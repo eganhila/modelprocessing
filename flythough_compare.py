@@ -1,8 +1,7 @@
 import yt 
 import numpy as np
 import matplotlib.pyplot as plt
-from yt.frontends.mgitm.api import MGITMDataset
-from yt.frontends.heliosares.api import HELIOSARESDataset
+from yt.frontends.netcdf.api import NetCDFDataset
 import spiceypy as sp
 from data_load import load_heliosares
 plt.style.use('ggplot')
@@ -24,13 +23,13 @@ def load_all():
     # Load MGITM
     fdir = '/Volumes/triton/Data/ModelChallenge/MGITM/'
     fname = 'mgitm_ls180_f070_150615.nc'
-    datasets['MGITM'] = MGITMDataset(filename=fdir+fname)
+    datasets['MGITM'] = NetCDFDataset(fdir+fname, model='mgitm')
 
 
     # Load Heliosares
     fdir = '/Volumes/triton/Data/ModelChallenge/Heliosares/test/'
     fname = 'Hsw_18_06_14_t00600.nc'
-    datasets['heliosares'] = HELIOSARESDataset(filename=fdir+fname)
+    #datasets['heliosares'] = NetCDFDataset(fdir+fname, model='heliosares')
 
 
     # Load MAVEN
@@ -38,6 +37,13 @@ def load_all():
     fname = 'orbit_2349_density.csv'
     datasets['maven'] = np.loadtxt(fdir+fname,delimiter=',', unpack=True,
                      converters={i:nan_converter for i in range(3)})
+
+
+    # Load gcm 
+    fdir = '/Volumes/triton/Data/ModelChallenge/Heliosares/'
+    fname = 'Heliosares_Ionos_Ls90_SolMean1_11_02_13.nc'
+    datasets['gcm'] = NetCDFDataset(fdir+fname, model='gcm')
+    print datasets['gcm'].field_list
 
     return datasets
 
@@ -48,7 +54,7 @@ def create_paths(datasets, fields, quick_test=False):
 
     # Create highres/spherical and lowres/cartesian coords
     if quick_test: steps = (100, 50)
-    else: steps = (500, 100)
+    else: steps = (1000, 100)
     hr_coords, hr_times = get_maven_path(geo=True, step=steps[0])
     lr_coords, lr_times = get_maven_path(geo=False, step=steps[1])
 
@@ -89,19 +95,15 @@ def plot_all(fts, field, ax):
     ax.set_yscale('log')
     ax.set_ylabel(field)
     #ax.set_xlim(7000+1.45011e9, 10000+1.45011e9)
-    #ax.set_ylim(10, 1e5)
+    ax.set_ylim(10, 1e5)
 
 def main():
 
     species = ['O_p1_number_density', 'O2_p1_number_density']
+    [('netcdf', u'Merid_vel'), ('netcdf', u'Temp_elec'), ('netcdf', u'Temp_ion'), ('netcdf', u'Temperature'), ('netcdf', u'Vert_vel'), ('netcdf', u'Zonal_vel'), ('netcdf', u'co2'), ('netcdf', u'co2plus'), ('netcdf', u'elec'), ('netcdf', u'h'), ('netcdf', u'h2'), ('netcdf', u'o')
 
     datasets = load_all()
-    ds = datasets['heliosares']
-    flythroughs = create_paths(datasets, species, quick_test=True)
-
-    for k, ft in flythroughs.items():
-        t, dat = ft
-        print k, t.min(), t.max() 
+    flythroughs = create_paths(datasets, species, quick_test=False)
 
 
     f, axes = plt.subplots(2)

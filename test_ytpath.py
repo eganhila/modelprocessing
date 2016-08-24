@@ -2,7 +2,6 @@ import yt
 import spiceypy as sp
 import matplotlib.pyplot as plt
 import numpy as np
-from yt.frontends.mgitm.api import MGITMDataset
 from yt.units.yt_array import YTArray
 
 
@@ -150,7 +149,7 @@ def get_path_arrays_points(ds, coords, times, fields):
         if len(vals) == 0: continue
         for f_i, f  in enumerate(fields):
             if len(vals[f_i]) > 0:
-                field_dat[f][i] = vals[f_i]
+                field_dat[f][i] = vals[f_i].in_units('cm**-3')
 
     return (times, field_dat, coords, range(len(times))) 
 
@@ -179,7 +178,7 @@ def get_path_arrays_rays(ds, coords, times, fields):
 
         if l > 0:
             for field in fields:
-                field_dat[field][arr_i:arr_i+l] = path[field][sort]
+                field_dat[field][arr_i:arr_i+l] = path[field][sort].in_units('cm**-3')
             arr_i = arr_i + l 
         else:
             arr_i = arr_i + 1
