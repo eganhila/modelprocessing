@@ -1,0 +1,7 @@
+syntax: glob
+
+Output/*
+*.pyc
+*.swp
+*.orig
+.ipynb_checkpoints/*

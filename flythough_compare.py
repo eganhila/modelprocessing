@@ -35,8 +35,13 @@ def load_all():
     # Load MAVEN
     fdir = '/users/hilaryegan/Projects/ModelChallenge/MavenProcessing/Output/'
     fname = 'orbit_2349_density.csv'
-    datasets['maven'] = np.loadtxt(fdir+fname,delimiter=',', unpack=True,
-                     converters={i:nan_converter for i in range(3)})
+    #datasets['maven'] = np.loadtxt(fdir+fname,delimiter=',', unpack=True,
+    #                 converters={i:nan_converter for i in range(3)})
+
+    # Load GCM
+    fdir = '/Volumes/triton/Data/ModelChallenge/Heliosares/'
+    fname = 'Heliosares_Ionos_Ls90_SolMean1_11_02_13.nc' 
+    datasets['gcm'] = NetCDFDataset(filename=fdir+fname, model='gcm')
 
 
     # Load gcm 
