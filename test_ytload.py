@@ -1,20 +1,21 @@
 import yt
 from yt.frontends.netcdf.api import NetCDFDataset
 from yt.frontends.batsrus.api import BATSRUSDataset
+import numpy as np
 
 def load_mgitm():
     fdir = '/Volumes/triton/Data/ModelChallenge/MGITM/'
     fname = 'MGITM_LS180_F070_150615.nc'
 
-    ds = NetCDFDataset(filename=fdir+fname, model='mgitm')
+    ds = yt.load(fdir+fname, model='mgitm')
 
     return ds
 
 def load_heliosares():
     fdir = '/Volumes/triton/Data/ModelChallenge/Heliosares/test/'
-    fname = '*_18_06_14_t00600.nc' 
+    fname = 'Hsw_18_06_14_t00600.nc' 
 
-    ds = NetCDFDataset(filename=fdir+fname, model='heliosares')
+    ds = yt.load(fdir+fname, model='heliosares')
 
     return ds
 
@@ -22,7 +23,8 @@ def load_gcm():
     fdir = '/Volumes/triton/Data/ModelChallenge/Heliosares/'
     fname = 'Heliosares_Ionos_Ls90_SolMean1_11_02_13.nc' 
 
-    ds = NetCDFDataset(filename=fdir+fname, model='gcm')
+    ds = yt.load(fdir+fname, model='gcm')
+
 
     return ds
 
@@ -56,11 +58,14 @@ def main(ds_type):
         print 'Test type {0} unrecognized'.format(ds_type)
         return
 
-
-    print ds.field_list
     ad = ds.all_data()
     print ad['number_density']
     slc = yt.SlicePlot(ds, 2, 'number_density')
+    #print np.max(ad['Opl_Density'])
+    #print ad['O_p1_number_density']
+    print ad['oplus']
+    slc = yt.SlicePlot(ds, 'latitude', 'oplus')
+    #slc = yt.SlicePlot(ds, 'x', 'Opl_Density')
     slc.save('Output/')
 
 
