@@ -15,4 +15,4 @@ all_dat = transpose(REFORM(all_dat, 1359, 13))
 out_dir = '/Users/hilaryegan/Projects/ModelChallenge/MavenProcessing/Output/'
 write_csv, out_dir+'upstream.csv', all_dat
 
-endm
+end
