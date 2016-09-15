@@ -6,34 +6,37 @@ from matplotlib.colors import LogNorm
 from yt.frontends.netcdf.api import NetCDFDataset
 import netCDF4 as nc
 import spiceypy as sp
+import h5py
 
 off_ax = {0: [1, 2], 1: [1, 0], 2:[2, 0]}
 logax = {0:True, 1:False, 2:False}
 labels = {0: "Altitude (km)",
           1: "Latitude",
-          2: "Longitude"}
+          2: "Longitude",
+          'O2pl_Density':'O$_2$+ Number Density (cm$^{-3}$)',
+          'CO2pl_Density':'CO$_2$+ Number Density (cm$^{-3}$)',
+          'Hesw_Density':'He Number Density (cm$^{-3}$)',
+          'Hsw_Density':'H Number Density (cm$^{-3}$)',
+          'Opl_Density':'O+ Number Density (cm$^{-3}$)', 
+          'Thew_Density':'e- Number Density (cm$^{-3}$)',
+          'pop': 'O+ Number Density (cm$^{-3}$)' }
 
-def load_data():
-    ds = NetCDFDataset('/Volumes/triton/Data/ModelChallenge/SDC_Archive/Heliosares/Hybrid/Run1/Hsw_18_06_14_t00600.nc', model='heliosares')
-    ad = ds.all_data()
-    ad['x']
-    x, y, z = ad['x'].flatten(), ad['y'].flatten(), ad['z'].flatten()
+def load_data(field):
+    fdir = '/Volumes/triton/Data/ModelChallenge/SDC_Archive/Heliosares/Hybrid/Run2/'
+    fdir = '/Volumes/triton/Data/ModelChallenge/SDC_Archive/BATSRUS/'
+    fname = '3d__ful_4_n00060000_AEQNmax-SSLONG0.h5'
 
-    N = z.shape[0]
+    with h5py.File(fdir+fname, 'r') as f:
 
-    lat, lon, alt = np.zeros(N), np.zeros(N), np.zeros(N)
+        fvals = f[field][:].flatten()
+        alt = (f['altitude'][:].flatten()+3390-1)*3390
+        lat = f['latitude'][:].flatten()
+        lon = f['longitude'][:].flatten()
+        geo_coords = np.array([alt, lat, lon]) 
 
-    for i in range(N):
-        p_rec = [x[i], y[i], z[i]]
-        p_lat = sp.spiceypy.reclat(p_rec)
-        alt[i], lon[i], lat[i] = p_lat
-            
-    lat = lat*180/np.pi
-    lon = lon*180/np.pi
-    alt = alt - 3390
+    return (fvals, geo_coords)
 
-    geo_coords = np.array([alt, lat, lon])
-    return (ds, geo_coords)
+    
 
 
 def bin_data(fvals, geo_coords):
@@ -41,7 +44,7 @@ def bin_data(fvals, geo_coords):
     lat_bins = np.linspace(-90, 90, 50)
     lon_bins = np.linspace(-180, 180, 50)
     alt_bins = np.logspace(2, np.log10(np.max(geo_coords[0])), 50)
-    bins = np.array(alt_bins, lat_bins, lon_bins)
+    bins = np.array([alt_bins, lat_bins, lon_bins])
     
     alt_idx = np.digitize(geo_coords[0], alt_bins)
     lat_idx = np.digitize(geo_coords[1], lat_bins)
@@ -69,6 +72,7 @@ def plot_data(field, binned_data, axis):
 
     pcol = plt.pcolormesh(bins[xax], bins[yax],
                 mean_fvals[:-1,:-1], cmap='viridis')
+                #norm=LogNorm(mean_fvals[mean_fvals!=0].min(), mean_fvals.max()))
 
     if logax[xax]: plt.semilogx()
     if logax[yax]: plt.semilogy()
@@ -79,25 +83,25 @@ def plot_data(field, binned_data, axis):
     plt.ylim(bins[yax, 0], bins[yax, -1])
 
     pcol.set_edgecolor('face')
-    plt.colorbar(label=field)
+    plt.colorbar(label=labels[field])
 
-    plt.savefig('Output/phase_helioR1_{0}_{1}.pdf'.format(field, axis))
+    plt.savefig('Output/phase_helioR2_{0}_{1}.pdf'.format(field, axis))
+    plt.close()
 
 
 def main():
 
-    ds, geo_coords = load_data()
+    fields = ['O2pl_Density', 'CO2pl_Density', 'Hesw_Density',
+              'Hsw_Density', 'Opl_Density', 'Thew_Density']
+    fields = ['pop']
+    for field in fields:
+        fvals, geo_coords = load_data(field)
 
-    ad = ds.all_data()
-    for field in ds.derived_field_list:
-        if "number_density" in field[1]:
-            fvals = ad[field]
 
         bindat = bin_data(fvals, geo_coords)
-        plot_data(field[1], bindat, 1) 
-        plot_data(field[1], bindat, 2) 
+        plot_data(field, bindat, 1) 
+        plot_data(field, bindat, 2) 
 
-        return
 
 
 if __name__ == '__main__':
