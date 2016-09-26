@@ -12,10 +12,10 @@ def load_mgitm():
     return ds
 
 def load_heliosares():
-    fdir = '/Volumes/triton/Data/ModelChallenge/Heliosares/test/'
+    fdir = '/Volumes/triton/Data/ModelChallenge/SDC_Archive/Heliosares/Hybrid/Run1/'
     fname = 'Hsw_18_06_14_t00600.nc' 
 
-    ds = yt.load(fdir+fname, model='heliosares')
+    ds = NetCDFDataset(fdir+fname, model='heliosares')
 
     return ds
 
@@ -58,6 +58,7 @@ def main(ds_type):
         print 'Test type {0} unrecognized'.format(ds_type)
         return
 
+    print ds.field_list
     ad = ds.all_data()
     print ad['number_density']
     slc = yt.SlicePlot(ds, 2, 'number_density')

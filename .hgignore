@@ -5,3 +5,4 @@ Output/*
 *.swp
 *.orig
 .ipynb_checkpoints/*
+*.ipynb

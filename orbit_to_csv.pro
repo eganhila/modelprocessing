@@ -1,5 +1,5 @@
 pro orbit_to_csv
-struc = READ_CSV("/Users/hilaryegan/Projects/ModelChallenge/MavenProcessing/Output/orbits_aphelion_moderate.dat")
+struc = READ_CSV("/Volumes/triton/Data/maven/orbit_plots/final_orbits/orbitN.dat")
 orbits = struc.field1[0]
 
 ;orbits = [2349]
@@ -25,6 +25,7 @@ foreach orbit, orbits do begin
   all_dat = [time, hp, op, opp] ; hpp is empty for some unknown reason
   all_dat = transpose(REFORM(all_dat, 4074, 4))
   out_dir = '/Users/hilaryegan/Projects/ModelChallenge/MavenProcessing/Output/'
+  out_dir = '/Volumes/triton/Data/ModelChallenge/Maven/'
   write_csv, out_dir+'orbit_'+orbit+'_density.csv', all_dat
 endforeach
 

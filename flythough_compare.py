@@ -20,35 +20,12 @@ def load_all():
 
     datasets = {}
 
-    # Load MGITM
-    fdir = '/Volumes/triton/Data/ModelChallenge/MGITM/'
-    fname = 'mgitm_ls180_f070_150615.nc'
-    datasets['MGITM'] = NetCDFDataset(fdir+fname, model='mgitm')
-
-
     # Load Heliosares
-    fdir = '/Volumes/triton/Data/ModelChallenge/Heliosares/test/'
-    fname = 'Hsw_18_06_14_t00600.nc'
-    #datasets['heliosares'] = NetCDFDataset(fdir+fname, model='heliosares')
+    # fdir = '/Volumes/triton/Data/ModelChallenge/Heliosares/test/'
+    # fname = 'Hsw_18_06_14_t00600.nc'
+    # datasets['heliosares'] = NetCDFDataset(fdir+fname, model='heliosares')
 
 
-    # Load MAVEN
-    fdir = '/users/hilaryegan/Projects/ModelChallenge/MavenProcessing/Output/'
-    fname = 'orbit_2349_density.csv'
-    #datasets['maven'] = np.loadtxt(fdir+fname,delimiter=',', unpack=True,
-    #                 converters={i:nan_converter for i in range(3)})
-
-    # Load GCM
-    fdir = '/Volumes/triton/Data/ModelChallenge/Heliosares/'
-    fname = 'Heliosares_Ionos_Ls90_SolMean1_11_02_13.nc' 
-    datasets['gcm'] = NetCDFDataset(filename=fdir+fname, model='gcm')
-
-
-    # Load gcm 
-    fdir = '/Volumes/triton/Data/ModelChallenge/Heliosares/'
-    fname = 'Heliosares_Ionos_Ls90_SolMean1_11_02_13.nc'
-    datasets['gcm'] = NetCDFDataset(fdir+fname, model='gcm')
-    print datasets['gcm'].field_list
 
     return datasets
 
