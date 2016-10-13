@@ -77,6 +77,7 @@ def convert_file(fdir, fname):
 def main():
 
     fdir = '/Volumes/triton/Data/ModelChallenge/SDC_Archive/BATSRUS/'
+    fdir = '/Users/hilaryegan/Data/ModelChallengeMaven/BATSRUS/'
     fnames = glob.glob(fdir+'*.dat')
 
     for fname in fnames:
