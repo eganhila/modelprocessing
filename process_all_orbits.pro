@@ -2,7 +2,7 @@ pro process_all_orbits
 
 struc = READ_CSV("/Volumes/triton/Data/maven/orbit_plots/final_orbits/orbitN.dat")
 orbits = struc.field1[5]
-
+orbits = 808
 foreach orbit, [orbits] do begin ;,  2344] do begin
 ;for orbit= 0,2925 do begin
   

@@ -1,5 +1,5 @@
 import yt
-from load_heliosares import load_mgitm
+#from load_heliosares import load_mgitm
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -32,7 +32,8 @@ mars_r = 3388.25
 #           val = ds.find_field_values_at_point(field, coord)
 #           if sum(val.shape) != 0:
 #               vals[i] = val
-#       return vals
+#       return vals:w
+
 #
 #   def plot_slc(coords, data):
 #

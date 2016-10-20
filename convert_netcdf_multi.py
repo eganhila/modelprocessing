@@ -49,8 +49,8 @@ name_conversion = {'CO2pl_Density':'CO2_p1_number_density',
                    'y':'y',
                    'z':'z'}
 
-fdir = '/Volumes/triton/Data/ModelChallenge/SDC_Archive/Heliosares/Hybrid/Run1/'
-h5name = 'run1.h5' 
+fdir = '/Volumes/triton/Data/ModelChallenge/SDC_Archive/Heliosares/Hybrid/Run2/'
+h5name = '../run2.h5' 
 fnames = glob.glob(fdir+'*.nc')
 
 dims = (410, 418, 258)
@@ -61,6 +61,8 @@ with nc.Dataset(fnames[0], mode='r') as ds:
     z = ds.variables['z'][:]
 
 xmesh, ymesh, zmesh = np.meshgrid(x, y, z, indexing='ij')
+xmesh, ymesh, zmesh = xmesh, ymesh, zmesh
+if fdir[-2] == '2': zmesh == zmesh*-1
 
 lat = -1*(np.arctan2(np.sqrt(xmesh**2+ymesh**2), zmesh)*180/np.pi)+90  #theta
 lon = np.arctan2(ymesh, xmesh)*180/np.pi   #phi
@@ -78,7 +80,6 @@ with h5py.File(fdir+h5name, 'w') as f:
     f.create_dataset('zmesh', data=zmesh)
 
 with h5py.File(fdir+h5name, 'r+') as f:
-    print fdir+h5name
     for fname in fnames:
         print fname
         with nc.Dataset(fname, mode='r') as ds:
@@ -93,8 +94,11 @@ with h5py.File(fdir+h5name, 'r+') as f:
                         key = name_conversion[k]
                     else:
                         continue
-                    print k, key 
-                    f.create_dataset(key, data=v[:].T)
+                    if species == 'Magw' and fdir[-2] == '2' and k!='Bz':
+                        print 'mag'
+                        f.create_dataset(key, data=-1*v[:].T)
+                    else:
+                        f.create_dataset(key, data=v[:].T)
 
 
 

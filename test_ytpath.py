@@ -2,6 +2,7 @@ import yt
 import spiceypy as sp
 import matplotlib.pyplot as plt
 import numpy as np
+from yt.frontends.netcdf.api import NetCDFDataset
 from yt.units.yt_array import YTArray
 
 
@@ -39,9 +40,13 @@ def plot_slicepath(ds, coords, times, coord_limit=False):
 
 
 
-def get_maven_path(geo=False, step=100):
+def get_maven_path(geo=False, step=100, trange=None):
     sp.furnsh("maven_spice.txt")
-    utc = ['2015-12-14/16:30:00', '2015-12-14/21:00:00']
+
+    if trange is None:
+        utc = ['2015-12-14/16:30:00', '2015-12-14/21:00:00']
+    else:
+        utc = trange
     et1, et2 = sp.str2et(utc[0]), sp.str2et(utc[1])
 
     times = np.linspace(et1, et2, step)
@@ -193,19 +198,19 @@ def get_path_arrays_rays(ds, coords, times, fields):
 
 def test_geo():
 
-    fdir = '/volumes/triton/data/modelchallenge/mgitm/'
-    fname = 'mgitm_ls180_f070_150615.nc'
-    ds = MGITMDataset(filename=fdir+fname)
+    fdir = '/Volumes/triton/Data/ModelChallenge/SDC_Archive/Heliosares/Hybrid/Run1/'
+    fname = 'Hsw_18_06_14_t00600.nc'
+    ds = NetCDFDataset(fdir+fname, model='heliosares')
 
 
-    coords, times = get_maven_path(geo=True, step=2000)
-    #positions, times = get_maven_path(geo=False)
+    #coords, times = get_maven_path(geo=True, step=2000, trange =['2015-02-28/22:45:47', '2015-03-01/03:16:07'])
+    positions, times = get_maven_path(geo=False, trange = ['2015-02-28/22:45:47', '2015-03-01/03:16:07'])
 
-    #plot_slicepath(ds, positions, times)
+    plot_slicepath(ds, positions, times)
 
 
-    t, dat, arr_coords, idx = get_path_arrays(ds, coords, times, ['oplus'], use_pts=True)
-    plot_field(t, dat['oplus'], add_coords=[arr_coords, coords[idx]])
+    #t, dat, arr_coords, idx = get_path_arrays(ds, coords, times, ['oplus'], use_pts=True)
+    #plot_field(t, dat['oplus'], add_coords=[arr_coords, coords[idx]])
 
 
 
@@ -214,4 +219,4 @@ def test_geo():
     #plt.plot(density)
     #plt.show()
 
-#test_geo()
+test_geo()

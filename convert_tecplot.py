@@ -47,19 +47,9 @@ def convert_file(fdir, fname):
     dat_file.close()
 
     x,y,z = data['x'], data['y'], data['z']
-
-    N = z.shape[0]
-
-    lat, lon, alt = np.zeros(N), np.zeros(N), np.zeros(N)
-
-    for i in range(N):
-        p_rec = [x[i], y[i], z[i]]
-        p_lat = sp.spiceypy.reclat(p_rec)
-        alt[i], lon[i], lat[i] = p_lat
-        
-    lat = lat*180/np.pi
-    lon = lon*180/np.pi
-    alt = alt*3390 
+    lat = -1*(np.arctan2(np.sqrt(x**2+y**2), z)*180/np.pi)+90  #theta
+    lon = np.arctan2(y, x)*180/np.pi   #phi
+    alt = (np.sqrt(x**2+y**2+z**2)-1)*3390
 
     data['latitude'] = lat
     data['longitude'] = lon
@@ -77,7 +67,7 @@ def convert_file(fdir, fname):
 def main():
 
     fdir = '/Volumes/triton/Data/ModelChallenge/SDC_Archive/BATSRUS/'
-    fdir = '/Users/hilaryegan/Data/ModelChallengeMaven/BATSRUS/'
+    #fdir = '/Users/hilaryegan/Data/ModelChallengeMaven/BATSRUS/'
     fnames = glob.glob(fdir+'*.dat')
 
     for fname in fnames:
