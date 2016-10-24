@@ -74,7 +74,7 @@ def plot_field_ds(x, data, ax, kwargs):
         ax.fill_between(x, min_dat, max_dat, alpha=0.2, color=kwargs['color'])
 
 
-def make_plot(times, fields, orbits, title, indxs, ds_names, ds_types, skip=1):
+def make_plot(times, fields, orbits, title, indxs, ds_names, ds_types, skip=1, subtitle=None):
     plot = setup_plot(fields, ds_names.keys())
 
     for ds_type, keys in ds_types.items():
@@ -110,11 +110,12 @@ def make_plot(times, fields, orbits, title, indxs, ds_names, ds_types, skip=1):
 	t = np.linspace(times[0], times[-1], data.shape[1])-times[0]
 	plot_field_ds(t[::skip], data[:,::skip], plot['axes'][field], plot['kwargs']['maven'])
 
-    finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, orbits[0]))
+    if subtitle is None: subtitle= orbits[0]
+    finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle))
     
 
 
-def flythrough_orbit(orbits, trange, ds_names, ds_types):
+def flythrough_orbit(orbits, trange, ds_names, ds_types, **kwargs):
 
     coords, times = get_path_pts(trange, Npts=150)
     indxs = get_path_idxs(coords, ds_names, ds_types)
@@ -127,21 +128,27 @@ def flythrough_orbit(orbits, trange, ds_names, ds_types):
     mag_fields = ['magnetic_field_radial',
           'magnetic_field_x', 'magnetic_field_y',
           'magnetic_field_z']
-    make_plot(times, ion_fields, orbits, 'ion_flythrough', indxs, ds_names, ds_types)
-    make_plot(times, mag_fields, orbits, 'mag_flythrough', indxs, ds_names, ds_types, skip=20)
+    make_plot(times, ion_fields, orbits, 'ion_flythrough', indxs, ds_names, ds_types, **kwargs)
+    make_plot(times, mag_fields, orbits, 'mag_flythrough', indxs, ds_names, ds_types, skip=20, **kwargs)
 
 
 def main():
 
-    orbit_groups = [np.array([415,412,397,363])]
+    orbit_groups =[np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,
+       375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391, 392,
+       397, 398, 401, 402, 405, 407, 408, 409, 412, 413, 414, 415, 417,
+       418, 419, 419, 420, 421]), np.array([ 2504, 2504, 2505, 2511, 2512, 2512, 2513, 2514,
+       2516, 2522, 2525, 2526, 2527, 2529, 2530, 2532, 2538]), np.array([504, 512, 513, 513, 515, 520, 524, 529, 531, 531, 534, 535, 535,
+       537, 537, 539, 539, 553, 560])] 
 
     # Get Datasets setup
     ds_names, ds_types = get_datasets()
 
-    for orbits in orbit_groups:
+    for gi, orbits in enumerate(orbit_groups):
         tranges = get_orbit_times(orbits)
+        mid_tr = tranges[:, orbits.shape[0]/2][::-1]
 
-        flythrough_orbit(orbits, tranges[:,0], ds_names, ds_types)
+        flythrough_orbit(orbits, mid_tr, ds_names, ds_types, subtitle='G{0}'.format(gi+1))
 
 
 
