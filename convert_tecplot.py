@@ -22,10 +22,13 @@ name_conversion = {'x':'x', 'y':'y', 'z':'z',
                   'jx':'current_x', 'jy':'current_y', 'jz':'current_z',
                   'altitude':'altitude', 'latitude':'latitude', 'longitude':'longitude'}
 
-data_conversion = {'x':lambda x: mars_r*x, 'y':lambda x: mars_r*x, 'z':lambda x: mars_r*x,
-        'rhp':lambda x: x/1.00794, 'rop2': lambda x: x/(2*15.9994), 'rop': lambda x:x/15.9994, 'rco2':lambda x: x/(15.9994*2+12.0107)}
-
-
+data_conversion = {'x':lambda x: mars_r*x, 
+                   'y':lambda x: mars_r*x, 
+                   'z':lambda x: mars_r*x,
+                   'rhp':lambda x: x/1.00794, 
+                   'rop2':lambda x: x/(2*15.9994), 
+                   'rop':lambda x: x/15.9994, 
+                   'rco2':lambda x: x/(15.9994*2+12.0107)}
 
 
 def convert_file(fdir, fname):
@@ -47,6 +50,7 @@ def convert_file(fdir, fname):
     dat_file.close()
 
     x,y,z = data['x'], data['y'], data['z']
+
     lat = -1*(np.arctan2(np.sqrt(x**2+y**2), z)*180/np.pi)+90  #theta
     lon = np.arctan2(y, x)*180/np.pi   #phi
     alt = (np.sqrt(x**2+y**2+z**2)-1)*3390
