@@ -6,7 +6,15 @@ from general_functions import *
 plt.style.use('seaborn-talk')
 
 def setup_plot(fields, ds_names):
-    f, axes = plt.subplots(len(fields), 1)
+    hrs = [1 for i in range(len(fields))]
+    hrs.insert(0,0.1)
+    import matplotlib.gridspec as gridspec
+    gs = gridspec.GridSpec(len(fields)+1, 1,
+                           height_ratios=hrs)
+    axes = [plt.subplot(gs[i, 0]) for i in range(1, len(fields)+1)]
+    f = plt.gcf()
+    
+    #f, axes = plt.subplots(len(fields), 1)
     colors = {'maven':'k', 
               'bats_min_LS270_SSL0':'CornflowerBlue',
               'bats_min_LS270_SSL180':'DodgerBlue',
@@ -23,15 +31,17 @@ def setup_plot(fields, ds_names):
     plot['figure'] = f
     plot['ax_arr'] = axes
     plot['N_axes'] = len(fields)
-
+    plot['timebar'] = plt.subplot(gs[0,0])
 
     return plot
 
 def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
     for f, ax in plot['axes'].items():
         ax.set_ylabel(label_lookup[f])
+        ax.set_xlim(plot['time'][0], plot['time'][-1])
         if zeroline:
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
+        #if f in log_fields:
         ax.set_yscale('symlog', linthreshy=10)
     for i in range(plot['N_axes']):
         ax = plot['ax_arr'][i]
@@ -42,10 +52,18 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
         #ax.set_ylabel(ax.get_ylabel(), labelpad=30*(i%2))    
         if xlim is not None:
             ax.set_xlim(xlim)
-        
+    
+    tb = plot['timebar']
+    xv, yv = np.meshgrid(plot['time'], [0,1])
+    m = np.array([plot['time'], plot['time']]).reshape(-1,2, order='F')
+    tb.pcolormesh(xv,yv, m.T, cmap='inferno',rasterized=True)
+    tb.axis('off')
+    tb.set_xlim(plot['time'][0], plot['time'][-1])
+    
+    
     plot['ax_arr'][0].legend()#(bbox_to_anchor=(1.4, 1))
     plot['ax_arr'][0].set_zorder(1)
-    plt.gcf().set_size_inches(10,10)
+    plot['figure'].set_size_inches(10,10)
 
     if show:
         plt.show()
@@ -109,7 +127,7 @@ def make_plot(times, fields, orbits, title, indxs, ds_names, ds_types, skip=1, s
 	    data[i] = mav_data[i][:L]
 	t = np.linspace(times[0], times[-1], data.shape[1])-times[0]
 	plot_field_ds(t[::skip], data[:,::skip], plot['axes'][field], plot['kwargs']['maven'])
-
+    plot['time'] = t
     if subtitle is None: subtitle= orbits[0]
     finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle))
     
@@ -134,12 +152,11 @@ def flythrough_orbit(orbits, trange, ds_names, ds_types, **kwargs):
 
 def main():
 
-    orbit_groups =[np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,
-       375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391, 392,
-       397, 398, 401, 402, 405, 407, 408, 409, 412, 413, 414, 415, 417,
-       418, 419, 419, 420, 421]), np.array([ 2504, 2504, 2505, 2511, 2512, 2512, 2513, 2514,
-       2516, 2522, 2525, 2526, 2527, 2529, 2530, 2532, 2538]), np.array([504, 512, 513, 513, 515, 520, 524, 529, 531, 531, 534, 535, 535,
-       537, 537, 539, 539, 553, 560])] 
+    #orbit_groups =[np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,
+    #   375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391, 392,
+    #   397, 398, 401, 402, 405, 407, 408, 409, 412, 413, 414, 415, 417,
+    #   418, 419, 419, 420, 421])] 
+    orbit_groups = [np.array([421])]
 
     # Get Datasets setup
     ds_names, ds_types = get_datasets()
@@ -148,9 +165,9 @@ def main():
         tranges = get_orbit_times(orbits)
         mid_tr = tranges[:, orbits.shape[0]/2][::-1]
 
-        flythrough_orbit(orbits, mid_tr, ds_names, ds_types, subtitle='G{0}'.format(gi+1))
+        flythrough_orbit(orbits, mid_tr, ds_names, ds_types, subtitle='421'.format(gi+1))
 
-
+        break
 
 
 

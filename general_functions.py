@@ -140,7 +140,7 @@ def get_path_pts(trange, geo=False, Npts=50):
         et1, et2 = trange
     times = np.linspace(et1, et2, Npts)
 
-    positions, lightTimes = sp.spkpos('Maven', times, 'J2000',
+    positions, lightTimes = sp.spkpos('Maven', times, 'MAVEN_MSO',
                                 'NONE', 'MARS BARYCENTER')
 
     if not geo:
