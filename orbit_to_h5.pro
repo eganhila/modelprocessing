@@ -7,7 +7,7 @@ fdir = '/Users/hilaryegan/Temp/';LS_270.h5'
 
 
 ;foreach orbit, orbits do begin 
-for orbit= 2409, 2500 do begin
+for orbit= 500, 500 do begin
     fid = H5F_CREATE(fdir+'orbit_'+string(format='(I04)', orbit)+'.h5')
     print,  '---------------------: ', orbit
 
@@ -28,11 +28,12 @@ for orbit= 2409, 2500 do begin
     ;mvn_swe_kp
     tlimit, trange[0], trange[1]
     
-    fields = ['mvn_sta_H+_raw_density','mvn_sta_O+_raw_density', 'mvn_sta_O2+_raw_density', 'mvn_B_1sec_MAVEN_MSO', 'mvn_sta_H+_vcx_MAVEN_MSO', 'mvn_sta_H+_vcy_MAVEN_MSO', 'mvn_sta_H+_vcz_MAVEN_MSO','mvn_sta_O2+_V-Vsc_MAVEN_MSO_vx','mvn_sta_O2+_V-Vsc_MAVEN_MSO_vy','mvn_sta_O2+_V-Vsc_MAVEN_MSO_vz','mvn_sta_H+_flux', 'mvn_sta_O2+_flux','mvn_sta_O+_flux' ]
-    field_names = ['H_p1_number_density', 'O_p1_number_density', 'O2_p1_number_density', 'magnetic_field', 'H_p1_velocity_x','H_p1_velocity_y','H_p1_velocity_z','O2_p1_velocity_x' ,'O2_p1_velocity_y','O2_p1_velocity_z', 'H_p1_flux', 'O2_p1_flux', 'O_p1_flux']
+    fields = ['mvn_sta_H+_raw_density','mvn_sta_O+_raw_density', 'mvn_sta_O2+_raw_density', 'mvn_B_1sec_MAVEN_MSO', 'mvn_sta_H+_vcx_MAVEN_MSO', 'mvn_sta_H+_vcy_MAVEN_MSO', 'mvn_sta_H+_vcz_MAVEN_MSO','mvn_sta_O2+_V-Vsc_MAVEN_MSO_vx','mvn_sta_O2+_V-Vsc_MAVEN_MSO_vy','mvn_sta_O2+_V-Vsc_MAVEN_MSO_vz','mvn_sta_H+_flux', 'mvn_sta_O2+_flux','mvn_sta_O+_flux','MAVEN_POS_(Mars-MSO)']
 
-    for i=0, 12 do begin
-        print,  i
+    field_names = ['H_p1_number_density', 'O_p1_number_density', 'O2_p1_number_density', 'magnetic_field', 'H_p1_velocity_x','H_p1_velocity_y','H_p1_velocity_z','O2_p1_velocity_x' ,'O2_p1_velocity_y','O2_p1_velocity_z', 'H_p1_flux', 'O2_p1_flux', 'O_p1_flux', 'position']
+
+    for i=0, 13 do begin
+        print,  i, field_names[i]
         get_data, fields[i], time, dat, val
 
         dt_id = H5T_IDL_CREATE(dat)

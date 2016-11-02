@@ -11,7 +11,8 @@ label_lookup = {'H_p1_number_density':r'$n(H+)\;\mathrm{cm^{-3}}$',
           'magnetic_field_radial':u'$B_r$',
           'magnetic_field_x':u'$B_x$',
           'magnetic_field_y':u'$B_y$',
-          'magnetic_field_z':u'$B_z$'}
+          'magnetic_field_z':u'$B_z$',
+          'magnetic_field_total':u'$|B|$'}
 
 def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/'):
     ds_names = {}
@@ -120,6 +121,10 @@ def get_ds_data(ds, field, indx):
 
     if field in ds.keys():
         return ds[field][:].flatten()[indx]
+    elif '_total' in field and field.replace('_total', '_x') in ds.keys():
+        return np.sqrt(ds[field.replace('_total', '_x')][:].flatten()[indx]**2+\
+                       ds[field.replace('_total', '_y')][:].flatten()[indx]**2+\
+                       ds[field.replace('_total', '_z')][:].flatten()[indx]**2)
     elif '_radial' in field and field.replace('_radial', '_x') in ds.keys():
         return cart_geo_vec_transform(ds,field.replace('_radial', ''), indx)[0]
     elif '_latitudinal'in field and field.replace('_latitudinal', '_x') in ds.keys():

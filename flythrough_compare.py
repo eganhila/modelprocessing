@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import spiceypy as sp
 import h5py
 from general_functions import *
 plt.style.use('seaborn-talk')
@@ -143,7 +142,7 @@ def flythrough_orbit(orbits, trange, ds_names, ds_types, **kwargs):
           'O_p1_number_density',
           'O_p2_number_density',
           'CO2_p1_number_density'] 
-    mag_fields = ['magnetic_field_radial',
+    mag_fields = ['magnetic_field_total', 'magnetic_field_radial',
           'magnetic_field_x', 'magnetic_field_y',
           'magnetic_field_z']
     make_plot(times, ion_fields, orbits, 'ion_flythrough', indxs, ds_names, ds_types, **kwargs)
@@ -163,7 +162,7 @@ def main():
 
     for gi, orbits in enumerate(orbit_groups):
         tranges = get_orbit_times(orbits)
-        mid_tr = tranges[:, orbits.shape[0]/2][::-1]
+        mid_tr = tranges[:, orbits.shape[0]/2]
 
         flythrough_orbit(orbits, mid_tr, ds_names, ds_types, subtitle='421'.format(gi+1))
 
