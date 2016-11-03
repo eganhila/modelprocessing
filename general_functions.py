@@ -8,68 +8,76 @@ label_lookup = {'H_p1_number_density':r'$n(H+)\;\mathrm{cm^{-3}}$',
           'O_p1_number_density':u'$n(O+)\;\mathrm{cm^{-3}}$',
           'O_p2_number_density':u'$n(O++)\;\mathrm{cm^{-3}}$',
           'CO2_p1_number_density':u'$n(CO_2+)\;\mathrm{cm^{-3}}$',
+          'H_number_density':u'$n(H)\;\mathrm{cm^{-3}}$',
+          'He_number_density':u'$n(He)\;\mathrm{cm^{-3}}$',
+          'electron_number_density':u'$n(e-)\;\mathrm{cm^{-3}}$',
+          'number_density':u'$n\;\mathrm{cm^{-3}}$',
           'magnetic_field_radial':u'$B_r$',
           'magnetic_field_x':u'$B_x$',
           'magnetic_field_y':u'$B_y$',
           'magnetic_field_z':u'$B_z$',
           'magnetic_field_total':u'$|B|$'}
 
-def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/'):
+def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/', new_models=False):
     ds_names = {}
+    if new_models:
+        fdir = '/Volumes/triton/Data/ModelChallenge/R2349/'
+        ds_names['batsrus_3dmhd'] =  fdir+'batsrus_3dmhd_2349.h5'
+    else:
 
-    #BATSRUS
-    """
-    ds_names['bats_max_LS270-SSL0'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmax-SSLONG0.h5'
-    """   
-    ds_names['bats_min_LS270_SSL0'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG0.h5'
-    ds_names['bats_min_LS270_SSL180'] = \
-        fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG180.h5'
-    ds_names['bats_min_LS270_SSL270'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG270.h5'        
-            
-    """
-    ds_names['bats_max_LS270-SSL180'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmax-SSLONG180.h5'
-    
-    ds_names['bats_max_LS270-SSL270'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmax-SSLONG270.h5'
-    
+        #BATSRUS
+        """
+        ds_names['bats_max_LS270-SSL0'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmax-SSLONG0.h5'
+        """   
+        ds_names['bats_min_LS270_SSL0'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG0.h5'
+        ds_names['bats_min_LS270_SSL180'] = \
+            fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG180.h5'
+        ds_names['bats_min_LS270_SSL270'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG270.h5'        
+                
+        """
+        ds_names['bats_max_LS270-SSL180'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmax-SSLONG180.h5'
+        
+        ds_names['bats_max_LS270-SSL270'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmax-SSLONG270.h5'
+        
 
-    ds_names['bats_max_LS90-SSL0'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmax-SSLONG0.h5'
-    ds_names['bats_min_LS90_SSL0'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmin-SSLONG0.h5'
-    ds_names['bats_max_LS90-SSL180'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmax-SSLONG180.h5'
-    ds_names['bats_min_LS90_SSL180'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmin-SSLONG180.h5'
-    ds_names['bats_max_LS90-SSL270'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmax-SSLONG270.h5'
-    ds_names['bats_min_LS90_SSL270'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmin-SSLONG270.h5'
+        ds_names['bats_max_LS90-SSL0'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmax-SSLONG0.h5'
+        ds_names['bats_min_LS90_SSL0'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmin-SSLONG0.h5'
+        ds_names['bats_max_LS90-SSL180'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmax-SSLONG180.h5'
+        ds_names['bats_min_LS90_SSL180'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmin-SSLONG180.h5'
+        ds_names['bats_max_LS90-SSL270'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmax-SSLONG270.h5'
+        ds_names['bats_min_LS90_SSL270'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmin-SSLONG270.h5'
 
-    ds_names['bats_max_LS180-SSL0'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmax-SSLONG0.h5'
-    ds_names['bats_min_LS180_SSL0'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmin-SSLONG0.h5'
-    ds_names['bats_max_LS180-SSL180'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmax-SSLONG180.h5'
-    ds_names['bats_min_LS180_SSL180'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmin-SSLONG180.h5'
-    ds_names['bats_max_LS180-SSL270'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmax-SSLONG270.h5'
-    ds_names['bats_min_LS180_SSL270'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmin-SSLONG270.h5'
-    """
-    
-    #HELIOSARES
-    ds_names['helio_run1'] = \
-            fdir+'HELIOSARES/Hybrid/'+'run1.h5'
-    
-    ds_names['helio_run2'] = \
-            fdir+'HELIOSARES/Hybrid/'+'run2.h5'
+        ds_names['bats_max_LS180-SSL0'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmax-SSLONG0.h5'
+        ds_names['bats_min_LS180_SSL0'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmin-SSLONG0.h5'
+        ds_names['bats_max_LS180-SSL180'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmax-SSLONG180.h5'
+        ds_names['bats_min_LS180_SSL180'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmin-SSLONG180.h5'
+        ds_names['bats_max_LS180-SSL270'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmax-SSLONG270.h5'
+        ds_names['bats_min_LS180_SSL270'] = \
+                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmin-SSLONG270.h5'
+        """
+        
+        #HELIOSARES
+        ds_names['helio_1'] = \
+                fdir+'HELIOSARES/Hybrid/'+'helio_1.h5'
+        
+        ds_names['helio_2'] = \
+                fdir+'HELIOSARES/Hybrid/'+'helio_2.h5'
 
     
     #MAVEN
@@ -101,8 +109,13 @@ def cart_geo_vec_transform(ds, prefix, indx):
         x, y, z = ds['x'][:].flatten()[indx], ds['y'][:].flatten()[indx], ds['z'][:].flatten()[indx]
     vx, vy, vz = ds[prefix+'_x'][:].flatten()[indx], ds[prefix+'_y'][:].flatten()[indx], ds[prefix+'_z'][:].flatten()[indx]
     v = np.array([vx,vy,vz])
-    lat, lon = ds['latitude'][:].flatten()[indx], ds['longitude'][:].flatten()[indx]
-    lat, lon = lat*np.pi/180.0, lon*np.pi/180.0
+    
+    lat = -1*(np.arctan2(np.sqrt(x**2+y**2), z))+np.pi/2  #theta
+    lon = np.arctan2(y, x)   #phi
+    #alt = (np.sqrt(x**2+y**2+z**2)-1)*3390
+
+    #lat, lon = ds['latitude'][:].flatten()[indx], ds['longitude'][:].flatten()[indx]
+    #lat, lon = lat*np.pi/180.0, lon*np.pi/180.0
 
     rot_mat = np.zeros((3,3,lat.shape[0]))
     rot_mat[0,:,:] = np.sin(lat)*np.cos(lon), np.sin(lat)*np.sin(lon), np.cos(lat)

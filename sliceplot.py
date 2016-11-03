@@ -13,7 +13,7 @@ def setup_plot():
     f, axes = plt.subplots(3,1)
     
     plot['figure'] = f
-    plot['axes'] = axes
+    plot['axes'] = axes[::-1]
     
     return plot
 
@@ -23,6 +23,10 @@ def add_orbit(ax, ax_i, orbit):
     coords, ltimes = get_path_pts(trange,Npts=250)
     
     x,y = coords[off_ax[ax_i][0]]/3390, coords[off_ax[ax_i][1]]/3390
+    
+    z = coords[ax_i]/3390
+    ltimes[np.logical_and(z<0, np.sqrt(x**2+y**2)<1)] = ltimes.min()
+    
     points = np.array([x, y]).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
 
@@ -71,13 +75,15 @@ def load_data(ds_name, field, vec_field):
 
 def get_offgrid_slice(ds, ax_i, field, vec_field):
     if ax_i == 0:
-        idx = ds['x'] == 0
+        idx = np.abs(ds['x']) == np.min(np.abs(ds['x']))
         c_fields = ['y', 'z']
     elif ax_i == 1:
-        idx = ds['y'] == 0
+        idx = np.abs(ds['y']) == np.min(np.abs(ds['y']))
         c_fields = ['x', 'z']
     elif ax_i == 2:
-        idx = ds['z'] == 0
+        idx = np.abs(ds['z']) == np.min(np.abs(ds['z']))
+        print np.min(np.abs(ds['z']))
+        print sum(idx)
         c_fields = ['x', 'y']
 
     all_fields = [f for f in c_fields]
@@ -104,7 +110,6 @@ def slice_regrid(ds, ax_i, field, vec_field, test):
     c1_slice = ds_slice[c_fields[1]]
     
     idxs = np.zeros_like(g0_flat,dtype=int)
-    
     for i, c in enumerate(zip(g0_flat, g1_flat)):
         c0, c1 = c
         dr = np.sqrt((c0_slice-c0)**2+(c1_slice-c1)**2)

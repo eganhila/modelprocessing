@@ -18,8 +18,9 @@ def setup_plot(fields, ds_names):
               'bats_min_LS270_SSL0':'CornflowerBlue',
               'bats_min_LS270_SSL180':'DodgerBlue',
               'bats_min_LS270_SSL270':'LightSkyBlue',
-              'helio_run1':'LimeGreen',
-              'helio_run2':'ForestGreen'}
+              'batsrus_3dmhd':'CornflowerBlue',
+              'helio_1':'LimeGreen',
+              'helio_2':'ForestGreen'}
     
     plot = {}
     plot['axes'] = {field:ax for field, ax in zip(fields, axes)}
@@ -75,6 +76,7 @@ def get_path_idxs(coords, ds_names, ds_types):
     indxs = {}
     for ds_type, keys in ds_types.items():
         if ds_type == 'maven': continue
+        if len(keys) == 0: continue
         print 'getting indxs: '+ds_type
         indxs[ds_type] = bin_coords(coords, ds_names[keys[0]])
     indxs['maven'] = 'all'
@@ -128,6 +130,7 @@ def make_plot(times, fields, orbits, title, indxs, ds_names, ds_types, skip=1, s
 	plot_field_ds(t[::skip], data[:,::skip], plot['axes'][field], plot['kwargs']['maven'])
     plot['time'] = t
     if subtitle is None: subtitle= orbits[0]
+    print 'Saving: ', 'Output/{0}_{1}.pdf'.format(title, subtitle)
     finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle))
     
 
@@ -140,10 +143,8 @@ def flythrough_orbit(orbits, trange, ds_names, ds_types, **kwargs):
     ion_fields =['H_p1_number_density',
           'O2_p1_number_density',
           'O_p1_number_density',
-          'O_p2_number_density',
           'CO2_p1_number_density'] 
-    mag_fields = ['magnetic_field_total', 'magnetic_field_radial',
-          'magnetic_field_x', 'magnetic_field_y',
+    mag_fields = ['magnetic_field_x', 'magnetic_field_y',
           'magnetic_field_z']
     make_plot(times, ion_fields, orbits, 'ion_flythrough', indxs, ds_names, ds_types, **kwargs)
     make_plot(times, mag_fields, orbits, 'mag_flythrough', indxs, ds_names, ds_types, skip=20, **kwargs)
@@ -151,20 +152,16 @@ def flythrough_orbit(orbits, trange, ds_names, ds_types, **kwargs):
 
 def main():
 
-    #orbit_groups =[np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,
-    #   375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391, 392,
-    #   397, 398, 401, 402, 405, 407, 408, 409, 412, 413, 414, 415, 417,
-    #   418, 419, 419, 420, 421])] 
-    orbit_groups = [np.array([421])]
-
+    orbit_groups =[np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,
+            375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391])] 
+    
     # Get Datasets setup
-    ds_names, ds_types = get_datasets()
+    ds_names, ds_types = get_datasets(new_models=False)
 
     for gi, orbits in enumerate(orbit_groups):
         tranges = get_orbit_times(orbits)
         mid_tr = tranges[:, orbits.shape[0]/2]
-
-        flythrough_orbit(orbits, mid_tr, ds_names, ds_types, subtitle='421'.format(gi+1))
+        flythrough_orbit(orbits, mid_tr, ds_names, ds_types, subtitle='G{0}'.format(gi+1))
 
         break
 
