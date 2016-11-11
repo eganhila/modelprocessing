@@ -7,7 +7,7 @@ fdir = '/Users/hilaryegan/Temp/';LS_270.h5'
 
 
 ;foreach orbit, orbits do begin 
-for orbit= 500, 500 do begin
+for orbit= 667, 2000 do begin
     fid = H5F_CREATE(fdir+'orbit_'+string(format='(I04)', orbit)+'.h5')
     print,  '---------------------: ', orbit
 

@@ -18,7 +18,31 @@ label_lookup = {'H_p1_number_density':r'$n(H+)\;\mathrm{cm^{-3}}$',
           'magnetic_field_z':u'$B_z$',
           'magnetic_field_total':u'$|B|$'}
 
-def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/', new_models=False):
+def load_data(ds_name, field=None, fields=None, vec_field=False):
+    ds = {}
+    with h5py.File(ds_name, 'r') as f:
+        if 'xmesh' in f.keys():
+            ds['x'] = f['xmesh'][:]/3390
+            ds['y'] = f['ymesh'][:]/3390
+            ds['z'] = f['zmesh'][:]/3390
+        else:
+            ds['x'] = f['x'][:]/3390
+            ds['y'] = f['y'][:]/3390
+            ds['z'] = f['z'][:]/3390            
+        
+        if vec_field:
+            ds[field+'_x'] = f[field+'_x'][:]
+            ds[field+'_y'] = f[field+'_y'][:]
+            ds[field+'_z'] = f[field+'_z'][:]
+        elif fields is not None:
+            for field in fields:
+                ds[field] = f[field][:]
+        elif field is not None:
+            ds[field] = f[field][:]
+            
+    return ds
+
+def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/', new_models=False, maven=True):
     ds_names = {}
     if new_models:
         fdir = '/Volumes/triton/Data/ModelChallenge/R2349/'
@@ -81,10 +105,11 @@ def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/', new_mo
 
     
     #MAVEN
-    ds_names['maven'] = \
-            '/Volumes/triton/Data/ModelChallenge/Maven/orbit2_{0:04d}.h5'
+    if maven:
+        ds_names['maven'] = \
+        '/Volumes/triton/Data/ModelChallenge/Maven/orbit2_{0:04d}.h5'
 
-    ds_types = {'batrus':[key for key in ds_names.keys() if 'bats' in key],
+    ds_types = {'batsrus':[key for key in ds_names.keys() if 'bats' in key],
                 'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
     return (ds_names, ds_types)
 
@@ -151,7 +176,7 @@ def get_ds_data(ds, field, indx):
 
 
 
-def get_path_pts(trange, geo=False, Npts=50):
+def get_path_pts(trange, geo=False, Npts=50, units_mr=False):
     if type(trange[0]) == str:
         et1, et2 = sp.str2et(trange[0]), sp.str2et(trange[1])
     else:
@@ -160,7 +185,8 @@ def get_path_pts(trange, geo=False, Npts=50):
 
     positions, lightTimes = sp.spkpos('Maven', times, 'MAVEN_MSO',
                                 'NONE', 'MARS BARYCENTER')
-
+    if units_mr:
+        positions = positions/3390
     if not geo:
         return positions.T, times+946080000 +647812
 

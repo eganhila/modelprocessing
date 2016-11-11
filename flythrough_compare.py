@@ -4,13 +4,14 @@ import h5py
 from general_functions import *
 plt.style.use('seaborn-talk')
 
-def setup_plot(fields, ds_names):
+def setup_plot(fields, ds_names, coords, tlimit=None):
     hrs = [1 for i in range(len(fields))]
     hrs.insert(0,0.1)
+    hrs.insert(0,0.1)
     import matplotlib.gridspec as gridspec
-    gs = gridspec.GridSpec(len(fields)+1, 1,
+    gs = gridspec.GridSpec(len(fields)+2, 1,
                            height_ratios=hrs)
-    axes = [plt.subplot(gs[i, 0]) for i in range(1, len(fields)+1)]
+    axes = [plt.subplot(gs[i, 0]) for i in range(2, len(fields)+2)]
     f = plt.gcf()
     
     #f, axes = plt.subplots(len(fields), 1)
@@ -24,7 +25,7 @@ def setup_plot(fields, ds_names):
     
     plot = {}
     plot['axes'] = {field:ax for field, ax in zip(fields, axes)}
-    plot['kwargs'] = {ds:{ 'label':ds, 'color':colors[ds], 'lw':1.5}
+    plot['kwargs'] = {ds:{ 'label':ds.replace('_', ' '), 'color':colors[ds], 'lw':1.5}
                         for ds in ds_names}
     plot['kwargs']['maven']['alpha'] = 0.6
     plot['kwargs']['maven']['lw'] = 1
@@ -32,7 +33,8 @@ def setup_plot(fields, ds_names):
     plot['ax_arr'] = axes
     plot['N_axes'] = len(fields)
     plot['timebar'] = plt.subplot(gs[0,0])
-
+    plot['tlimit'] = tlimit
+    plot['altitude'] = np.sqrt(np.sum(coords**2,axis=0))
     return plot
 
 def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
@@ -41,30 +43,53 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
         ax.set_xlim(plot['time'][0], plot['time'][-1])
         if zeroline:
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
-        #if f in log_fields:
-        ax.set_yscale('symlog', linthreshy=10)
+        if 'number_density' in f:
+            ax.set_yscale('symlog', linthreshy=10)
     for i in range(plot['N_axes']):
         ax = plot['ax_arr'][i]
+        if i == 0:
+            twinax = ax.twiny()
+            alt = plot['altitude']
+            #twinax.plot(alt, np.zeros_like(alt), alpha=0)
+
+            tick_locs = np.array([0,0.25,0.5,0.75,0.99])
+            if plot['tlimit'] is not None: 
+                lim = plot['tlimit']
+                tick_locs = tick_locs*(lim[1]-lim[0])+lim[0]
+            twinax.set_xticks(tick_locs)
+            twinax.set_xticklabels(['$'+str(int(alt[int(tl*alt.shape[0])]))+'$' for tl in tick_locs])
+            twinax.set_xlabel('$\textrm{Altitude}$')
+
         if i == plot['N_axes']-1:
-            ax.set_xlabel('Time')
+            ax.set_xlabel('$\texrm{Time}$')
         else:
             ax.set_xticks([])
         #ax.set_ylabel(ax.get_ylabel(), labelpad=30*(i%2))    
-        if xlim is not None:
-            ax.set_xlim(xlim)
+        if plot['tlimit'] is not None:
+            lim = plot['tlimit']
+            t = plot['time']
+            tlim = (t[int(lim[0]*t.shape[0])], t[int(lim[1]*t.shape[0])])
+            ax.set_xlim(tlim)
     
     tb = plot['timebar']
-    xv, yv = np.meshgrid(plot['time'], [0,1])
-    m = np.array([plot['time'], plot['time']]).reshape(-1,2, order='F')
-    tb.pcolormesh(xv,yv, m.T, cmap='inferno',rasterized=True)
+    if plot['tlimit'] is None:
+        xv, yv = np.meshgrid(plot['time'], [0,1])
+        m = np.array([plot['time'], plot['time']]).reshape(-1,2, order='F')
+        tb.set_xlim(plot['time'][0], plot['time'][-1])
+        tb.pcolormesh(xv, yv, m.T, cmap='inferno',rasterized=True)
+    else:
+        xv, yv = np.meshgrid(np.linspace(tlim[0],tlim[1],1e3), lim)
+        m = np.array([np.linspace(tlim[0],tlim[1],1e3),
+                      np.linspace(tlim[0],tlim[1],1e3)]).reshape(-1,2, order='F')
+        tb.set_xlim(tlim[0], tlim[1])
+    
     tb.axis('off')
-    tb.set_xlim(plot['time'][0], plot['time'][-1])
+    
     
     
     plot['ax_arr'][0].legend()#(bbox_to_anchor=(1.4, 1))
     plot['ax_arr'][0].set_zorder(1)
     plot['figure'].set_size_inches(10,10)
-
     if show:
         plt.show()
     if fname is None:
@@ -87,14 +112,20 @@ def plot_field_ds(x, data, ax, kwargs):
         ax.plot(x, data, **kwargs)
     else:
         mean_dat = np.nanmedian(data,axis=0)
-        max_dat = np.nanmax(data, axis=0)
-        min_dat = np.nanmin(data, axis=0)
+        max1_dat = np.nanpercentile(data, 75, axis=0)
+        min1_dat = np.nanpercentile(data, 25, axis=0)
+        max0_dat = np.nanmax(data, axis=0)
+        min0_dat = np.nanmin(data, axis=0)
         ax.plot(x, mean_dat, **kwargs)
-        ax.fill_between(x, min_dat, max_dat, alpha=0.2, color=kwargs['color'])
+        
+        ax.fill_between(x, min1_dat, max1_dat, alpha=0.2, color=kwargs['color'])
+        lim = ax.get_ylim()
+        ax.fill_between(x, min0_dat, max0_dat, alpha=0.05, color=kwargs['color'])
+        ax.set_ylim(lim)
 
 
-def make_plot(times, fields, orbits, title, indxs, ds_names, ds_types, skip=1, subtitle=None):
-    plot = setup_plot(fields, ds_names.keys())
+def make_plot(times, fields, orbits, title, indxs, coords, ds_names, ds_types, skip=1, subtitle=None):
+    plot = setup_plot(fields, ds_names.keys(), coords, tlimit=(0.4,0.7))
 
     for ds_type, keys in ds_types.items():
         for key in keys:
@@ -146,8 +177,8 @@ def flythrough_orbit(orbits, trange, ds_names, ds_types, **kwargs):
           'CO2_p1_number_density'] 
     mag_fields = ['magnetic_field_x', 'magnetic_field_y',
           'magnetic_field_z']
-    make_plot(times, ion_fields, orbits, 'ion_flythrough', indxs, ds_names, ds_types, **kwargs)
-    make_plot(times, mag_fields, orbits, 'mag_flythrough', indxs, ds_names, ds_types, skip=20, **kwargs)
+    make_plot(times, ion_fields, orbits, 'ion_flythrough', indxs, coords, ds_names, ds_types, **kwargs)
+    #make_plot(times, mag_fields, orbits, 'mag_flythrough', indxs, coords, ds_names, ds_types, skip=20, **kwargs)
 
 
 def main():
