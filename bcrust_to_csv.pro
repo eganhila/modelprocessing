@@ -22,8 +22,13 @@ mvn_model_bcrust, time[0], pos=pos, data=data
 mk=mvn_spice_kernels(/all, /load, trange=trange)
 
 iau_bcrust = data.pc
-bss=spice_vector_rotate(transpose(iau_bcrust), trange, 'IAU_MARS',
-                        'MAVEN_MSO')
+bss=spice_vector_rotate(iau_bcrust,time, 'IAU_MARS','MAVEN_MSO')
 
 mag = transpose(bss)
+
+dat = [time, bcrust[*, 0], bcrust[*, 1], bcrust[*, 2], mag[*,0], mag[*,1], mag[*,2]]
+dat = transpose(reform(dat, size(time, /N_Elements), 7))
+
+write_csv, 'Output/test_bcrust.csv', dat
+
 
