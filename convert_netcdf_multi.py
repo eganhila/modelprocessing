@@ -49,16 +49,20 @@ name_conversion = {'CO2pl_Density':'CO2_p1_number_density',
                    'y':'y',
                    'z':'z'}
 
-fdir = '/Volumes/triton/Data/ModelChallenge/SDC_Archive/Heliosares/Hybrid/Run2/'
-h5name = '../helio_2.h5' 
+fdir = '/Volumes/triton/Data/ModelChallenge/R2349/Heliosares/'
+h5name = '../helio_r2349.h5' 
 fnames = glob.glob(fdir+'*.nc')
 
-dims = (410, 418, 258)
+#dims = (410, 418, 258)
+dims = (386, 386, 202)
 
 with nc.Dataset(fnames[0], mode='r') as ds:
-    x = ds.variables['x'][:]
-    y = ds.variables['y'][:]
-    z = ds.variables['z'][:]
+    # x = ds.variables['x'][:]
+    # y = ds.variables['y'][:]
+    # z = ds.variables['z'][:]
+    x = ds.variables['X_axis'][:]
+    y = ds.variables['Y_axis'][:]
+    z = ds.variables['Z_axis'][:]
 
 xmesh, ymesh, zmesh = np.meshgrid(x, y, z, indexing='ij')
 xmesh, ymesh, zmesh = xmesh, ymesh, zmesh

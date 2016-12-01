@@ -1,7 +1,7 @@
 import numpy as np
 import spiceypy as sp
 import h5py
-
+import matplotlib.pyplot as plt
 sp.furnsh("maven_spice.txt")
 label_lookup = {'H_p1_number_density':r'$n(H+)\;\mathrm{cm^{-3}}$',
           'O2_p1_number_density':u'$n(O_2+)\;\mathrm{cm^{-3}}$',
@@ -12,12 +12,44 @@ label_lookup = {'H_p1_number_density':r'$n(H+)\;\mathrm{cm^{-3}}$',
           'He_number_density':u'$n(He)\;\mathrm{cm^{-3}}$',
           'electron_number_density':u'$n(e-)\;\mathrm{cm^{-3}}$',
           'number_density':u'$n\;\mathrm{cm^{-3}}$',
-          'magnetic_field_radial':u'$B_r$',
-          'magnetic_field_x':u'$B_x$',
-          'magnetic_field_y':u'$B_y$',
-          'magnetic_field_z':u'$B_z$',
-          'magnetic_field_total':u'$|B|$'}
+          'magnetic_field_radial':u'$B_r \mathrm{(nT)}$',
+          'magnetic_field_x':u'$B_X \mathrm{(nT)}$',
+          'magnetic_field_y':u'$B_Y \mathrm{(nT)}$',
+          'magnetic_field_z':u'$B_Z \mathrm{(nT)}$',
+          'magnetic_field_total':u'$|B| \mathrm{(nT)}$',
+          'bats_min_LS270_SSL0':'BATSRUS: SSL=0',# (Solar min, LS=270)',
+          'bats_min_LS270_SSL180':'BATSRUS: SSL=180',# (Solar min, LS=270)',
+          'bats_min_LS270_SSL270':'BATSRUS: SSL=270',# (Solar min, LS=270)',
+          'helio_1':'HELIOSARES: 1',# (Solar mod, LS=270)',
+          'helio_2':'HELIOSARES: 2',# (Solar mod, LS=270)',
+          'maven': "MAVEN"}
+label_lookup['altitude'] = '$\mathrm{Altitude}$'
+label_lookup['magnetic_field_total'] = '$\mathrm{|B|\;(nT)}$'
+label_lookup['number_density'] = '$\mathrm{n\;(cm^{-3})}$'
+label_lookup['batsrus_multi_species'] = 'BATSRUS Multi-Species'
+label_lookup['batsrus_multi_fluid'] = 'BATSRUS Multi-Fluid'
+label_lookup['heliosares'] = 'HELIOSARES'
+label_lookup['x'] = 'x'
+label_lookup['y'] = 'y'
+label_lookup['z'] = 'z'
+field_lims = {'magnetic_field_x':(-50,50),#(-33,33),
+              'magnetic_field_y':(-50,50),#(-33,33),
+              'magnetic_field_z':(-50,50),#(-33,33),
+              'H_p1_number_density':(1e-1,3e4),
+              'O2_p1_number_density':(1e0,3e5),
+              'O_p1_number_density':(1e0, 2e4),
+              'CO2_p1_number_density':(1e0,6e3),
+              'H_number_density':(1e-2, 1e5), 
+              'He_number_density':(1e-2, 1e5),
+              'electron_number_density':(1e-2, 1e5),
+              'magnetic_field_total':(0,120)}
 
+log_fields2 = ['H_p1_number_density',
+               'O2_p1_number_density',
+               'O_p1_number_density',
+               'CO2_p1_number_density',
+               'altitude',
+               'number_density']
 def load_data(ds_name, field=None, fields=None, vec_field=False):
     ds = {}
     with h5py.File(ds_name, 'r') as f:
@@ -26,10 +58,10 @@ def load_data(ds_name, field=None, fields=None, vec_field=False):
             ds['y'] = f['ymesh'][:]/3390
             ds['z'] = f['zmesh'][:]/3390
         else:
-            ds['x'] = f['x'][:]/3390
-            ds['y'] = f['y'][:]/3390
-            ds['z'] = f['z'][:]/3390            
-        
+            ds['x'] = f['x'][:]
+            ds['y'] = f['y'][:]
+            ds['z'] = f['z'][:]
+            
         if vec_field:
             ds[field+'_x'] = f[field+'_x'][:]
             ds[field+'_y'] = f[field+'_y'][:]
@@ -46,7 +78,13 @@ def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/', new_mo
     ds_names = {}
     if new_models:
         fdir = '/Volumes/triton/Data/ModelChallenge/R2349/'
-        ds_names['batsrus_3dmhd'] =  fdir+'batsrus_3dmhd_2349.h5'
+        ds_names['batsrus_multi_fluid'] =  fdir+'batsrus_3d_multi_fluid.h5'
+        ds_names['batsrus_multi_species'] =  fdir+'batsrus_3d_multi_species.h5'
+        ds_names['heliosares'] =  fdir+'helio_r2349.h5'
+        
+        ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
+                    'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
+                    'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
     else:
 
         #BATSRUS
@@ -102,15 +140,18 @@ def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/', new_mo
         
         ds_names['helio_2'] = \
                 fdir+'HELIOSARES/Hybrid/'+'helio_2.h5'
+            
+        
+        ds_types = {'batsrus1':[key for key in ds_names.keys() if 'bats' in key],
+                    'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
 
     
     #MAVEN
     if maven:
         ds_names['maven'] = \
-        '/Volumes/triton/Data/ModelChallenge/Maven/orbit2_{0:04d}.h5'
+        "/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/Output/test_orbit.csv"
+        #'/Volumes/triton/Data/ModelChallenge/Maven/orbit2_{0:04d}.h5'
 
-    ds_types = {'batsrus':[key for key in ds_names.keys() if 'bats' in key],
-                'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
     return (ds_names, ds_types)
 
 def geo_cart_coord_transform(geo_coords):
@@ -151,32 +192,60 @@ def cart_geo_vec_transform(ds, prefix, indx):
 
     return vr
 
+def apply_flat_indx(ds, field, indx):
+    return ds[field][:].flatten()[indx]
 
-def get_ds_data(ds, field, indx):
+def apply_grid_indx(ds, field, indx):
+    #print ds[field].shape, indx.shape
+    dat = np.zeros(indx.shape[1])
+    for i in range(indx.shape[1]):
+        dat[i] = ds[field][:][indx[0,i], indx[1,i], indx[2,i]]
+    return dat
+
+def get_ds_data(ds, field, indx, grid=True):
+    
+    if grid: apply_indx = apply_grid_indx
+    else: apply_indx = apply_flat_indx
+    
     if type(indx)==str:
         if field in ds.keys():  return ds[field][:].flatten()
         else: return np.array([])
 
     if field in ds.keys():
-        return ds[field][:].flatten()[indx]
+        return apply_indx(ds, field, indx)#ds[field][:].flatten()[indx]
     elif '_total' in field and field.replace('_total', '_x') in ds.keys():
-        return np.sqrt(ds[field.replace('_total', '_x')][:].flatten()[indx]**2+\
-                       ds[field.replace('_total', '_y')][:].flatten()[indx]**2+\
-                       ds[field.replace('_total', '_z')][:].flatten()[indx]**2)
-    elif '_radial' in field and field.replace('_radial', '_x') in ds.keys():
-        return cart_geo_vec_transform(ds,field.replace('_radial', ''), indx)[0]
-    elif '_latitudinal'in field and field.replace('_latitudinal', '_x') in ds.keys():
-        return cart_geo_vec_transform(ds,field.replace('_latitudinal', ''), indx)[1]
-    elif 'longitudinal' in field and field.replace('_longitudinal', '_x') in ds.keys():
-        return cart_geo_vec_transform(ds,field.replace('_longitudinal', ''), indx)[2]
+        x = apply_indx(ds, field.replace('_total', '_x'), indx)**2
+        y = apply_indx(ds, field.replace('_total', '_y'), indx)**2
+        z = apply_indx(ds, field.replace('_total', '_z'), indx)**2
+        return np.sqrt(x+y+z)
+                                  
+#    elif '_radial' in field and field.replace('_radial', '_x') in ds.keys():
+#        return cart_geo_vec_transform(ds,field.replace('_radial', ''), indx)[0]
+#    elif '_latitudinal'in field and field.replace('_latitudinal', '_x') in ds.keys():
+#        return cart_geo_vec_transform(ds,field.replace('_latitudinal', ''), indx)[1]
+#    elif 'longitudinal' in field and field.replace('_longitudinal', '_x') in ds.keys():
+#        return cart_geo_vec_transform(ds,field.replace('_longitudinal', ''), indx)[2]
     else:
         print "Field {0} not found".format(field)
         return np.array([])
         #raise(ValueError)
 
+def get_path_pts_adj(orb, Npts=50, units_mr=True, return_alt=False):
+    fdir = '/Volumes/triton/Data/ModelChallenge/Maven/Traj/'
+    with h5py.File(fdir+'traj_{0:04d}.h5'.format(orb), 'r') as f_h5:
+        x = f_h5['x'][:]
+        y = f_h5['y'][:]
+        z = f_h5['z'][:]
+        alt = f_h5['alt'][:]
+    coords = np.array([x,y,z])
+    if return_alt:
+        return (coords, alt)
+    else:
+        return coords
+        
 
-
-def get_path_pts(trange, geo=False, Npts=50, units_mr=False):
+def get_path_pts_reg(trange, geo=False, Npts=50, units_mr=False, sim_mars_r=3396.0,
+                 adjust_spherical=True):
     if type(trange[0]) == str:
         et1, et2 = sp.str2et(trange[0]), sp.str2et(trange[1])
     else:
@@ -203,24 +272,41 @@ def get_path_pts(trange, geo=False, Npts=50, units_mr=False):
 	return geo_coords, times+946080000+647812
 
 
-def bin_coords(coords, dsf):
+def bin_coords(coords, dsf, grid=True):
+    if grid: return bin_coords_grid(coords, dsf)
+    else: return bin_coords_nogrid(coords, dsf)
+    
+def bin_coords_grid(coords, dsf):
     with h5py.File(dsf, 'r') as dataset:
-        if 'Hybrid' in dsf:
-            x = dataset['xmesh'][:].flatten()
-            y = dataset['ymesh'][:].flatten()
-            z = dataset['zmesh'][:].flatten()
-        else:
-            x = dataset['x'][:].flatten()
-            y = dataset['y'][:].flatten()
-            z = dataset['z'][:].flatten()
+        x = dataset['xmesh'][:,0,0]/3390
+        y = dataset['ymesh'][0,:,0]/3390
+        z = dataset['zmesh'][0,0,:]/3390
+        mesh_shape = (dataset['xmesh'].shape)
+        
+    idx = np.zeros((3, coords.shape[-1]))
+    
+    for i in range(coords.shape[-1]):
+        idx_x = np.argmin((coords[0,i]-x)**2)
+        idx_y = np.argmin((coords[1,i]-y)**2)
+        idx_z = np.argmin((coords[2,i]-z)**2)
+        
+        idx[:, i] = [idx_x, idx_y, idx_z]
+            
+    return idx.astype(int)
+        
+def bin_coords_nogrid(coords, dsf):
+    with h5py.File(dsf, 'r') as dataset:
+        x = dataset['x'][:].flatten()
+        y = dataset['y'][:].flatten()
+        z = dataset['z'][:].flatten()
 
-        idx = np.zeros(coords.shape[-1])
+    idx = np.zeros(coords.shape[-1])
 
     for i in range(coords.shape[-1]):
         dx2  = (coords[0, i] - x)**2
         dy2  = (coords[1, i] - y)**2
         dz2  = (coords[2, i] - z)**2
-
+        
         dr = np.sqrt(dx2+dy2+dz2)
         idx[i] = np.argmin(dr)
 

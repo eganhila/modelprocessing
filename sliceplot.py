@@ -7,6 +7,8 @@ from matplotlib.collections import LineCollection
 import getopt
 import sys
 import cmocean
+import glob
+plt.style.use('seaborn-poster')
 
 def setup_sliceplot():
     plot = {}
@@ -41,11 +43,14 @@ def orbit_intersect_plane(coords, center, ax_i):
             
     return (p1, coords[:,p2_idx])
 
-def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False, show_center=False):
+def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
+              show_center=False, lw=2.8):
     off_ax = [[1,2],[0,2],[0,1]]
-    trange = get_orbit_times(orbit)
-    coords, ltimes = get_path_pts(trange,Npts=250)
-    coords = coords/3390
+    #trange = get_orbit_times(orbit)
+    #coords, ltimes = get_path_pts(trange,Npts=250)
+    #coords = coords/3390
+    coords = get_path_pts_adj(orbit)[:, ::10]
+    ltimes = np.linspace(0,1,coords.shape[1])
     
     x,y = coords[off_ax[ax_i][0]], coords[off_ax[ax_i][1]]
     
@@ -58,7 +63,7 @@ def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False, show_center=Fa
     lc = LineCollection(segments, cmap=plt.get_cmap('inferno'),
                         norm=plt.Normalize(ltimes.min(), ltimes.max()))
     lc.set_array(ltimes)
-    lc.set_linewidth(1.8)
+    lc.set_linewidth(lw)
     
     ax.add_collection(lc)
     
@@ -110,15 +115,30 @@ def get_offgrid_slice(ds, ax_i, field, vec_field, center, extra_fields=None):
     all_fields = ['x','y','z']
     ax_lab = all_fields[ax_i]
     c_fields = [['y','z'],['x','z'],['x','y']][ax_i]
+
+    # Need to divide this into two sections, 
+    # inside and outside 2 R_M
+
+    r = np.sqrt(ds['x']**2+ds['y']**2+ds['z']**2)
+    outer_pts = r>=1.5
         
+
     tol = 0.01
-    idx = np.abs(ds[ax_lab]-ax_c) < np.min(np.abs(ds[ax_lab]-ax_c))+tol
+    idx0 = np.abs(ds[ax_lab]-ax_c) < np.min(np.abs(ds[ax_lab]-ax_c))+tol
 
-    while sum(idx) < 10000:
+    while sum(idx0) < 10000:
         tol *=5
-        idx = np.abs(ds[ax_lab]-ax_c) < np.min(np.abs(ds[ax_lab]-ax_c))+tol
-        print tol, sum(idx)
+        idx0 = np.abs(ds[ax_lab]-ax_c) < np.min(np.abs(ds[ax_lab]-ax_c))+tol
 
+    idx1 = np.logical_and(outer_pts, idx0)
+    while sum(idx1) < 10000:
+        tol *=5
+        idx1 = np.abs(ds[ax_lab][outer_pts]-ax_c) <\
+                np.min(np.abs(ds[ax_lab][outer_pts]-ax_c))+tol
+
+    idx1 = np.abs(ds[ax_lab]-ax_c) <\
+            np.min(np.abs(ds[ax_lab]-ax_c))+tol
+    idx = np.logical_or(idx0, np.logical_and(idx1, outer_pts))
     
     if vec_field: 
         for ax in c_fields: all_fields.append(field+'_'+ax)
@@ -154,16 +174,16 @@ def slice_regrid(ds, ax_i, field, vec_field=False, test=False, center=None, extr
         idxs[i] = np.argmin(dr)
         
     if vec_field:
-        field = [ds_slice[field+'_'+c_fields[0]][idxs], ds_slice[field+'_'+c_fields[1]][idxs]]
+        field_dat = [ds_slice[field+'_'+c_fields[0]][idxs], ds_slice[field+'_'+c_fields[1]][idxs]]
         
-        field[0][idxs==-1] = 0
-        field[1][idxs==-1] = 0
-        field[0] = field[0].reshape(grid_0.shape)
-        field[1] = field[1].reshape(grid_0.shape)
+        field_dat[0][idxs==-1] = 0
+        field_dat[1][idxs==-1] = 0
+        field_dat[0] = field_dat[0].reshape(grid_0.shape)
+        field_dat[1] = field_dat[1].reshape(grid_0.shape)
         
         in_mars = np.sqrt(grid_0**2+grid_1**2+ax_c**2)<1.1
-        field[0][in_mars] = 0
-        field[1][in_mars] = 0
+        field_dat[0][in_mars] = 0
+        field_dat[1][in_mars] = 0
 
     else:
         if extra_fields is None:
@@ -191,7 +211,7 @@ def slice_onax(ds, ax_i, field, vec_field=False, idx=None, center=None, test=Fal
                         
     if idx is None:
         idx = ds['x'].shape[ax_i]/2
-                        
+
                         
     if ax_i == 0: 
         slc_0 = ds['y'][idx, :,:]
@@ -217,7 +237,7 @@ def slice_data(ds, ax_i, field, regrid_data, **kwargs):
 
 def plot_data_vec(plot, slc, ax_i):
     slc_0, slc_1, field_dat = slc
-    Ns = np.array(slc_0.shape, dtype=int)/25
+    Ns = np.array(slc_0.shape, dtype=int)/15
     lws = np.sqrt(np.sum(np.array(field_dat)**2,axis=0))
     lws = 1.2*lws[::Ns[0], ::Ns[1]].flatten()/lws.max()
     #lws[lws==0] = 0.001
@@ -229,27 +249,28 @@ def plot_data_vec(plot, slc, ax_i):
 
 def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
     slc_0, slc_1, field_dat = slc
-    
-    if zlim is None: vmax, vmin = field_dat.max(), 1e-3
+    #diverge_cmap, logscale, zlim = True, False, (-30,30)
+    if zlim is None: vmin, vmax = 1e-3, field_lims[field][1] #np.nanmax(field_dat), 1e-3
     else: vmin, vmax = zlim
-    #if logscale and field_dat.max() != field_dat.min(): norm = LogNorm(vmax=vmax, vmin=vmin)
+    
     if logscale: norm = LogNorm(vmax=vmax, vmin=vmin)
     else: norm = Normalize(vmax=vmax, vmin=vmin)
-    
+
     if diverge_cmap: cmap=cmocean.cm.delta
     else: cmap='viridis'
-    
-    im = plot['axes'][ax_i].pcolormesh(slc_0.T, slc_1.T, field_dat.T,
-                                       norm=norm, cmap=cmap, rasterized=True)
-    
-    #im = plot['axes'][ax_i].pcolormesh(slc_0.T, slc_1.T, field_dat.T,
-    #                                       cmap='RdBu', rasterized=True)
-    plot['axes'][ax_i].set_xlim(slc_0.min(), slc_0.max())
-    plot['axes'][ax_i].set_ylim(slc_1.min(), slc_1.max())
+
     if field in label_lookup: label=label_lookup[field]
     else: label = field
-    if cbar:
-        plt.colorbar(im, ax=plot['axes'][ax_i],label=label)
+
+    if field_dat.max() != field_dat.min(): 
+    
+        im = plot['axes'][ax_i].pcolormesh(slc_0.T, slc_1.T, field_dat.T,
+                                           norm=norm, cmap=cmap, rasterized=True)
+        if cbar:
+            plt.colorbar(im, ax=plot['axes'][ax_i],label=label)
+    
+    plot['axes'][ax_i].set_xlim(slc_0.min(), slc_0.max())
+    plot['axes'][ax_i].set_ylim(slc_1.min(), slc_1.max())
     
 def plot_data(plot, slc, ax_i, vec_field, field,**kwargs):
     if vec_field: plot_data_vec(plot, slc, ax_i, **kwargs)
@@ -258,21 +279,23 @@ def plot_data(plot, slc, ax_i, vec_field, field,**kwargs):
 
 def make_plot(ds_name, field, center=None, orbit=None, regrid_data=False,
               vec_field=False, fname=None, test=False):
-    ds = load_data(ds_name, field, vec_field)
+    ds = load_data(ds_name,field=field, vec_field=vec_field)
     plot = setup_sliceplot()
     
     for ax in [0,1,2]:
-        slc = slice_data(ds, ax, field, regrid_data, vec_field=vec_field, test=test, center=center)
+        slc = slice_data(ds, ax, field, regrid_data=regrid_data, vec_field=vec_field, test=test, center=center)
         plot_data(plot, slc, ax, vec_field, field)
     finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname)
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:",["field=","infile=", "orbit=", "center=", "test"])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:",["field=","infile=", "orbit=", "center=", "test","dir="])
     except getopt.GetoptError:
+        print getopt.GetoptError()
+        print 'error'
         return
     
-    infile, field, orbit, center, test = None, None, None, None, False
+    infile, field, orbit, center, test, fdir = None, None, None, None, False, None
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
@@ -282,28 +305,40 @@ def main(argv):
             orbit = int(arg)
         elif opt in ("-t", "--test"):
             test = True
+        elif opt in ("-d", "--dir"):
+            fdir = arg
         elif opt in ("-c", "--center"):
             import ast
             center = np.array(ast.literal_eval(arg))
-    if infile is None: infile = '/Volumes/triton/Data/ModelChallenge/SDC_Archive/Heliosares/Hybrid/run1.h5'
-    if field is None: field = "electron_number_density"
     
+    if infile is None and fdir is None: 
+        print 'must supply file'
+        raise(RuntimeError)
     
-    if 'velocity' in field or 'magnetic_field' in field:
+    if 'velocity' in field or 'magnetic_field' == field:
         vec_field = True
     else: vec_field = False
-    if 'Heliosares' in infile: regrid_data = False
+
+    if fdir is not None: infiles = glob.glob(fdir+"*.h5")
+    else: infiles = [infile]
+
+    if 'Heliosares' in infiles[0] or 'helio' in infiles[0]: regrid_data = False
     else: regrid_data = True
+
     
     if field == 'all_ion':
         with h5py.File(infile, 'r') as f: fields = f.keys()
         fields = [f for f in fields if 'number_density' in f]
     else: fields = [field]
+
+
     
-    for field in fields:
-        make_plot(infile, field, orbit=orbit, test=test,
-                  regrid_data=regrid_data, vec_field=vec_field, center=center,
-                  fname='Output/slice_{0}_{1}_{2}.pdf'.format(field, infile.split('/')[-1][:-3], orbit))
+    for infile in infiles:
+        for field in fields:
+            print infile, field
+            make_plot(infile, field, orbit=orbit, test=test,
+                      regrid_data=regrid_data, vec_field=vec_field, center=center,
+                      fname='Output/slice_{0}_{1}_{2}.pdf'.format(field, infile.split('/')[-1][:-3], orbit))
     
 if __name__ == '__main__':
     main(sys.argv[1:])
