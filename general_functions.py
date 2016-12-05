@@ -154,11 +154,14 @@ def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/', new_mo
 
     return (ds_names, ds_types)
 
-def geo_cart_coord_transform(geo_coords):
+def geo_cart_coord_transform(geo_coords, use_r=False):
     alt = geo_coords[:, 0]
     lat = geo_coords[:, 1]
     lon = geo_coords[:, 2]
-    R = alt + 3388.25
+    if use_r:
+        R = alt
+    else:
+        R = alt + 3388.25
     phi = -1*(lat-90)*np.pi/180.0
     theta = lon*np.pi/180.0
 
@@ -202,7 +205,7 @@ def apply_grid_indx(ds, field, indx):
         dat[i] = ds[field][:][indx[0,i], indx[1,i], indx[2,i]]
     return dat
 
-def get_ds_data(ds, field, indx, grid=True):
+def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None, area=None):
     
     if grid: apply_indx = apply_grid_indx
     else: apply_indx = apply_flat_indx
@@ -218,7 +221,20 @@ def get_ds_data(ds, field, indx, grid=True):
         y = apply_indx(ds, field.replace('_total', '_y'), indx)**2
         z = apply_indx(ds, field.replace('_total', '_z'), indx)**2
         return np.sqrt(x+y+z)
-                                  
+    elif '_normal' in field and field.replace('_normal', '_x') in ds.keys():
+        vx = apply_indx(ds, field.replace('_normal', '_x'), indx)
+        vy = apply_indx(ds, field.replace('_normal', '_y'), indx)
+        vz = apply_indx(ds, field.replace('_normal', '_z'), indx)
+        v = np.array([vx,vy,vz])
+        vn = np.sum(normal*v, axis=0)
+        return vn
+    elif '_flux' in field:
+        vn = 1e5*get_ds_data(ds, velocity_field+'_normal', indx, grid, normal)
+        dens = get_ds_data(ds, field.replace('flux', "number_density"), indx, grid)
+        return vn*dens
+    elif 'area' == field:
+        return area
+                                   
 #    elif '_radial' in field and field.replace('_radial', '_x') in ds.keys():
 #        return cart_geo_vec_transform(ds,field.replace('_radial', ''), indx)[0]
 #    elif '_latitudinal'in field and field.replace('_latitudinal', '_x') in ds.keys():

@@ -1,34 +1,38 @@
 ; First calculate the Bcrust along the orbit
 orbit = 2349
-mvn_model_bcrust_load, bcrust, orbit=orbit
-get_data, 'mvn_mod_bcrust_mso', time, bcrust, val
-
-
 t0_unix = (mvn_orbit_num(orbnum=orbit-1)+mvn_orbit_num(orbnum=orbit))/2
 t1_unix = (mvn_orbit_num(orbnum=orbit+1)+mvn_orbit_num(orbnum=orbit))/2
+
 trange = [time_string(t0_unix), time_string(t1_unix)]
-; Then try and calculate Bcrust at a given time along orbit
+time = indgen(t1_unix-t0_unix-20, start=t0_unix+10, /l64)
+;   mvn_model_bcrust, time, data=data, /arkani, nmax=60
+;
+;   ;mvn_model_bcrust, trange, data=bcrust
+;   ;get_data, 'mvn_mod_bcrust_mso', time, bcrust, val
+;   bcrust= transpose(data.ss)
+;
+;   dat = [time-time[0], bcrust[*, 0], bcrust[*, 1], bcrust[*, 2]]
+;   dat = transpose(reform(dat, size(time, /N_Elements), 4))
+;   print, time[0]
+;
+;   write_csv, 'Output/test_bcrust.csv', dat
+mvn_kp_read, trange, insitu_0
+mvn_kp_resample, insitu_0, time, insitu
 
-; First we have to get the positions of the trajectory
-; Must be in IAU_MARS planetocentric coordinates
+pos = [insitu.spacecraft.GEO_x, insitu.spacecraft.GEO_y, insitu.spacecraft.GEO_z] 
+pos = reform(pos, size(time, /N_elements),3)
+;pos = transpose(pos)
 
+mk = mvn_spice_kernels(/all, /load, trange=trange)
+mvn_model_bcrust, time_string(mvn_orbit_num(orbnum=orbit)), data=data, pos=pos, /arkani, nmax=60
 
-get_mvn_eph, time, eph 
-pos = [eph.X_PC, eph.Y_PC, eph.Z_PC]
-pos = reform(pos,size(eph.x_pc, /N_elements), 3)
+bss = transpose(spice_vector_rotate(data.pc, time, 'IAU_MARS', 'MAVEN_MSO'))
 
-mvn_model_bcrust, time[0], pos=pos, data=data
+dat = [time-time[0], bss[*, 0], bss[*, 1], bss[*, 2]]
 
-mk=mvn_spice_kernels(/all, /load, trange=trange)
+dat = transpose(reform(dat, size(time, /N_Elements), 4))
+print, time[0]
 
-iau_bcrust = data.pc
-bss=spice_vector_rotate(iau_bcrust,time, 'IAU_MARS','MAVEN_MSO')
-
-mag = transpose(bss)
-
-dat = [time, bcrust[*, 0], bcrust[*, 1], bcrust[*, 2], mag[*,0], mag[*,1], mag[*,2]]
-dat = transpose(reform(dat, size(time, /N_Elements), 7))
-
-write_csv, 'Output/test_bcrust.csv', dat
+write_csv, 'Output/test_bcrust_0.csv', dat
 
 

@@ -7,14 +7,18 @@ pro output_orbit_traj
     ;orbits = struc.field1;[0]
     orbits = make_array(1895, start=1105, /index) 
 
-    ;orbits = [2349]
+    orbits = [2349]
     foreach orbit, orbits do begin 
 
         t0_unix = (mvn_orbit_num(orbnum=orbit-1)+mvn_orbit_num(orbnum=orbit))/2
         t1_unix = (mvn_orbit_num(orbnum=orbit+1)+mvn_orbit_num(orbnum=orbit))/2
         trange = [time_string(t0_unix), time_string(t1_unix)]
 
-        mvn_kp_read, trange ,insitu, /insitu_only, /text_files, /new_files
+        mvn_kp_read, trange ,insitu_0, /insitu_only, /text_files
+
+        time = indgen(t1_unix-t0_unix-20, start=t0_unix+10, /l64)
+
+        mvn_kp_resample, insitu_0, time, insitu
 
         time=insitu.time
         mso_x = insitu.spacecraft.mso_x
@@ -33,10 +37,11 @@ pro output_orbit_traj
         sim_y = mso_y/Rm
         sim_z = mso_z/Rm
 
-        all_dat = [sim_x, sim_y, sim_z, alt] 
-        all_dat = transpose(REFORM(all_dat, size(sim_x, /N_ELEMENTS), 4))
+        all_dat = [time, sim_x, sim_y, sim_z, alt] 
+        all_dat = transpose(REFORM(all_dat, size(sim_x, /N_ELEMENTS), 5))
         
-        write_csv, out_dir+'orbit_'+string(orbit)+'_trajectory.csv', all_dat
+        ;write_csv, out_dir+'orbit_'+string(orbit)+'_trajectory.csv', all_dat
+        write_csv, 'Output/test_trajectory.csv', all_dat
 
     endforeach
 

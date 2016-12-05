@@ -250,6 +250,8 @@ def plot_data_vec(plot, slc, ax_i):
 def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
     slc_0, slc_1, field_dat = slc
     #diverge_cmap, logscale, zlim = True, False, (-30,30)
+    zlim = (-180,180)
+    logscale=False
     if zlim is None: vmin, vmax = 1e-3, field_lims[field][1] #np.nanmax(field_dat), 1e-3
     else: vmin, vmax = zlim
     

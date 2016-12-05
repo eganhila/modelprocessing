@@ -17,6 +17,9 @@ def main():
         with h5py.File(fdir+fn_h5, 'w') as f_h5:
             x, y, z, alt = np.loadtxt(fn_csv, delimiter=',',
                                       unpack=True)
+            #t, x, y, z, alt = np.loadtxt(fn_csv, delimiter=',',
+            #                          unpack=True)
+            #f_h5.create_dataset('time', data=t)
             f_h5.create_dataset('x', data=x)
             f_h5.create_dataset('y', data=y)
             f_h5.create_dataset('z', data=z)
