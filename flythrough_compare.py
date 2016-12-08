@@ -4,7 +4,7 @@ import h5py
 from general_functions import *
 import sys
 import getopt
-plt.style.use('seaborn-talk')
+plt.style.use('seaborn-poster')
 
 def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     if add_altitude: 
@@ -184,8 +184,8 @@ def make_plot(times, fields, orbits, title, indxs, coords, ds_names, ds_types, s
 	#    data[i] = mav_data[i][:L]
 	#t = np.linspace(times[0], times[-1], data.shape[1])-times[0]
 	t = np.linspace(times[0], times[-1], data.shape[0])-times[0]
+        #t = np.linspace(-0.45, 1.45, data.shape[0])#-times[0]
 	#plot_field_ds(t[::skip], data[:,::skip], plot['axes'][field], plot['kwargs']['maven'])
-        print t.shape, data.shape
 	plot_field_ds(t[::skip], 1.5*data[field][::skip], plot['axes'][field], 
                       plot['kwargs']['maven'])
     plot['altitude'] = data['alt']
@@ -214,7 +214,7 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
     elif field == 'mag':
         fields = ['magnetic_field_total', 'magnetic_field_x', 'magnetic_field_y',
               'magnetic_field_z']
-        tlimit = (0.3, 0.7)
+        tlimit = None#(0.3, 0.7)
         title = 'mag_flythrough'
         skip = 1
 

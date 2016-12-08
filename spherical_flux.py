@@ -31,8 +31,8 @@ diverging_fields = ['H_p1_flux', 'H_p1_velocity_normal']
 log_fields = ['H_p1_number_density', 'H_p1_velocity_total']
 
 def create_sphere_mesh(r):
-    lon = np.linspace(0,360, 26)
-    lat = np.linspace(-90,90, 16)
+    lon = np.arange(0,361, 5)
+    lat = np.arange(-90,91, 5)
     phi = -1*(lat-90)*np.pi/180.0
     theta = lon*np.pi/180.0
     phi_v, theta_v = np.meshgrid(phi, theta)
@@ -105,6 +105,10 @@ def run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=None):
                     ion_0, ion_1 = field.split('_')[:2]
                     ion = ion_0 + '_'+ion_1
 
+                    if field == 'total_flux':
+                        fluxes = np.array([v for k,v in field_dat[key].items() if 'flux' in k])
+                        field_dat[key][field] = np.sum(fluxes, axis=0)
+
                     if field not in field_dat[key].keys():
                         field_dat[key][field] = get_ds_data(ds, field, indxs[ds_type], 
                                                             grid=ds_type=='heliosares', 
@@ -118,28 +122,49 @@ def run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=None):
 def main():
     
     radii=np.r_[[1.2, 1.7], np.arange(1.0, 5.0, 0.5)]#[1.1, 1.7]
-    ds_names={'batsrus_multi_fluid':'/Volumes/triton/Data/ModelChallenge/R2349/batsrus_3d_multi_species.h5'}
-    ds_types={'batsrus1': ['batsrus_multi_fluid']}
-    #ds_names={'batsrus_multi_species':'/Volumes/triton/Data/ModelChallenge/R2349/batsrus_3d_multi_fluid.h5'}
-    #ds_types={'batsrus1': ['batsrus_multi_species']}
-    
     ions = ['H_p1', 'O2_p1', 'CO2_p1', 'O_p1']
-    fields_suffix = ['number_density', 'velocity_total', 'velocity_normal', 'flux']
-    #fields_suffix = ['number_density', 'flux']
-    fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
-    #fields.append('velocity_total')
-    #fields.append('velocity_normal')
+    ds_type = 'heliosares'
+    
+    if ds_type == 'batsrus_multi_fluid':
+        ds_names={'batsrus_multi_fluid':
+                    '/Volumes/triton/Data/ModelChallenge/R2349/batsrus_3d_multi_species.h5'}
+        ds_types={'batsrus1': ['batsrus_multi_fluid']}
+        #fields_suffix = ['number_density', 'velocity_total', 'velocity_normal', 'flux']
+        fields_suffix = ['flux']
+        fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
+        velocity_field = '{0}_velocity'
+
+    elif ds_type == 'batsrus_multi_species':
+        ds_names={'batsrus_multi_species':
+                '/Volumes/triton/Data/ModelChallenge/R2349/batsrus_3d_multi_fluid.h5'}
+        ds_types={'batsrus1': ['batsrus_multi_species']}
+    
+        fields_suffix = ['number_density', 'flux']
+        fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
+        fields.append('velocity_total')
+        fields.append('velocity_normal')
+        velocity_field = 'velocity'
+
+    elif ds_type == 'heliosares':
+        ds_names={'heliosares':
+                '/Volumes/triton/Data/ModelChallenge/R2349/helio_r2349.h5'}
+        ds_types={'heliosares': ['heliosares']}
+        ions = ['O_p1']
+    
+        fields_suffix = ['number_density', 'flux']
+        fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
+        velocity_field = '{0}_velocity'
+    fields.append('total_flux')
     
     df = pd.DataFrame(columns=ions, index=radii)
     
     for r in radii:    
-        field_dat = run_sphere_flux(ds_names, ds_types, r, fields, velocity_field='velocity')
-
+        field_dat = run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=velocity_field)
         for ion in ions:
-            total_ions = np.sum(field_dat['area']*field_dat['batsrus_multi_fluid'][ion+'_flux'])
+            total_ions = np.sum(field_dat['area']*field_dat[ds_type][ion+'_flux'])
             df.loc[r,ion] = total_ions
         
-    df.to_csv('Output/sphere_flux_batsrus_multi_species.csv')
+    df.to_csv('Output/sphere_flux_{0}.csv'.format(ds_type))
     
 if __name__=='__main__':
     main()

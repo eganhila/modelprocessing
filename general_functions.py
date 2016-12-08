@@ -3,11 +3,11 @@ import spiceypy as sp
 import h5py
 import matplotlib.pyplot as plt
 sp.furnsh("maven_spice.txt")
-label_lookup = {'H_p1_number_density':r'$n(H+)\;\mathrm{cm^{-3}}$',
-          'O2_p1_number_density':u'$n(O_2+)\;\mathrm{cm^{-3}}$',
-          'O_p1_number_density':u'$n(O+)\;\mathrm{cm^{-3}}$',
-          'O_p2_number_density':u'$n(O++)\;\mathrm{cm^{-3}}$',
-          'CO2_p1_number_density':u'$n(CO_2+)\;\mathrm{cm^{-3}}$',
+label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
+          'O2_p1_number_density':u'$n(O_2+)$', #\;\mathrm{cm^{-3}}$',
+          'O_p1_number_density':u'$n(O+)$', #\;\mathrm{cm^{-3}}$',
+          'O_p2_number_density':u'$n(O++)$', #\;\mathrm{cm^{-3}}$',
+          'CO2_p1_number_density':u'$n(CO_2+)$', #\;\mathrm{cm^{-3}}$',
           'H_number_density':u'$n(H)\;\mathrm{cm^{-3}}$',
           'He_number_density':u'$n(He)\;\mathrm{cm^{-3}}$',
           'electron_number_density':u'$n(e-)\;\mathrm{cm^{-3}}$',
@@ -29,20 +29,22 @@ label_lookup['number_density'] = '$\mathrm{n\;(cm^{-3})}$'
 label_lookup['batsrus_multi_species'] = 'BATSRUS Multi-Species'
 label_lookup['batsrus_multi_fluid'] = 'BATSRUS Multi-Fluid'
 label_lookup['heliosares'] = 'HELIOSARES'
+label_lookup['total_flux'] = '$\mathrm{Total\; Ion\;Flux}$'
 label_lookup['x'] = 'x'
 label_lookup['y'] = 'y'
 label_lookup['z'] = 'z'
 field_lims = {'magnetic_field_x':(-50,50),#(-33,33),
               'magnetic_field_y':(-50,50),#(-33,33),
               'magnetic_field_z':(-50,50),#(-33,33),
-              'H_p1_number_density':(1e-1,3e4),
-              'O2_p1_number_density':(1e0,3e5),
-              'O_p1_number_density':(1e0, 2e4),
+              'H_p1_number_density':(7e-1,7e4),
+              'O2_p1_number_density':(1e0,6e4),
+              'O_p1_number_density':(4e0, 2e4),
               'CO2_p1_number_density':(1e0,6e3),
               'H_number_density':(1e-2, 1e5), 
               'He_number_density':(1e-2, 1e5),
               'electron_number_density':(1e-2, 1e5),
-              'magnetic_field_total':(0,120)}
+              'magnetic_field_total':(0,120),
+              'altitude':(5E1, 1e4)}
 
 log_fields2 = ['H_p1_number_density',
                'O2_p1_number_density',
