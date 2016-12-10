@@ -9,7 +9,7 @@ from flythrough_compare import *
 import pandas as pd
 from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 from itertools import product as iproduct
-plt.style.use('seaborn-poster')
+plt.style.use(['seaborn-poster', 'poster'])
 
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|\;(km/s)}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}\;(km/s)}$'
@@ -121,9 +121,9 @@ def run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=None):
 
 def main():
     
-    radii=np.r_[[1.2, 1.7], np.arange(1.0, 5.0, 0.5)]#[1.1, 1.7]
-    ions = ['H_p1', 'O2_p1', 'CO2_p1', 'O_p1']
-    ds_type = 'heliosares'
+    radii=np.r_[[1.7]]#, np.arange(1.0, 3.0, 0.2)]
+    ions = ['O2_p1', 'CO2_p1', 'O_p1']
+    ds_type = 'batsrus_multi_species'
     
     if ds_type == 'batsrus_multi_fluid':
         ds_names={'batsrus_multi_fluid':

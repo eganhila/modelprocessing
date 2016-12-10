@@ -19,7 +19,7 @@ color = {'H_p1':'DarkBlue', 'O2_p1':'DarkSlateBlue', 'O_p1':'Purple', 'CO2_p1':'
 
 
 for dsk in ['fluid', 'species']:
-    for ion in ['H_p1', 'O2_p1', 'O_p1', 'CO2_p1']:
+    for ion in [ 'O2_p1', 'O_p1', 'CO2_p1']:
         plt.plot(dfs[dsk][ion].index, dfs[dsk][ion].values, ls[dsk], color=color[ion],label=ion.replace('_', ''))
 
     if dsk == 'fluid':

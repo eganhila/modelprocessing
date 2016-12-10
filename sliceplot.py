@@ -98,7 +98,7 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,
         circle = plt.Circle((0, 0), 1, color='k', alpha=0.1, zorder=0)
         ax.add_artist(circle)
         
-        if orbit is not None: add_orbit(ax,ax_i, orbit, center, show_center=show_center, show_intersect=show_intersect)
+        if orbit is not None: add_orbit(ax,ax_i, orbit, center, show_center=show_center, show_intersect=True)
             
         ax.set_xlabel('$\mathrm{'+ax_labels[ax_i][0]+'} \;(R_M)$')
         ax.set_ylabel('$\mathrm{'+ax_labels[ax_i][1]+'} \;(R_M)$')
@@ -156,7 +156,7 @@ def get_offgrid_slice(ds, ax_i, field, vec_field, center, extra_fields=None):
 
 def slice_regrid(ds, ax_i, field, vec_field=False, test=False, center=None, extra_fields=None):
     if test: lin = np.linspace(-4, 4, 50)
-    else: lin = np.linspace(-4, 4, 250)
+    else: lin = np.linspace(-1.5, 1.5, 250)
     grid_0, grid_1 = np.meshgrid(lin, lin)
     g0_flat, g1_flat = grid_0.flatten(), grid_1.flatten()
     
