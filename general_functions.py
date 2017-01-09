@@ -2,57 +2,21 @@ import numpy as np
 import spiceypy as sp
 import h5py
 import matplotlib.pyplot as plt
-sp.furnsh("maven_spice.txt")
-label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
-          'O2_p1_number_density':u'$n(O_2+)$', #\;\mathrm{cm^{-3}}$',
-          'O_p1_number_density':u'$n(O+)$', #\;\mathrm{cm^{-3}}$',
-          'O_p2_number_density':u'$n(O++)$', #\;\mathrm{cm^{-3}}$',
-          'CO2_p1_number_density':u'$n(CO_2+)$', #\;\mathrm{cm^{-3}}$',
-          'H_number_density':u'$n(H)\;\mathrm{cm^{-3}}$',
-          'He_number_density':u'$n(He)\;\mathrm{cm^{-3}}$',
-          'electron_number_density':u'$n(e-)\;\mathrm{cm^{-3}}$',
-          'number_density':u'$n\;\mathrm{cm^{-3}}$',
-          'magnetic_field_radial':u'$B_r \mathrm{(nT)}$',
-          'magnetic_field_x':u'$B_X \mathrm{(nT)}$',
-          'magnetic_field_y':u'$B_Y \mathrm{(nT)}$',
-          'magnetic_field_z':u'$B_Z \mathrm{(nT)}$',
-          'magnetic_field_total':u'$|B| \mathrm{(nT)}$',
-          'bats_min_LS270_SSL0':'BATSRUS: SSL=0',# (Solar min, LS=270)',
-          'bats_min_LS270_SSL180':'BATSRUS: SSL=180',# (Solar min, LS=270)',
-          'bats_min_LS270_SSL270':'BATSRUS: SSL=270',# (Solar min, LS=270)',
-          'helio_1':'HELIOSARES: 1',# (Solar mod, LS=270)',
-          'helio_2':'HELIOSARES: 2',# (Solar mod, LS=270)',
-          'maven': "MAVEN"}
-label_lookup['altitude'] = '$\mathrm{Altitude}$'
-label_lookup['magnetic_field_total'] = '$\mathrm{|B|\;(nT)}$'
-label_lookup['number_density'] = '$\mathrm{n\;(cm^{-3})}$'
-label_lookup['batsrus_multi_species'] = 'BATSRUS Multi-Species'
-label_lookup['batsrus_multi_fluid'] = 'BATSRUS Multi-Fluid'
-label_lookup['heliosares'] = 'HELIOSARES'
-label_lookup['total_flux'] = '$\mathrm{Total\; Ion\;Flux}$'
-label_lookup['x'] = 'x'
-label_lookup['y'] = 'y'
-label_lookup['z'] = 'z'
-field_lims = {'magnetic_field_x':(-50,50),#(-33,33),
-              'magnetic_field_y':(-50,50),#(-33,33),
-              'magnetic_field_z':(-50,50),#(-33,33),
-              'H_p1_number_density':(7e-1,7e4),
-              'O2_p1_number_density':(1e0,6e4),
-              'O_p1_number_density':(4e0, 2e4),
-              'CO2_p1_number_density':(1e0,6e3),
-              'H_number_density':(1e-2, 1e5), 
-              'He_number_density':(1e-2, 1e5),
-              'electron_number_density':(1e-2, 1e5),
-              'magnetic_field_total':(0,120),
-              'altitude':(5E1, 1e4)}
 
-log_fields2 = ['H_p1_number_density',
-               'O2_p1_number_density',
-               'O_p1_number_density',
-               'CO2_p1_number_density',
-               'altitude',
-               'number_density']
+from labels import *
+from field_default_params import *
+sp.furnsh("maven_spice.txt")
+
 def load_data(ds_name, field=None, fields=None, vec_field=False):
+    """
+    Load data for a standard hdf5 dataset into a dictionary
+
+    ds_name (string): full file name to be loaded
+    field (optional, string): field to load
+    fields (optional, list): fields to load
+    vec_field (boolean, default False): if true, automatically load 
+        field + "_x", "_y", and "_z". Must be used with field, not fields
+    """
     ds = {}
     with h5py.File(ds_name, 'r') as f:
         if 'xmesh' in f.keys():
@@ -76,7 +40,13 @@ def load_data(ds_name, field=None, fields=None, vec_field=False):
             
     return ds
 
-def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/', new_models=False, maven=True):
+def get_datasets( new_models=False, maven=True):
+    """
+    Get datasets and related information (which datasets are the same type, etc)
+    Not a very expandable function, should be rewritten
+
+    new_models (boolean, default False): load R2349 instead of SDC 
+    """
     ds_names = {}
     if new_models:
         fdir = '/Volumes/triton/Data/ModelChallenge/R2349/'
@@ -88,7 +58,7 @@ def get_datasets(fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/', new_mo
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
     else:
-
+        fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/'
         #BATSRUS
         """
         ds_names['bats_max_LS270-SSL0'] = \
@@ -208,6 +178,23 @@ def apply_grid_indx(ds, field, indx):
     return dat
 
 def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None, area=None):
+    """
+    Get data from a dataset for a particular field and set of points
+    Can interpret suffixes to get total or  normal values for vector
+    fields, or flux values for a number density field.
+
+    ds : loaded data in dictionary form
+    field : field to get data for
+    indx : indexes of the points get the data for
+    grid : boolean indicating if the dataset was saved in array or
+        list of points form
+    normal : hacky way to get nhat for surface
+    velocity_field : what velocity field to use in calculation of
+        flux values
+    area : hacky way to get area for surface
+    """
+
+
     
     if grid: apply_indx = apply_grid_indx
     else: apply_indx = apply_flat_indx
@@ -291,6 +278,17 @@ def get_path_pts_reg(trange, geo=False, Npts=50, units_mr=False, sim_mars_r=3396
 
 
 def bin_coords(coords, dsf, grid=True):
+    """
+    Get indexes of the dataset points for specified
+    set of coordinates.
+
+    coords (3, N): array of points assumed to be in same
+        coordinate system as datasets, cartesian MSO
+    dsf: filename of ds
+    grid (boolean, default True): if the dataset was saved in array or
+        list of points form
+
+    """
     if grid: return bin_coords_grid(coords, dsf)
     else: return bin_coords_nogrid(coords, dsf)
     
