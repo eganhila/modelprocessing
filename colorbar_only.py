@@ -1,30 +1,30 @@
 '''
-Make a colorbar as a separate figure.
+Make a linear colorbar as a separate figure.
+
+vmin, vmax = colorbar limits
+cmap = colormap to be used
+orientation = 'vertical' or 'horizontal'
 '''
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import cmocean
 
-ax = plt.subplot(111)
-# Set the colormap and norm to correspond to the data for which
-# the colorbar will be used.
+vmin, vmax = -30,30
 cmap = cmocean.cm.delta
-norm = mpl.colors.Normalize(vmin=-30, vmax=30)
+orientation = 'vertical'
 
-# ColorbarBase derives from ScalarMappable and puts a colorbar
-# in a specified axes, so it has everything needed for a
-# standalone colorbar.  There are many more kwargs, but the
-# following gives a basic continuous colorbar with ticks
-# and labels.
+
+ax = plt.subplot(111)
+norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+
 cb = mpl.colorbar.ColorbarBase(ax, cmap=cmap,
                                 norm=norm,
-                                orientation='vertical')
+                                orientation=orientation)
 cb.set_label('$\mathrm{B\; (nT)}$')
 
 f= plt.gcf()
-#f.set_size_inches(6,1.25)
-f.set_size_inches(1.25,6)
+if orientation == 'vertical': f.set_size_inches(1.25,6)
+else: f.set_size_inches(6,1.25)
 
 plt.tight_layout()
-
 plt.savefig('Output/colorbar.pdf')
