@@ -20,7 +20,7 @@ species name.
 Inputs:
 
     --outname (-o): filename to save h5 output to. Default heliosares.h5
-    --dir (-d): Directory to find files in. Defaults to current dir
+    --indir (-i): Directory to find files in. Defaults to current dir
     --test (-t): Doesn't do anything right now, will eventually test
 
 """
@@ -32,7 +32,7 @@ import glob
 import sys
 import getopt
 
-f_var_rename = 'Misc/netcdf_names.txt'
+f_var_rename = 'Misc/name_conversion.txt'
 mars_r = 3390
 axis_labels = ['X_axis', 'Y_axis', 'Z_axis']
 # axis_labels = ['x','y','z']
@@ -78,7 +78,7 @@ def convert_dataset(fnames, h5_name):
     name_conversion = {}
     for pair in file(f_var_rename):
         k,v = pair.split(',')
-        name_conversion[k] = v
+        name_conversion[k] = v[:-1] #remove newline
 
     #Process the rest of the fields
     with h5py.File(fdir+h5name, 'r+') as f:
@@ -107,7 +107,7 @@ def convert_dataset(fnames, h5_name):
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "d:t:o:", ["dir=","test","outname="])
+        opts, args = getopt.getopt(argv, "i:t:o:", ["indir=","test","outname="])
     except getopt.GetoptError:
         return
 
@@ -118,7 +118,7 @@ def main(argv):
     for opt, arg in opts:
         if opt in ("-t", "--test"):
             test = True
-        elif opt in ("-d", "--dir"):
+        elif opt in ("-i", "--indir"):
             fdir = arg
         elif opt in ("-o", "--outname"):
             outname = arg
