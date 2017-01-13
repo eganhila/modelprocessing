@@ -1,0 +1,86 @@
+CO2pl_Density,CO2_p1_number_density
+CO2pl_Temperature,CO2_p1_temperature
+CO2pl_Ux,CO2_p1_velocity_x
+CO2pl_Uy,CO2_p1_velocity_y
+CO2pl_Uz,CO2_p1_velocity_z
+Elew_Ex,electric_field_x
+Elew_Ey,electric_field_y
+Elew_Ez,electric_field_z
+Hesw_Density,He_number_density
+Hesw_Temperature,He_temperature
+Hesw_Ux,He_velocity_x
+Hesw_Uy,He_velocity_y
+Hesw_Uz,He_velocity_z
+Hpl_Density,H_p1_number_density
+Hpl_Temperature,H_p1_temperature
+Hpl_Ux,H_p1_velocity_x
+Hpl_Uy,H_p1_velocity_y
+Hpl_Uz,H_p1_velocity_z
+Hsw_Density,H_number_density
+Hsw_Temperature,H_temperature
+Hsw_Ux,H_velocity_x
+Hsw_Uy,H_velocity_y
+Hsw_Uz,H_velocity_z
+Magw_Bx,magnetic_field_x
+Magw_By,magnetic_field_y
+Magw_Bz,magnetic_field_z
+O2pl_Density,O2_p1_number_density
+O2pl_Temperature,O2_p1_temperature
+O2pl_Ux,O2_p1_velocity_x
+O2pl_Uy,O2_p1_velocity_y
+O2pl_Uz,O2_p1_velocity_z
+Opl_Density,O_p1_number_density
+Opl_Temperature,O_p1_temperature
+Opl_Ux,O_p1_velocity_x
+Opl_Uy,O_p1_velocity_y
+Opl_Uz,O_p1_velocity_z
+Thew_Density,electron_number_density
+Thew_Temperature,electron_temperature
+Thew_Ux,electron_velocity_x
+Thew_Uy,electron_velocity_y
+Thew_Uz,electron_velocity_z
+X [R],x
+Y [R],y
+Z [R],z
+`r [amu/cm^3],number_density
+U_x [km/s],velocity_x
+U_y [km/s],velocity_y
+U_z [km/s],velocity_z
+B_x [nT],magnetic_field_x
+B_y [nT],magnetic_field_y
+B_z [nT],magnetic_field_z
+p [nPa],pressure
+`r^H^p [amu/cm^3],H_p1_number_density
+U_x^H^p [km/s],H_p1_velocity_x
+U_y^H^p [km/s],H_p1_velocity_y
+U_z^H^p [km/s],H_p1_velocity_z
+p^H^p [nPa],H_p1_pressure
+`r^O^2^p [amu/cm^3],O2_p1_number_density
+U_x^O^2^p [km/s],O2_p1_velocity_x
+U_y^O^2^p [km/s],O2_p1_velocity_x
+U_z^O^2^p [km/s],O2_p1_velocity_z
+p^O^2^p [nPa],O2_p1_pressure
+`r^O^p^p [amu/cm^3],O_p1_number_density
+U_x^O^p^p [km/s],O_p1_velocity_x
+U_y^O^p^p [km/s],O_p1_velocity_y
+U_z^O^p^p [km/s],O_p1_velocity_z
+p^O^p^p [nPa],O_p1_pressure
+`r^C^O^2^p [amu/cm^3],CO2_p1_number_density
+U_x^C^O^2^ [km/s],CO2_p1_velocity_x
+U_y^C^O^2^ [km/s],CO2_p1_velocity_y
+U_z^C^O^2^ [km/s],CO2_p1_velocity_z
+p^C^O^2^p [nPa],CO2_p1_pressure
+B1_x [nT],magnetic_field_1_x
+B1_y [nT],magnetic_field_1_y
+B1_z [nT],magnetic_field_1_z
+E [J/m^3],electric_field
+J_x [`mA/m^2],curent_x
+J_y [`mA/m^2],current_y
+J_z [`mA/m^2],current_z
+Hp [amu/cm^3],H_p1_number_density
+O2p [amu/cm^3],O2_p1_number_density
+Op [amu/cm^3],O_p1_number_density
+CO2p [amu/cm^3],CO2_p1_number_density
+U_x [km/s],velocity_x
+U_y [km/s],velocity_y
+U_z [km/s],velocity_z
