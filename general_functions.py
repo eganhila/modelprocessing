@@ -343,3 +343,27 @@ def get_orbit_times(orbits, J200=False):
     if J200: return tranges_J2000
     else: return tranges_utc
 
+def convert_coords_cart_sphere(coords_cart):
+    """
+    Converts a set of coordinates in a cartesian 
+    coordinate system to a spherical one. Returns in
+    order (lat, lon, alt). 
+
+    coords_cart (3, ...): numpy array with the first
+        dimension indication x,y,z
+    """
+    shape = coords_cart.shape
+    coords = coords_cart.reshape(3,-1)
+
+    lat, lon, alt = np.zeros_like(coords)
+    for i in range(coords.shape[1]):
+        p_rec = [coords[0, i], coords[1, j], coords[2, k]]
+        p_lat = sp.spiceypy.reclat(p_rec)
+        alt[i], lon[i], lat[i] = p_lat
+        
+    lat = lat*180/np.pi
+    lon = lon*180/np.pi
+    alt = alt - mars_r 
+
+    coords_sphere = np.array([lat, lon, alt]).reshape(shape)
+    return coords_sphere
