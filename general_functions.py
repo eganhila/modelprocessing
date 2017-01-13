@@ -3,9 +3,10 @@ import spiceypy as sp
 import h5py
 import matplotlib.pyplot as plt
 
-from labels import *
-from field_default_params import *
-sp.furnsh("maven_spice.txt")
+from Misc.labels import *
+from Misc.field_default_params import *
+sp.furnsh("Misc/maven_spice.txt")
+mars_r = 3390
 
 def load_data(ds_name, field=None, fields=None, vec_field=False):
     """
@@ -357,7 +358,7 @@ def convert_coords_cart_sphere(coords_cart):
 
     lat, lon, alt = np.zeros_like(coords)
     for i in range(coords.shape[1]):
-        p_rec = [coords[0, i], coords[1, j], coords[2, k]]
+        p_rec = [coords[0, i], coords[1, i], coords[2, i]]
         p_lat = sp.spiceypy.reclat(p_rec)
         alt[i], lon[i], lat[i] = p_lat
         
