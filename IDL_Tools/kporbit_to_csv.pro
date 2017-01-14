@@ -1,3 +1,5 @@
+; This routine makes a csv with data for an orbit
+
 orbit = 2349
 
 t0_unix = (mvn_orbit_num(orbnum=orbit-1)+mvn_orbit_num(orbnum=orbit))/2
@@ -27,5 +29,6 @@ magz = insitu.mag.mso_z
 
 dat = [time, msox, msoy,msoz, alt, o2_p1, o_p1, co2_p1, h_p1, e, magx, magy, magz]
 dat_t = transpose(reform(dat,size(msox, /N_elements), 13))
+header = ["time", "x", "y", "z", "altitude", "O2_p1_number_density", "O_p1_number_density", "CO2_p1_number_density","H_p1_number_density","electron_number_density","magnetic_field_x","magnetic_field_y", "magnetic_field_z"]
 
-write_csv, 'Output/test_orbit.csv', dat_t
+write_csv, 'test_orbit.csv', dat_t, header=header
