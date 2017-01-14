@@ -3,8 +3,8 @@ import spiceypy as sp
 import h5py
 import matplotlib.pyplot as plt
 
-from Misc.labels import *
-from Misc.field_default_params import *
+from misc.labels import *
+from misc.field_default_params import *
 sp.furnsh("Misc/maven_spice.txt")
 mars_r = 3390
 
