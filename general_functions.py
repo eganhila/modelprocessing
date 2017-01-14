@@ -368,3 +368,32 @@ def convert_coords_cart_sphere(coords_cart):
 
     coords_sphere = np.array([lat, lon, alt]).reshape(shape)
     return coords_sphere
+
+
+def get_all_data(ds_names, ds_types, indxs, fields):
+    """
+    Get data for all fields for indexes that were 
+    already found.
+    """
+    data = {f:{} for f in fields}
+
+    for ds_type, keys in ds_types.items():
+        for dsk in keys:
+
+            dsf = ds_names[dsk]
+
+            if ds_type == 'maven':
+                data = pd.read_csv(dsf)
+                data['magnetic_field_total'] = np.sqrt(data['magnetic_field_x']**2+
+                                                       data['magnetic_field_y']**2+
+                                                       data['magnetic_field_z']**2)
+#        t = np.linspace(times[0], times[-1], data.shape[0])-times[0]
+#        plot_field_ds(t[::skip], 1.5*data[field][::skip], plot['axes'][field], 
+#                      plot['kwargs']['maven'])
+                
+            for field in fields:
+                with h5py.File(dsf, 'r') as ds:
+                    ds_dat = get_ds_data(ds, field, indxs[ds_type],
+                                         grid=ds_type=='heliosares')
+                    data[field][dsk] = ds_dat
+

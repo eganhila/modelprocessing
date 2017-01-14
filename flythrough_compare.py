@@ -180,39 +180,13 @@ def make_flythrough_plot(times, fields, orbits, title, indxs, data, ds_names, sk
     finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle))
     
 
-def get_all_data(ds_names, ds_types, indxs, fields):
-    data = {f:{} for f in fields}
-
-    for ds_type, keys in ds_types.items():
-        for dsk in keys:
-            dsf = ds_names[dsk]
-
-            for field in fields:
-                with h5py.File(dsf, 'r') as ds:
-                    ds_dat = get_ds_data(ds, field, indxs[ds_type],
-                                         grid=ds_type=='heliosares')
-                    data[field][dsk] = ds_dat
-#    plot['altitude'] = data['alt']
-#    plot['time'] = t
-#    data = pd.read_csv('Output/test_orbit.csv',
-#            names=['mso_x','mso_y', 'mso_z', 'alt', 'O2_p1_number_density',
-#                   'O_p1_number_density', 'CO2_p1_number_density',
-#                   'H_p1_number_density', 'electron_number_density',
-#                   'magnetic_field_x', 'magnetic_field_y',
-#                   'magnetic_field_z'])
-#    data['magnetic_field_total'] = np.sqrt(data['magnetic_field_x']**2+
-#                                           data['magnetic_field_y']**2+
-#                                           data['magnetic_field_z']**2)
-#    for field in fields:
-#        dsf = ds_names['maven'] 
-#        mav_data = []
-
-#        t = np.linspace(times[0], times[-1], data.shape[0])-times[0]
-#        plot_field_ds(t[::skip], 1.5*data[field][::skip], plot['axes'][field], 
-#                      plot['kwargs']['maven'])
 
 
 def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
+    """
+    Setup an orbit, find the appropriate date, and make
+    a flythrough plot.
+    """
 
     #coords, times = get_path_pts(trange, Npts=150)
     coords = get_path_pts_adj(orbits[0])[:, ::10]
