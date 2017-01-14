@@ -1,12 +1,32 @@
+"""
+Makes plots that fly through selected models for a
+fields/group of fields.
+
+Inputs:
+    --field (-f): field to flythrough. Can also put "mag" to
+        flythrough all magnetic field fields or "ion" for all
+        ion fields
+    --orbit (-o): orbit to flythrough. Integer to pick a single
+        orbit, or predefine a group like G1
+    --new_models (-n): Use the new models, flag passed to get
+        datasets
+
+"""
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 from general_functions import *
 import sys
 import getopt
+import pandas as pd
 plt.style.use('seaborn-poster')
 
 def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
+    """
+    Setup plotting environment and corresponding data structures
+    """
     if add_altitude: 
         fields = fields[:]
         fields.insert(0,'altitude')
@@ -50,11 +70,14 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     return plot
 
 def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
+    """
+    Make final plotting adjustments and save/show image
+    """
     if 'altitude' in plot.keys():
         plot['axes']['altitude'].plot(np.linspace(plot['time'][0], plot['time'][-1],
                                                   plot['altitude'].shape[0]), 
                                                   plot['altitude'],
-                                                                                                                          **plot['kwargs']['maven'])
+                                                  **plot['kwargs']['maven'])
     for f, ax in plot['axes'].items():
         ax.set_ylabel(label_lookup[f])
         ax.set_xlim(plot['time'][0], plot['time'][-1])
@@ -94,10 +117,6 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
     
     tb.axis('off')
     sb.axis('off')
-    
-    
-    
-
     
     #plot['ax_arr'][-1].legend()#(bbox_to_anchor=(1.4, 1))
     handles, labels = plot['ax_arr'][-1].get_legend_handles_labels()
@@ -139,61 +158,58 @@ def plot_field_ds(x, data, ax, kwargs):
         ax.set_ylim(lim)
 
 
-def make_plot(times, fields, orbits, title, indxs, coords, ds_names, ds_types, skip=1, subtitle=None, tlimit=None):
+def make_flythrough_plot(times, fields, orbits, title, indxs, data, ds_names, skip=1, subtitle=None, tlimit=None):
+    """
+    Main function for creating plot, must have already found
+    data
+    """
     plot = setup_plot(fields, ds_names.keys(), coords,
                       tlimit=tlimit, add_altitude=True)
 
+    for field in fields:
+        for dsk, ds_dat in data[field].items():
+                        
+            if ds_dat.size != 0:
+                plot_field_ds(times-times[0], ds_dat, plot['axes'][field], plot['kwargs'][dsk])
+            else:
+                plot_field_ds(np.array([0]),np.array([0]),
+                              plot['axes'][field], plot['kwargs'][dsk])
+
+    if subtitle is None: subtitle= orbits[0]
+    print 'Saving: ', 'Output/{0}_{1}.pdf'.format(title, subtitle)
+    finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle))
+    
+
+def get_all_data(ds_names, ds_types, indxs, fields):
+    data = {f:{} for f in fields}
+
     for ds_type, keys in ds_types.items():
-        for key in keys:
-            dsf = ds_names[key]
+        for dsk in keys:
+            dsf = ds_names[dsk]
 
             for field in fields:
                 with h5py.File(dsf, 'r') as ds:
                     ds_dat = get_ds_data(ds, field, indxs[ds_type],
                                          grid=ds_type=='heliosares')
-                        
-                    if ds_dat.size != 0:
-			plot_field_ds(times-times[0], ds_dat, plot['axes'][field], plot['kwargs'][key])
-		    else:
-			plot_field_ds(np.array([0]),np.array([0]),
-                                      plot['axes'][field], plot['kwargs'][key])
-    import pandas as pd
-    data = pd.read_csv('Output/test_orbit.csv',
-            names=['mso_x','mso_y', 'mso_z', 'alt', 'O2_p1_number_density',
-                   'O_p1_number_density', 'CO2_p1_number_density',
-                   'H_p1_number_density', 'electron_number_density',
-                   'magnetic_field_x', 'magnetic_field_y',
-                   'magnetic_field_z'])
-    data['magnetic_field_total'] = np.sqrt(data['magnetic_field_x']**2+
-                                           data['magnetic_field_y']**2+
-                                           data['magnetic_field_z']**2)
-    for field in fields:
-	dsf = ds_names['maven'] 
-	mav_data = []
+                    data[field][dsk] = ds_dat
+#    plot['altitude'] = data['alt']
+#    plot['time'] = t
+#    data = pd.read_csv('Output/test_orbit.csv',
+#            names=['mso_x','mso_y', 'mso_z', 'alt', 'O2_p1_number_density',
+#                   'O_p1_number_density', 'CO2_p1_number_density',
+#                   'H_p1_number_density', 'electron_number_density',
+#                   'magnetic_field_x', 'magnetic_field_y',
+#                   'magnetic_field_z'])
+#    data['magnetic_field_total'] = np.sqrt(data['magnetic_field_x']**2+
+#                                           data['magnetic_field_y']**2+
+#                                           data['magnetic_field_z']**2)
+#    for field in fields:
+#        dsf = ds_names['maven'] 
+#        mav_data = []
 
-	#for i, orb in enumerate(orbits):
-       #     if np.sum(dat.shape) != 0: mav_data.append(dat[field])     
-
-	#if len(mav_data) == 0: 
-	#    plot_field_ds(np.array([0]), np.array([0]), plot['axes'][field], plot['kwargs']['maven'])
-	#    continue
-
-	#L = min([d.shape[0] for d in mav_data])
-	#data = np.zeros((len(mav_data),L))
-	#for i in range(len(mav_data)):
-	#    data[i] = mav_data[i][:L]
-	#t = np.linspace(times[0], times[-1], data.shape[1])-times[0]
-	t = np.linspace(times[0], times[-1], data.shape[0])-times[0]
-        #t = np.linspace(-0.45, 1.45, data.shape[0])#-times[0]
-	#plot_field_ds(t[::skip], data[:,::skip], plot['axes'][field], plot['kwargs']['maven'])
-	plot_field_ds(t[::skip], 1.5*data[field][::skip], plot['axes'][field], 
-                      plot['kwargs']['maven'])
-    plot['altitude'] = data['alt']
-    plot['time'] = t
-    if subtitle is None: subtitle= orbits[0]
-    print 'Saving: ', 'Output/{0}_{1}.pdf'.format(title, subtitle)
-    finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle))
-    
+#        t = np.linspace(times[0], times[-1], data.shape[0])-times[0]
+#        plot_field_ds(t[::skip], 1.5*data[field][::skip], plot['axes'][field], 
+#                      plot['kwargs']['maven'])
 
 
 def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
@@ -217,9 +233,15 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
         tlimit = None#(0.3, 0.7)
         title = 'mag_flythrough'
         skip = 1
+    else:
+        fields = [field]
+        tlimit = None
+        title = field+"_flythrough"
+        skip=1
 
-    make_plot(times, fields, orbits, title, indxs, coords,
-              ds_names, ds_types, tlimit=tlimit, skip=skip, **kwargs)
+    data = get_all_data(ds_names, ds_types, indxs, fields)
+    make_plot(times, fields, orbits, title, indxs, data, 
+              ds_names, tlimit=tlimit, skip=skip, **kwargs)
 
 
 def main(argv):
@@ -248,8 +270,6 @@ def main(argv):
     # Get Datasets setup
     ds_names, ds_types = get_datasets(new_models=new_models)
 
-        #tranges = get_orbit_times(orbits)
-        #mid_tr = tranges[:, orbits.shape[0]/2]
     flythrough_orbit([orbit], ds_names, ds_types, field)
 
 
