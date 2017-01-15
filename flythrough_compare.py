@@ -80,7 +80,6 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
                                                   **plot['kwargs']['maven'])
     for f, ax in plot['axes'].items():
         ax.set_ylabel(label_lookup[f])
-        ax.set_xlim(plot['time'][0], plot['time'][-1])
         if zeroline:
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
         if f in field_lims: ax.set_ylim(field_lims[f])
@@ -92,17 +91,20 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
         else: ax.set_xticks([])
         
         if plot['tlimit'] is not None:
-            lim, t = plot['tlimit'], plot['time']
-            tlim = (t[int(lim[0]*t.shape[0])], t[int(lim[1]*t.shape[0])])
+            #lim, t = plot['tlimit'], plot['time']
+            #tlim = (t[int(lim[0]*t.shape[0])], t[int(lim[1]*t.shape[0])])
+            tlim = plot['tlimit']
             ax.set_xlim(tlim)
+        else:
+            ax.set_xlim(0,1)
             
     tb = plot['timebar']
     sb = plot['shadowbar']
     
-    t_xv, t_yv = np.meshgrid(np.linspace(0,1, plot['time'].shape[0]), [0,1])
+    t_xv, t_yv = np.meshgrid(np.linspace(0,1, 100), [0,1])
     s_xv, s_yv = np.meshgrid(np.linspace(0, 1, plot['shadow'].shape[0]),[0,1])
                              
-    t_dat = np.array([plot['time'], plot['time']])
+    t_dat = np.array([np.linspace(0,1,100), np.linspace(0,1,100)])
     s_dat = np.array([plot['shadow'], plot['shadow']])
     
     tb.pcolormesh(t_xv, t_yv, t_dat, cmap='inferno',rasterized=True)
@@ -158,7 +160,7 @@ def plot_field_ds(x, data, ax, kwargs):
         ax.set_ylim(lim)
 
 
-def make_flythrough_plot(times, fields, orbits, title, indxs, data, ds_names, skip=1, subtitle=None, tlimit=None):
+def make_flythrough_plot(times, fields, orbits, title, indxs, data, ds_names, coords=None,  skip=1, subtitle=None, tlimit=None):
     """
     Main function for creating plot, must have already found
     data
@@ -176,11 +178,9 @@ def make_flythrough_plot(times, fields, orbits, title, indxs, data, ds_names, sk
                               plot['axes'][field], plot['kwargs'][dsk])
 
     if subtitle is None: subtitle= orbits[0]
-    print 'Saving: ', 'Output/{0}_{1}.pdf'.format(title, subtitle)
     finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle))
+    print 'Saving: ', 'Output/{0}_{1}.pdf'.format(title, subtitle)
     
-
-
 
 def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
     """
@@ -189,9 +189,10 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
     """
 
     #coords, times = get_path_pts(trange, Npts=150)
-    coords = get_path_pts_adj(orbits[0])[:, ::10]
+    coords, idx = get_orbit_coords(orbits[0], Npts=250, return_idx=True)
     times = np.linspace(0,1,coords.shape[1])
     indxs = get_path_idxs(coords, ds_names, ds_types)
+    indxs['maven'] = idx
 
     if field == 'ion':
         fields =['H_p1_number_density',
@@ -214,8 +215,8 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
         skip=1
 
     data = get_all_data(ds_names, ds_types, indxs, fields)
-    make_plot(times, fields, orbits, title, indxs, data, 
-              ds_names, tlimit=tlimit, skip=skip, **kwargs)
+    make_flythrough_plot(times, fields, orbits, title, indxs, data, 
+              ds_names, coords=coords, tlimit=tlimit, skip=skip, **kwargs)
 
 
 def main(argv):
@@ -242,7 +243,8 @@ def main(argv):
         orbit_groups = np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391])
     
     # Get Datasets setup
-    ds_names, ds_types = get_datasets(new_models=new_models)
+    ds_names, ds_types = get_datasets(R2349=new_models)
+    print ds_names, ds_types
 
     flythrough_orbit([orbit], ds_names, ds_types, field)
 

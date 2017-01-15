@@ -2,12 +2,13 @@ import numpy as np
 import spiceypy as sp
 import h5py
 import matplotlib.pyplot as plt
+import pandas as pd
 from misc.labels import *
 from misc.field_default_params import *
 
-sp.furnsh("Misc/maven_spice.txt")
+sp.furnsh("misc/maven_spice.txt")
 mars_r = 3390
-orbit_dir = '/Volumes/triton/Data/ModelChallenge/OrbitDat/'
+orbit_dir = '/Volumes/triton/Data/OrbitDat/Flythroughs/'
 model_dir = '/Volumes/triton/Data/ModelChallenge/'
 
 def load_data(ds_name, field=None, fields=None, vec_field=False):
@@ -58,41 +59,44 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True):
     a new type for each dataset.
     """
     ds_names = {}
-    if new_models:
-        fdir = 'R2349/'
-        ds_names['batsrus_multi_fluid'] =  fdir+'R2349/batsrus_3d_multi_fluid.h5'
-        ds_names['batsrus_multi_species'] =  fdir+'R2349/batsrus_3d_multi_species.h5'
-        ds_names['heliosares'] =  fdir+'R2349/helio_r2349.h5'
+    if R2349:
+        ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
+        ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
+        ds_names['heliosares'] =  model_dir+'R2349/helio_r2349.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
         if maven:
-            ds_names['maven'] = orbit_dir+'orbit_2349.h5'
+            ds_names['maven'] = orbit_dir+'orbit_2349.csv'
+            ds_types['maven']=['maven']
     elif SDC_G1:
         #BATSRUS
         ds_names['bats_min_LS270_SSL0'] = \
-                fdir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG0.h5'
+                model_dir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG0.h5'
         ds_names['bats_min_LS270_SSL180'] = \
-            fdir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG180.h5'
+            model_dir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG180.h5'
         ds_names['bats_min_LS270_SSL270'] = \
-                fdir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG270.h5'        
+                model_dir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG270.h5'        
         
         #HELIOSARES
         ds_names['helio_1'] = \
-                fdir+'SDC_Archive/HELIOSARES/Hybrid/'+'helio_1.h5'
+                model_dir+'SDC_Archive/HELIOSARES/Hybrid/'+'helio_1.h5'
         
         ds_names['helio_2'] = \
-                fdir+'SDC_Archive/HELIOSARES/Hybrid/'+'helio_2.h5'
+                model_dir+'SDC_Archive/HELIOSARES/Hybrid/'+'helio_2.h5'
             
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'bats' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
         if maven:
-            ds_names['maven'] = orbit_dir+'orbit_2349.h5'
+            pass
+            #ds_names['maven'] = orbit_dir+'orbit_2349.csv'
+            #ds_types['maven']=['maven']
 
+    else:
+        print 'No datasets selected'
     
-    #MAVEN
 
     return (ds_names, ds_types)
 
@@ -130,7 +134,12 @@ def apply_grid_indx(ds, field, indx):
         dat[i] = ds[field][:][indx[0,i], indx[1,i], indx[2,i]]
     return dat
 
-def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None, area=None):
+def apply_maven_indx(ds, field, indx):
+    return ds.loc[indx, field].values
+
+
+def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None,
+                area=None, maven=False):
     """
     Get data from a dataset for a particular field and set of points
     Can interpret suffixes to get total or  normal values for vector
@@ -150,6 +159,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None, ar
 
     
     if grid: apply_indx = apply_grid_indx
+    elif maven: apply_indx = apply_maven_indx
     else: apply_indx = apply_flat_indx
     
     if type(indx)==str:
@@ -199,7 +209,7 @@ def adjust_spherical_positions(pos, alt, Rm0):
         
 
 def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0,
-                 adjust_spherical=True):
+                 adjust_spherical=True, return_idx=False):
     """
     A function that returns coordinates of the spacecraft for
     a given orbit.
@@ -208,17 +218,16 @@ def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0
     geo (bool, default = False): Return coordinates in spherical geographic
         system. Otherwise return in cartesian MSO. !! Doesn't
         currently work
-    Npts (int, default = 50): Number of points to sample orbit with
+    Npts (int, default = 50): Number of points to sample orbit with. Only
+        choose N that 10000  is easily divisible by
     units_rm (bool, default=True): Return coordinates in units of
         mars radius. Otherwise return in km
     sim_mars_r (float, default=3396.0): radius of planet to assume in simulation
     adjust_spherical (bool, default=True): Adjust the coordinates to
         account for a non-spherical mars
     """
-    et1, et2 = get_orbit_times(orbit)
-    times = np.linspace(et1, et2, Npts)
-    
-    data = pd.read_csv(orbit_dir+'orbit_{0:04d}.csv')
+    Nskip = 10000/Npts
+    data = pd.read_csv(orbit_dir+'orbit_{0:04d}.csv'.format(orbit))[::Nskip]
     pos = np.array([data['x'], data['y'], data['z']])
     alt = data['altitude']
      
@@ -226,7 +235,10 @@ def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0
         pos = adjust_spherical_positions(pos, alt, sim_mars_r)
 
     if units_rm:
-        positions = positions/sim_mars_r
+        pos = pos/sim_mars_r
+
+    if return_idx: return (pos,alt.index)
+    else: return pos
 
 
 def bin_coords(coords, dsf, grid=True):
@@ -321,17 +333,18 @@ def get_all_data(ds_names, ds_types, indxs, fields):
             dsf = ds_names[dsk]
 
             if ds_type == 'maven':
-                data = pd.read_csv(dsf)
-                data['magnetic_field_total'] = np.sqrt(data['magnetic_field_x']**2+
-                                                       data['magnetic_field_y']**2+
-                                                       data['magnetic_field_z']**2)
-#        t = np.linspace(times[0], times[-1], data.shape[0])-times[0]
-#        plot_field_ds(t[::skip], 1.5*data[field][::skip], plot['axes'][field], 
-#                      plot['kwargs']['maven'])
-                
-            for field in fields:
-                with h5py.File(dsf, 'r') as ds:
+                ds = pd.read_csv(dsf)
+                for field in fields:
                     ds_dat = get_ds_data(ds, field, indxs[ds_type],
-                                         grid=ds_type=='heliosares')
+                            maven=True, grid=False)
                     data[field][dsk] = ds_dat
+
+
+            else:
+                for field in fields:
+                    with h5py.File(dsf, 'r') as ds:
+                        ds_dat = get_ds_data(ds, field, indxs[ds_type],
+                                             grid=ds_type=='heliosares')
+                        data[field][dsk] = ds_dat
+    return data
 
