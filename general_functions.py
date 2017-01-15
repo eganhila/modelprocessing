@@ -2,11 +2,13 @@ import numpy as np
 import spiceypy as sp
 import h5py
 import matplotlib.pyplot as plt
-
 from misc.labels import *
 from misc.field_default_params import *
+
 sp.furnsh("Misc/maven_spice.txt")
 mars_r = 3390
+orbit_dir = '/Volumes/triton/Data/ModelChallenge/OrbitDat/'
+model_dir = '/Volumes/triton/Data/ModelChallenge/'
 
 def load_data(ds_name, field=None, fields=None, vec_field=False):
     """
@@ -41,108 +43,58 @@ def load_data(ds_name, field=None, fields=None, vec_field=False):
             
     return ds
 
-def get_datasets( new_models=False, maven=True):
+def get_datasets( R2349=False, SDC_G1=False, maven=True):
     """
     Get datasets and related information (which datasets are the same type, etc)
-    Not a very expandable function, should be rewritten
 
-    new_models (boolean, default False): load R2349 instead of SDC 
+    Set the flag of the set of datasets you want to load as
+    True. Can only load one dataset at once. Includes maven
+    data by default but can turn that off separately
+
+    Most important is setting up ds_types for code speed.
+    Set a new type for every type of dataset that isn't
+    identical grid setup. Indexes of coordinates are only
+    found once for each type of dataset. If in doubt, set
+    a new type for each dataset.
     """
     ds_names = {}
     if new_models:
-        fdir = '/Volumes/triton/Data/ModelChallenge/R2349/'
-        ds_names['batsrus_multi_fluid'] =  fdir+'batsrus_3d_multi_fluid.h5'
-        ds_names['batsrus_multi_species'] =  fdir+'batsrus_3d_multi_species.h5'
-        ds_names['heliosares'] =  fdir+'helio_r2349.h5'
+        fdir = 'R2349/'
+        ds_names['batsrus_multi_fluid'] =  fdir+'R2349/batsrus_3d_multi_fluid.h5'
+        ds_names['batsrus_multi_species'] =  fdir+'R2349/batsrus_3d_multi_species.h5'
+        ds_names['heliosares'] =  fdir+'R2349/helio_r2349.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
-    else:
-        fdir='/Volumes/triton/Data/ModelChallenge/SDC_Archive/'
+        if maven:
+            ds_names['maven'] = orbit_dir+'orbit_2349.h5'
+    elif SDC_G1:
         #BATSRUS
-        """
-        ds_names['bats_max_LS270-SSL0'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmax-SSLONG0.h5'
-        """   
         ds_names['bats_min_LS270_SSL0'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG0.h5'
+                fdir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG0.h5'
         ds_names['bats_min_LS270_SSL180'] = \
-            fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG180.h5'
+            fdir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG180.h5'
         ds_names['bats_min_LS270_SSL270'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG270.h5'        
-                
-        """
-        ds_names['bats_max_LS270-SSL180'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmax-SSLONG180.h5'
-        
-        ds_names['bats_max_LS270-SSL270'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_PERmax-SSLONG270.h5'
-        
-
-        ds_names['bats_max_LS90-SSL0'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmax-SSLONG0.h5'
-        ds_names['bats_min_LS90_SSL0'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmin-SSLONG0.h5'
-        ds_names['bats_max_LS90-SSL180'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmax-SSLONG180.h5'
-        ds_names['bats_min_LS90_SSL180'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmin-SSLONG180.h5'
-        ds_names['bats_max_LS90-SSL270'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmax-SSLONG270.h5'
-        ds_names['bats_min_LS90_SSL270'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_APHmin-SSLONG270.h5'
-
-        ds_names['bats_max_LS180-SSL0'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmax-SSLONG0.h5'
-        ds_names['bats_min_LS180_SSL0'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmin-SSLONG0.h5'
-        ds_names['bats_max_LS180-SSL180'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmax-SSLONG180.h5'
-        ds_names['bats_min_LS180_SSL180'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmin-SSLONG180.h5'
-        ds_names['bats_max_LS180-SSL270'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmax-SSLONG270.h5'
-        ds_names['bats_min_LS180_SSL270'] = \
-                fdir+'BATSRUS/'+'3d__ful_4_n00060000_AEQNmin-SSLONG270.h5'
-        """
+                fdir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG270.h5'        
         
         #HELIOSARES
         ds_names['helio_1'] = \
-                fdir+'HELIOSARES/Hybrid/'+'helio_1.h5'
+                fdir+'SDC_Archive/HELIOSARES/Hybrid/'+'helio_1.h5'
         
         ds_names['helio_2'] = \
-                fdir+'HELIOSARES/Hybrid/'+'helio_2.h5'
+                fdir+'SDC_Archive/HELIOSARES/Hybrid/'+'helio_2.h5'
             
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'bats' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
+        if maven:
+            ds_names['maven'] = orbit_dir+'orbit_2349.h5'
 
     
     #MAVEN
-    if maven:
-        ds_names['maven'] = \
-        "/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/Output/test_orbit.csv"
-        #'/Volumes/triton/Data/ModelChallenge/Maven/orbit2_{0:04d}.h5'
 
     return (ds_names, ds_types)
-
-def geo_cart_coord_transform(geo_coords, use_r=False):
-    alt = geo_coords[:, 0]
-    lat = geo_coords[:, 1]
-    lon = geo_coords[:, 2]
-    if use_r:
-        R = alt
-    else:
-        R = alt + 3388.25
-    phi = -1*(lat-90)*np.pi/180.0
-    theta = lon*np.pi/180.0
-
-    x = R*np.cos(theta)*np.sin(phi)
-    y = R*np.sin(theta)*np.sin(phi)
-    z = R*np.cos(phi)
-
-    return np.array([x,y,z]).T
 
 def cart_geo_vec_transform(ds, prefix, indx):
     if 'xmesh' in ds.keys():
@@ -236,46 +188,45 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None, ar
         return np.array([])
         #raise(ValueError)
 
-def get_path_pts_adj(orb, Npts=50, units_mr=True, return_alt=False):
-    fdir = '/Volumes/triton/Data/ModelChallenge/Maven/Traj/'
-    with h5py.File(fdir+'traj_{0:04d}.h5'.format(orb), 'r') as f_h5:
-        x = f_h5['x'][:]
-        y = f_h5['y'][:]
-        z = f_h5['z'][:]
-        alt = f_h5['alt'][:]
-    coords = np.array([x,y,z])
-    if return_alt:
-        return (coords, alt)
-    else:
-        return coords
+def adjust_spherical_positions(pos, alt, Rm0):
+    alt1 = min(alt)
+    R = np.sqrt(np.sum(pos**2, axis=0))
+    alt2 = min(R)-Rm0
+    Rm = Rm0+alt2-alt1 
+    
+    return pos/Rm*Rm0
+
         
 
-def get_path_pts_reg(trange, geo=False, Npts=50, units_mr=False, sim_mars_r=3396.0,
+def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0,
                  adjust_spherical=True):
-    if type(trange[0]) == str:
-        et1, et2 = sp.str2et(trange[0]), sp.str2et(trange[1])
-    else:
-        et1, et2 = trange
+    """
+    A function that returns coordinates of the spacecraft for
+    a given orbit.
+
+    orbit (int): Orbit #
+    geo (bool, default = False): Return coordinates in spherical geographic
+        system. Otherwise return in cartesian MSO. !! Doesn't
+        currently work
+    Npts (int, default = 50): Number of points to sample orbit with
+    units_rm (bool, default=True): Return coordinates in units of
+        mars radius. Otherwise return in km
+    sim_mars_r (float, default=3396.0): radius of planet to assume in simulation
+    adjust_spherical (bool, default=True): Adjust the coordinates to
+        account for a non-spherical mars
+    """
+    et1, et2 = get_orbit_times(orbit)
     times = np.linspace(et1, et2, Npts)
+    
+    data = pd.read_csv(orbit_dir+'orbit_{0:04d}.csv')
+    pos = np.array([data['x'], data['y'], data['z']])
+    alt = data['altitude']
+     
+    if adjust_spherical:
+        pos = adjust_spherical_positions(pos, alt, sim_mars_r)
 
-    positions, lightTimes = sp.spkpos('Maven', times, 'MAVEN_MSO',
-                                'NONE', 'MARS BARYCENTER')
-    if units_mr:
-        positions = positions/3390
-    if not geo:
-        return positions.T, times+946080000 +647812
-
-    geo_coords = np.zeros_like(positions)
-
-    for i in enumerate(positions):
-	geo_coords[i,:] = sp.spiceypy.reclat(p)
-
-	geo_coords[:,0] = (geo_coords[:,0]-3388.25)
-	geo_coords[:,1] = (geo_coords[:,1]+np.pi)*180/np.pi
-	geo_coords[:,2] = (geo_coords[:,2])*180/np.pi
-	geo_coords = geo_coords[:,[0,2,1]].T
-
-	return geo_coords, times+946080000+647812
+    if units_rm:
+        positions = positions/sim_mars_r
 
 
 def bin_coords(coords, dsf, grid=True):
@@ -330,19 +281,6 @@ def bin_coords_nogrid(coords, dsf):
     return idx.astype(int)
 
 
-def get_orbit_times(orbits, J200=False):
-
-    trange_dat = np.loadtxt('/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/Output/orbit_times.csv',
-			delimiter=',', unpack=True)
-    t_peri= trange_dat[1, orbits]
-    t_pre = trange_dat[1, orbits-1]
-    t_post = trange_dat[1, orbits+1]
-
-    tranges_J2000 = np.array([0.5*(t_peri+t_pre), 0.5*(t_peri+t_post)])
-    tranges_utc = tranges_J2000 - (946080000+647812)
-
-    if J200: return tranges_J2000
-    else: return tranges_utc
 
 def convert_coords_cart_sphere(coords_cart):
     """
