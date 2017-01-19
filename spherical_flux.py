@@ -1,3 +1,24 @@
+"""
+Calculates properties over a spherical shell.
+
+Inputs:
+    --field, -f: field suffix to calculate shell for. Can 
+        also give "all" to get shells calculated for flux, 
+        number density, and normal velocity
+    --species, -s: What species to calculate shell for. Can
+        also give "all" to get shells calculated for O2_p1,
+        O_p1, and CO2_p1.
+    --infile, -i: Input file.
+    --radius, -r: Radius in units of Rm to calculate shell for.
+        Can also give all to get evenly spaced shells from 1-3 Rm.  
+    -output_csv, -o: Flag to output a csv file with all the data
+        that has been calculated.
+    -total, -t: Flag to add "total_flux" as a field. Only totals
+        ions that have already been calculated.
+    -ion_velocity, -v: Flag to use ion velocities instead of
+        total velocities
+
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 import spiceypy as sp
@@ -12,6 +33,7 @@ from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 from itertools import product as iproduct
 from misc.labels import *
 from misc.field_default_params import *
+import sys
 plt.style.use(['seaborn-poster', 'poster'])
 
 
@@ -126,53 +148,54 @@ def run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=None, make_plo
     data['area'] = area
     return data
 
-def main():
-    
-    radii=np.r_[[1.7]]#, np.arange(1.0, 3.0, 0.2)]
-    ions = ['O2_p1', 'CO2_p1', 'O_p1']
-    ds_type = 'heliosares'
-    
-    if ds_type == 'batsrus_multi_fluid':
-        ds_names={'batsrus_multi_fluid':
-                    '/Volumes/triton/Data/ModelChallenge/R2349/batsrus_3d_multi_species.h5'}
-        ds_types={'batsrus1': ['batsrus_multi_fluid']}
-        #fields_suffix = ['number_density', 'velocity_total', 'velocity_normal', 'flux']
-        fields_suffix = ['flux']
-        fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
-        velocity_field = '{0}_velocity'
+def main(argv):
+    try:
+        opts, args = getopt.getopt(argv,"f:i:r:s:o:",
+                ["field=","species=", "infile=","radius=", "output_csv"] )
+    except getopt.GetoptError:
+        print getopt.GetoptError()
+        print 'error'
+        return
 
-    elif ds_type == 'batsrus_multi_species':
-        ds_names={'batsrus_multi_species':
-                '/Volumes/triton/Data/ModelChallenge/R2349/batsrus_3d_multi_fluid.h5'}
-        ds_types={'batsrus1': ['batsrus_multi_species']}
-    
-        fields_suffix = ['number_density', 'flux']
-        fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
-        fields.append('velocity_total')
-        fields.append('velocity_normal')
-        velocity_field = 'velocity'
+    out_csv, total, velocity_field = False, False, 'velocity'
+    for opt, arg in opts:
+        if opt in ("-f", "--field"):
+            if arg == "all": 
+                fields_suffix = ['flux', 'number_density', 'velocity_normal']
+            else:
+                fields_suffix = [arg]
+        elif opt in ("-s", "--species"):
+            if arg == 'all': ions = ['O2_p1', 'CO2_p1', 'O_p1']
+            else: ions = [arg]
+        elif opt in ("-i", "--infile"):
+            dsk = arg.split('/')[-1].split('.')[0]
+            ds_names = {dsk:arg}
+            ds_types = {dsk:[dsk]}
+        elif opt in ("-r", "--radius"):
+            if arg == 'all': radii = np.arange(1.0, 3.0, 0.2)]
+            else: radii = [arg]
+        elif opt in ("-o", "-output_csv"):
+            out_csv = True
+        elif opt in ("-t", "-total"):
+            total = True
+        elif opt in ("-v", "-ion_velocity"):
+            velocity_field = '{0}_velocity'
 
-    elif ds_type == 'heliosares':
-        ds_names={'heliosares':
-                '/Volumes/triton/Data/ModelChallenge/R2349/helio_r2349.h5'}
-        ds_types={'heliosares': ['heliosares']}
-        ions = ['O_p1']
-    
-        fields_suffix = ['number_density', 'flux']
-        fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
-        velocity_field = '{0}_velocity'
-    #fields.append('total_flux')
-    
-    df = pd.DataFrame(columns=ions, index=radii)
+    fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
+    if total: fields.append('total_flux')
+
+    if out_csv: df = pd.DataFrame(columns=ions, index=radii)
     
     for r in radii:    
-        field_dat = run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=velocity_field)
-        #for ion in ions:
-        #    total_ions = np.sum(field_dat['area']*field_dat[ion+'_flux'][ds_type])
-        #    df.loc[r,ion] = total_ions
-        
-    #df.to_csv('Output/sphere_flux_{0}.csv'.format(ds_type))
+        field_dat = run_sphere_flux(ds_names, ds_types, r, fields,
+                                    velocity_field=velocity_field)
+        if out_csv:
+            for ion in ions:
+                total_ions = np.sum(field_dat['area']*field_dat[ion+'_flux'][ds_type])
+                df.loc[r,ion] = total_ions
+
+    id out_csv: df.to_csv('Output/sphere_flux_{0}.csv'.format(ds_type))
     
 if __name__=='__main__':
-    main()
+    main(sys.argv[1:])
                     
