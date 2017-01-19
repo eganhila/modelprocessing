@@ -17,3 +17,6 @@ log_fields2 = ['H_p1_number_density',
                'CO2_p1_number_density',
                'altitude',
                'number_density']
+diverging_field_keys = ['flux', 'velocity_normal']
+symlog_field_keys = ['flux', 'velocity_normal']
+log_field_keys = ['number_density']
