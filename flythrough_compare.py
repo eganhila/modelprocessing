@@ -127,7 +127,7 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
     plot['figure'].set_size_inches(8,10)
     if show:
         plt.show()
-    if fname is None:
+    elif fname is None:
         plt.savefig('Output/test.pdf')
     else:
         plt.savefig(fname)
@@ -160,7 +160,8 @@ def plot_field_ds(x, data, ax, kwargs):
         ax.set_ylim(lim)
 
 
-def make_flythrough_plot(times, fields, orbits, title, indxs, data, ds_names, coords=None,  skip=1, subtitle=None, tlimit=None):
+def make_flythrough_plot(fields, data, ds_names, title='flythrough', 
+                         coords=None,  subtitle=None, tlimit=None, **kwargs):
     """
     Main function for creating plot, must have already found
     data
@@ -172,13 +173,13 @@ def make_flythrough_plot(times, fields, orbits, title, indxs, data, ds_names, co
         for dsk, ds_dat in data[field].items():
                         
             if ds_dat.size != 0:
-                plot_field_ds(times-times[0], ds_dat, plot['axes'][field], plot['kwargs'][dsk])
+                times = np.linspace(0, 1, ds_dat.shape[0])
+                plot_field_ds(times, ds_dat, plot['axes'][field], plot['kwargs'][dsk])
             else:
                 plot_field_ds(np.array([0]),np.array([0]),
                               plot['axes'][field], plot['kwargs'][dsk])
 
-    if subtitle is None: subtitle= orbits[0]
-    finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle))
+    finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle), **kwargs)
     print 'Saving: ', 'Output/{0}_{1}.pdf'.format(title, subtitle)
     
 
@@ -215,8 +216,8 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
         skip=1
 
     data = get_all_data(ds_names, ds_types, indxs, fields)
-    make_flythrough_plot(times, fields, orbits, title, indxs, data, 
-              ds_names, coords=coords, tlimit=tlimit, skip=skip, **kwargs)
+    make_flythrough_plot(fields, data, ds_names, coords=coords,  
+                         subtitle=orbits[0],  tlimit=tlimit)
 
 
 def main(argv):
