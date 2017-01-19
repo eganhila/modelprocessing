@@ -6,7 +6,7 @@ import pandas as pd
 from misc.labels import *
 from misc.field_default_params import *
 
-sp.furnsh("misc/maven_spice.txt")
+sp.furnsh("/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/misc/maven_spice.txt")
 mars_r = 3390
 orbit_dir = '/Volumes/triton/Data/OrbitDat/Flythroughs/'
 model_dir = '/Volumes/triton/Data/ModelChallenge/'
@@ -128,10 +128,11 @@ def apply_flat_indx(ds, field, indx):
     return ds[field][:].flatten()[indx]
 
 def apply_grid_indx(ds, field, indx):
-    #print ds[field].shape, indx.shape
     dat = np.zeros(indx.shape[1])
-    for i in range(indx.shape[1]):
-        dat[i] = ds[field][:][indx[0,i], indx[1,i], indx[2,i]]
+    dat_flat = ds[field][:].flatten()
+    dat_shape = ds[field].shape
+    indx_flat = indx[0]*dat_shape[1]*dat_shape[2]+indx[1]*dat_shape[2]+indx[2]
+    dat = dat_flat[indx_flat] 
     return dat
 
 def apply_maven_indx(ds, field, indx):
@@ -156,11 +157,13 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None,
     area : hacky way to get area for surface
     """
 
-
-    
     if grid: apply_indx = apply_grid_indx
     elif maven: apply_indx = apply_maven_indx
     else: apply_indx = apply_flat_indx
+
+    if velocity_field is not None: 
+        ion = (field.split('_')[0])+'_'+(field.split('_')[1])
+        velocity_field = velocity_field.format(ion)
     
     if type(indx)==str:
         if field in ds.keys():  return ds[field][:].flatten()
@@ -320,7 +323,7 @@ def convert_coords_cart_sphere(coords_cart):
     return coords_sphere
 
 
-def get_all_data(ds_names, ds_types, indxs, fields):
+def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
     """
     Get data for all fields for indexes that were 
     already found.
@@ -344,7 +347,7 @@ def get_all_data(ds_names, ds_types, indxs, fields):
                 for field in fields:
                     with h5py.File(dsf, 'r') as ds:
                         ds_dat = get_ds_data(ds, field, indxs[ds_type],
-                                             grid=ds_type=='heliosares')
+                                             grid=ds_type=='heliosares', **kwargs)
                         data[field][dsk] = ds_dat
     return data
 
