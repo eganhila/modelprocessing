@@ -3,32 +3,18 @@ import matplotlib.pyplot as plt
 import spiceypy as sp
 import h5py
 import matplotlib.gridspec as gridspec
+from matplotlib import ticker
 from matplotlib.collections import LineCollection
 from general_functions import *
 from flythrough_compare import *
 import pandas as pd
 from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 from itertools import product as iproduct
+from misc.labels import *
+from misc.field_default_params import *
 plt.style.use(['seaborn-poster', 'poster'])
 
-label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|\;(km/s)}$'
-label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}\;(km/s)}$'
-label_lookup['H_p1_flux'] = "$\mathrm{\Phi(H+)\;(\#/ (cm^{2} s) }$"
-label_lookup['O2_p1_velocity_total'] = '$\mathrm{|v(O_2+)|\;(km/s)}$'
-label_lookup['O2_p1_velocity_normal'] = '$\mathrm{v(O_2+)\cdot \hat{r}\;(km/s)}$'
-label_lookup['O2_p1_flux'] = "$\mathrm{\Phi(O_2+)\;(\#/ (cm^{2} s) }$"
-label_lookup['CO2_p1_velocity_total'] = '$\mathrm{|v(CO_2+)|\;(km/s)}$'
-label_lookup['CO2_p1_velocity_normal'] = '$\mathrm{v(CO_2+)\cdot \hat{r}\;(km/s)}$'
-label_lookup['CO2_p1_flux'] = "$\mathrm{\Phi(CO_2+)\;(\#/ (cm^{2} s) }$"
-label_lookup['O_p1_velocity_total'] = '$\mathrm{|v(O+)|\;(km/s)}$'
-label_lookup['O_p1_velocity_normal'] = '$\mathrm{v(O+)\cdot \hat{r}\;(km/s)}$'
-label_lookup['O_p1_flux'] = "$\mathrm{\Phi(O+)\;(\#/ (cm^{2} s) }$"
-label_lookup['area'] = '$\mathrm{dA}\;(cm^{2})$'
-label_lookup['velocity_total'] = '$\mathrm{|v|\;(km/s)}$'
-label_lookup['velocity_normal'] = '$\mathrm{v\cdot \hat{r}\;(km/s)}$'
 
-diverging_fields = ['H_p1_flux', 'H_p1_velocity_normal']
-log_fields = ['H_p1_number_density', 'H_p1_velocity_total']
 
 def create_sphere_mesh(r):
     lon = np.arange(0,361, 5)
@@ -58,72 +44,93 @@ def create_sphere_mesh(r):
     return ((lon_f, lat_f), coords_f, rhat, area)
 
 
-def create_plot(field, xy, fdat,r, fname='Output/test.pdf'):
+def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
     
-    if field in diverging_fields or 'flux' in field or 'normal' in field:
+    # Check to see if the field diverges
+    if field in field_lims:
+        vmin, vmax = field_lims[field]
+        linthresh = int(np.ceil(np.log10(vmax)))-4
+
+    if sum([1 for k in diverging_field_keys if k in field]):
         cmap = 'RdBu'
-        vmax = np.max(np.abs(fdat))
-        vmin = -1*vmax
-        print vmin, vmax
+        fdat = np.ma.filled(np.ma.masked_invalid( fdat),0)
+        if field not in field_lims:
+            vmax = np.max(np.abs(fdat))
+            vmin = -1*vmax
+            linthresh= 100*np.min(np.abs(fdat[fdat>0]))
     else:
         cmap = 'viridis'
-        vmin, vmax = np.min(fdat), np.max(fdat)
+        fdat = np.ma.masked_where(fdat==0, fdat)
+        if field not in field_lims:
+            vmin, vmax = np.min(fdat), np.max(fdat)
+
         
-    if (field in log_fields or 'number_density'  in field) \
-            and np.min(fdat)>0: norm = LogNorm(vmin=vmin, vmax=vmax)
-    elif (field in log_fields or 'number_density'  in field):
-        norm = SymLogNorm(vmin=vmin, vmax=vmax, linthresh=0)
+    symlog=False
+    if sum([1 for k in symlog_field_keys if k in field]):
+        norm = SymLogNorm(vmin=vmin, vmax=vmax, linthresh=1e5)
+	maxlog=int(np.ceil( np.log10(vmax) ))
+	minlog=int(np.ceil( np.log10(-vmin) ))
+	linlog=int(np.ceil(np.log10(linthresh)))
+        symlog=True
+
+	#generate logarithmic ticks 
+	tick_locations=([-(10**x) for x in xrange(minlog,linlog-1,-1)]
+			+[0.0]
+			+[(10**x) for x in xrange(linlog,maxlog+1)] )
+    elif sum([1 for k in log_field_keys if k in field]):
+        norm = LogNorm(vmin=vmin, vmax=vmax)
     else: norm = Normalize(vmin=vmin, vmax=vmax)
         
     lon, lat = xy
     plt.pcolormesh(lon, lat, fdat.reshape(lon.shape), cmap=cmap,
-                   norm=norm)
-    plt.colorbar(label=label_lookup[field])
+                   norm=norm, rasterized=True, vmin=vmin, vmax=vmax)
+    if symlog:
+        plt.colorbar(label=label_lookup[field],ticks=tick_locations,
+                format=ticker.LogFormatterMathtext())
+    else:
+        plt.colorbar(label=label_lookup[field])
+        
     plt.ylim(-90,90)
     plt.xlim(0,360)
     plt.xlabel('Longitude (0=Dayside, 180=Nightside)')
     plt.ylabel('Latitude')
     plt.title('R = {0} (RM)'.format(r))
     print 'Saving: {0}'.format(fname)
-    plt.savefig(fname)
+    if show:
+        plt.show()
+    else:
+        plt.savefig(fname)
     plt.close()
 
 
-def run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=None):
-    print velocity_field.format('fgj')
+def run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=None, make_plot=True):
     xy, coords, rhat, area = create_sphere_mesh(r)
     indxs = get_path_idxs(coords, ds_names, ds_types)
+    data = get_all_data(ds_names, ds_types, indxs, 
+                        [f for f in fields if f != 'total_flux'],
+                        velocity_field=velocity_field, normal=rhat)
+
+    if 'total_flux' in fields:
+        flux_dat = {}
+        for dsk in ds_names.keys(): 
+            fluxes = np.array([v[dsk] for k,v in data.items() if 'flux' in k])
+            flux_dat[dsk] = np.sum(fluxes, axis=0)
+        data['total_flux'] = flux_dat
     
-    field_dat = {}
-    for ds_type, keys in ds_types.items():
-        for key in keys:
-            field_dat[key] = {}
-            dsf = ds_names[key]
-            
-            with h5py.File(dsf, 'r') as ds:
-                for field in fields: 
-                    ion_0, ion_1 = field.split('_')[:2]
-                    ion = ion_0 + '_'+ion_1
+    if make_plot:
+        for dsk in ds_names.keys(): 
+            for field in fields: 
+                create_plot(field, xy, data[field][dsk], r,
+                            fname='Output/sphere_r{0}_{1}_{2}.pdf'.format(r,field,dsk))
 
-                    if field == 'total_flux':
-                        fluxes = np.array([v for k,v in field_dat[key].items() if 'flux' in k])
-                        field_dat[key][field] = np.sum(fluxes, axis=0)
-
-                    if field not in field_dat[key].keys():
-                        field_dat[key][field] = get_ds_data(ds, field, indxs[ds_type], 
-                                                            grid=ds_type=='heliosares', 
-                                                            normal=rhat, velocity_field=velocity_field.format(ion))
-                    
-                    create_plot(field, xy, field_dat[key][field], r,
-                                fname='Output/sphere_r{0}_{1}_{2}.pdf'.format(r,field,key))
-    field_dat['area'] = area
-    return field_dat
+    data['area'] = area
+    return data
 
 def main():
     
     radii=np.r_[[1.7]]#, np.arange(1.0, 3.0, 0.2)]
     ions = ['O2_p1', 'CO2_p1', 'O_p1']
-    ds_type = 'batsrus_multi_species'
+    ds_type = 'heliosares'
     
     if ds_type == 'batsrus_multi_fluid':
         ds_names={'batsrus_multi_fluid':
@@ -154,17 +161,17 @@ def main():
         fields_suffix = ['number_density', 'flux']
         fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
         velocity_field = '{0}_velocity'
-    fields.append('total_flux')
+    #fields.append('total_flux')
     
     df = pd.DataFrame(columns=ions, index=radii)
     
     for r in radii:    
         field_dat = run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=velocity_field)
-        for ion in ions:
-            total_ions = np.sum(field_dat['area']*field_dat[ds_type][ion+'_flux'])
-            df.loc[r,ion] = total_ions
+        #for ion in ions:
+        #    total_ions = np.sum(field_dat['area']*field_dat[ion+'_flux'][ds_type])
+        #    df.loc[r,ion] = total_ions
         
-    df.to_csv('Output/sphere_flux_{0}.csv'.format(ds_type))
+    #df.to_csv('Output/sphere_flux_{0}.csv'.format(ds_type))
     
 if __name__=='__main__':
     main()
