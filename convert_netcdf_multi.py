@@ -31,13 +31,15 @@ import spiceypy as sp
 import glob
 import sys
 import getopt
+from general_functions import *
 
 f_var_rename = 'Misc/name_conversion.txt'
 mars_r = 3390
 axis_labels = ['X_axis', 'Y_axis', 'Z_axis']
 # axis_labels = ['x','y','z']
 
-def convert_dataset(fnames, h5_name):
+def convert_dataset(fdir, h5_name):
+    fnames = glob.glob(fdir+'*.nc')
 
     # Get grid
     with nc.Dataset(fnames[0], mode='r') as ds:
@@ -63,7 +65,7 @@ def convert_dataset(fnames, h5_name):
     lat, lon, alt = convert_coords_cart_sphere(np.array([xmesh, ymesh, zmesh]))
 
     # Save data that we've created so far
-    with h5py.File(fdir+h5name, 'w') as f:
+    with h5py.File(fdir+h5_name, 'w') as f:
         f.create_dataset('x', data=x)
         f.create_dataset('y', data=y)
         f.create_dataset('z', data=z)
@@ -81,7 +83,7 @@ def convert_dataset(fnames, h5_name):
         name_conversion[k] = v[:-1] #remove newline
 
     #Process the rest of the fields
-    with h5py.File(fdir+h5name, 'r+') as f:
+    with h5py.File(fdir+h5_name, 'r+') as f:
         for fname in fnames:
             print "Processing: ", fname
             with nc.Dataset(fname, mode='r') as ds:
