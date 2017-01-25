@@ -49,7 +49,7 @@ def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
     #trange = get_orbit_times(orbit)
     #coords, ltimes = get_path_pts(trange,Npts=250)
     #coords = coords/3390
-    coords = get_path_pts_adj(orbit)[:, ::10]
+    coords = get_orbit_coords(orbit, Npts=250)
     ltimes = np.linspace(0,1,coords.shape[1])
     
     x,y = coords[off_ax[ax_i][0]], coords[off_ax[ax_i][1]]
@@ -250,12 +250,19 @@ def plot_data_vec(plot, slc, ax_i):
 def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
     slc_0, slc_1, field_dat = slc
     #diverge_cmap, logscale, zlim = True, False, (-30,30)
-    zlim = (-180,180)
-    logscale=False
-    if zlim is None: vmin, vmax = 1e-3, field_lims[field][1] #np.nanmax(field_dat), 1e-3
-    else: vmin, vmax = zlim
+    #zlim = (-180,180)
+    #if zlim is None: vmin, vmax = 1e-3, field_lims[field][1] #np.nanmax(field_dat), 1e-3
+    #else: vmin, vmax = zlim
+
+    if field in field_lims.keys(): vmin, vmax = field_lims[field]
+    else: vmin, vmax = np.nanmin(field_dat), np.nanmax(field_dat)
+
+    diverging, logscale=False, False
+    if sum([1 for dfk in diverging_field_keys if dfk in field])>0: diverging=True
+    if sum([1 for lfk in log_field_keys if lfk in field])>0: logscale=True
     
-    if logscale: norm = LogNorm(vmax=vmax, vmin=vmin)
+    if logscale and not diverging: norm = LogNorm(vmax=vmax, vmin=vmin)
+    elif logscale and diverging: norm = SymLogNorm(vmin=vmin, vmax=vmax, linthresh=1)
     else: norm = Normalize(vmax=vmax, vmin=vmin)
 
     if diverge_cmap: cmap=cmocean.cm.delta
