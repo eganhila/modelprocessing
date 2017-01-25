@@ -83,6 +83,7 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
     else:
         cmap = 'viridis'
         fdat = np.ma.masked_where(fdat==0, fdat)
+        fdat = np.ma.masked_invalid(fdat)
         if field not in field_lims:
             vmin, vmax = np.min(fdat), np.max(fdat)
 
@@ -150,10 +151,11 @@ def run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=None, make_plo
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:r:s:o:",
-                ["field=","species=", "infile=","radius=", "output_csv"] )
+        opts, args = getopt.getopt(argv,"f:i:r:s:otv",
+                ["field=","species=", "infile=","radius=", "output_csv",
+                 "total", "ion_velocity"] )
     except getopt.GetoptError:
-        print getopt.GetoptError()
+        print getopt.GetoptError
         print 'error'
         return
 
@@ -165,14 +167,14 @@ def main(argv):
             else:
                 fields_suffix = [arg]
         elif opt in ("-s", "--species"):
-            if arg == 'all': ions = ['O2_p1', 'CO2_p1', 'O_p1']
+            if arg == 'all': ions = ['O2_p1',  'O_p1']#'CO2_p1',
             else: ions = [arg]
         elif opt in ("-i", "--infile"):
             dsk = arg.split('/')[-1].split('.')[0]
             ds_names = {dsk:arg}
-            ds_types = {dsk:[dsk]}
+            ds_types = {'heliosares':[dsk]}
         elif opt in ("-r", "--radius"):
-            if arg == 'all': radii = np.arange(1.0, 3.0, 0.2)]
+            if arg == 'all': radii = np.arange(1.0, 3.0, 0.2)
             else: radii = [arg]
         elif opt in ("-o", "-output_csv"):
             out_csv = True
@@ -180,21 +182,25 @@ def main(argv):
             total = True
         elif opt in ("-v", "-ion_velocity"):
             velocity_field = '{0}_velocity'
+    print velocity_field
 
     fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
     if total: fields.append('total_flux')
 
     if out_csv: df = pd.DataFrame(columns=ions, index=radii)
     
-    for r in radii:    
-        field_dat = run_sphere_flux(ds_names, ds_types, r, fields,
-                                    velocity_field=velocity_field)
-        if out_csv:
-            for ion in ions:
-                total_ions = np.sum(field_dat['area']*field_dat[ion+'_flux'][ds_type])
-                df.loc[r,ion] = total_ions
+    for ds_type in ds_names.keys():
+        for r in radii:    
+            field_dat = run_sphere_flux(ds_names, ds_types, r, fields,
+                                        velocity_field=velocity_field)
+            print field_dat
+            if out_csv:
+                for ion in ions:
+                    total_ions = np.sum(np.nan_to_num(field_dat['area']*\
+                                field_dat[ion+'_flux'][ds_type]))
+                    df.loc[r,ion] = total_ions
 
-    id out_csv: df.to_csv('Output/sphere_flux_{0}.csv'.format(ds_type))
+        if out_csv: df.to_csv('Output/sphere_flux_{0}.csv'.format(ds_type))
     
 if __name__=='__main__':
     main(sys.argv[1:])
