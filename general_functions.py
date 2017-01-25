@@ -62,7 +62,7 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True):
     if R2349:
         ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
-        ds_names['heliosares'] =  model_dir+'R2349/helio_r2349.h5'
+        ds_names['heliosares'] =  model_dir+'R2349/helio_60km.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
