@@ -91,7 +91,7 @@ def convert_dataset(fdir, h5_name):
                 species = fname.split('/')[-1].split('_')[0]
 
                 for k,v in ds.variables.items():
-                    if np.all(v.shape == dims):
+                    if np.all(v.shape == dims) or np.all(v.shape == dims[::-1]):
                         if species+'_'+k in name_conversion:
                             key = name_conversion[species+'_'+k]
                         elif k in name_conversion:
