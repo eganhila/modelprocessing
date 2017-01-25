@@ -223,7 +223,7 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
 def main(argv):
 
     try:
-        opts, args = getopt.getopt(argv,"f:o:n:",["field=", "orbit=", "new_models"])
+        opts, args = getopt.getopt(argv,"f:o:n",["field=", "orbit=", "new_models"])
     except getopt.GetoptError:
         print 'error'
         return
