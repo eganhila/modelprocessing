@@ -11,16 +11,16 @@ Hesw_Temperature,He_temperature
 Hesw_Ux,He_velocity_x
 Hesw_Uy,He_velocity_y
 Hesw_Uz,He_velocity_z
-Hpl_Density,H_p1_number_density
-Hpl_Temperature,H_p1_temperature
-Hpl_Ux,H_p1_velocity_x
-Hpl_Uy,H_p1_velocity_y
-Hpl_Uz,H_p1_velocity_z
-Hsw_Density,H_number_density
-Hsw_Temperature,H_temperature
-Hsw_Ux,H_velocity_x
-Hsw_Uy,H_velocity_y
-Hsw_Uz,H_velocity_z
+Hpl_Density,Hpl_number_density
+Hpl_Temperature,Hpl_temperature
+Hpl_Ux,Hpl_velocity_x
+Hpl_Uy,Hpl_velocity_y
+Hpl_Uz,Hpl_velocity_z
+Hsw_Density,Hsw_number_density
+Hsw_Temperature,Hsw_temperature
+Hsw_Ux,Hsw_velocity_x
+Hsw_Uy,Hsw_velocity_y
+Hsw_Uz,Hsw_velocity_z
 Magw_Bx,magnetic_field_x
 Magw_By,magnetic_field_y
 Magw_Bz,magnetic_field_z
@@ -57,7 +57,7 @@ U_z^H^p [km/s],H_p1_velocity_z
 p^H^p [nPa],H_p1_pressure
 `r^O^2^p [amu/cm^3],O2_p1_number_density
 U_x^O^2^p [km/s],O2_p1_velocity_x
-U_y^O^2^p [km/s],O2_p1_velocity_x
+U_y^O^2^p [km/s],O2_p1_velocity_y
 U_z^O^2^p [km/s],O2_p1_velocity_z
 p^O^2^p [nPa],O2_p1_pressure
 `r^O^p^p [amu/cm^3],O_p1_number_density
@@ -84,3 +84,4 @@ CO2p [amu/cm^3],CO2_p1_number_density
 U_x [km/s],velocity_x
 U_y [km/s],velocity_y
 U_z [km/s],velocity_z
+Pe [nPa], electron_pressure

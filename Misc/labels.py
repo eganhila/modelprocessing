@@ -23,6 +23,7 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'number_density': '$\mathrm{n\;(cm^{-3})}$',
           'batsrus_multi_species':'BATSRUS Multi-Species',
           'batsrus_multi_fluid':'BATSRUS Multi-Fluid',
+          'batsrus_electron_pressure':"BATSRUS Electron Pressure", 
           'heliosares':'HELIOSARES',
           'total_flux':'$\mathrm{Total\; Ion\;Flux}$',
           'x':'x', 'y':'y', 'z':'z'
@@ -42,3 +43,5 @@ label_lookup['O_p1_flux'] = "$\mathrm{\Phi(O+)\;(\#/ (cm^{2} s) }$"
 label_lookup['area'] = '$\mathrm{dA}\;(cm^{2})$'
 label_lookup['velocity_total'] = '$\mathrm{|v|\;(km/s)}$'
 label_lookup['velocity_normal'] = '$\mathrm{v\cdot \hat{r}\;(km/s)}$'
+
+for i in range(550, 660, 10):label_lookup['t00{0}'.format(i)] = 't00{0}'.format(i)
