@@ -33,30 +33,25 @@ import sys
 import getopt
 from general_functions import *
 
-f_var_rename = 'Misc/name_conversion.txt'
+f_var_rename = 'misc/name_conversion.txt'
 mars_r = 3390
 axis_labels = ['X_axis', 'Y_axis', 'Z_axis']
 # axis_labels = ['x','y','z']
 
 def convert_dataset(fdir, h5_name):
+    print 'Starting: {0}'.format(h5_name)
     fnames = glob.glob(fdir+'*.nc')
 
     # Get grid
     with nc.Dataset(fnames[0], mode='r') as ds:
-        # x = ds.variables['x'][:]
-        # y = ds.variables['y'][:]
-        # z = ds.variables['z'][:]
         x = ds.variables[axis_labels[0]][:]
         y = ds.variables[axis_labels[1]][:]
         z = ds.variables[axis_labels[2]][:]
 
-    xmesh, ymesh, zmesh = np.meshgrid(x, y, z, indexing='ij')
-    xmesh, ymesh, zmesh = xmesh, ymesh, zmesh
-
-    # Reversing the axis because things aren't in ij indexing
-    if fdir[-2] == '2': 
-        print 'reversing'
-        zmesh == zmesh*-1
+    zmesh, ymesh, xmesh = np.meshgrid(z, y, x, indexing='ij')
+    xmesh = xmesh.T
+    ymesh = ymesh.T
+    zmesh = zmesh.T
 
     # Set dims
     dims = (x.shape[0], y.shape[0], z.shape[0])
@@ -82,28 +77,44 @@ def convert_dataset(fdir, h5_name):
         k,v = pair.split(',')
         name_conversion[k] = v[:-1] #remove newline
 
-    #Process the rest of the fields
-    with h5py.File(fdir+h5_name, 'r+') as f:
-        for fname in fnames:
-            print "Processing: ", fname
-            with nc.Dataset(fname, mode='r') as ds:
 
-                species = fname.split('/')[-1].split('_')[0]
+    # Load in H+ data for combining
+    data = {}
+    for fname in fnames:
+        print "Processing: ", fname
+        with nc.Dataset(fname, mode='r') as ds:
+            species = fname.split('/')[-1].split('_')[0]
+            for k,v in ds.variables.items():
+                if np.all(v.shape == dims) or np.all(v.shape == dims[::-1]):
 
-                for k,v in ds.variables.items():
-                    if np.all(v.shape == dims) or np.all(v.shape == dims[::-1]):
-                        if species+'_'+k in name_conversion:
-                            key = name_conversion[species+'_'+k]
-                        elif k in name_conversion:
-                            key = name_conversion[k]
-                        else:
-                            key = species+"_"+k
+                    if species+'_'+k in name_conversion:
+                        key = name_conversion[species+'_'+k]
+                    elif k in name_conversion:
+                        key = name_conversion[k]
+                    else:
+                        key = species+"_"+k
 
-                        if species == 'Magw' and fdir[-2] == '2' and k!='Bz':
-                            print 'mag'
-                            f.create_dataset(key, data=-1*v[:].T)
-                        else:
+                    if species in ['Hpl', 'Hsw']: 
+                        data[key] = v[:].T
+                    else:
+                        with h5py.File(fdir+h5_name, 'r+') as f:
                             f.create_dataset(key, data=v[:].T)
+
+
+    # Combine sw and pl H+
+    data['H_p1_number_density'] = data['Hpl_number_density'] + data['Hsw_number_density']
+    weights = [data['Hpl_number_density'], data['Hsw_number_density']]
+    zeros = np.sum(weights,axis=0)==0 
+    weights[0][zeros]=1
+    weights[1][zeros]=1
+
+    for f in ['temperature', 'velocity_x', 'velocity_y', 'velocity_z']:
+        dd = [data['Hpl_{0}'.format(f)], data['Hsw_{0}'.format(f)]]
+        data['H_p1_{0}'.format(f)] = np.average(dd, weights=weights, axis=0) 
+
+    # Save H+
+    with h5py.File(fdir+h5_name, 'r+') as f:
+        for k, v in data.items(): f.create_dataset(k, data=v)
 
 
 
