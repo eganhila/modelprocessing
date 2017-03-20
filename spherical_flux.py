@@ -34,6 +34,7 @@ from itertools import product as iproduct
 from misc.labels import *
 from misc.field_default_params import *
 import sys
+import ast
 plt.style.use(['seaborn-poster', 'poster'])
 
 
@@ -76,15 +77,16 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
     if sum([1 for k in diverging_field_keys if k in field]):
         cmap = 'RdBu'
         fdat = np.ma.filled(np.ma.masked_invalid( fdat),0)
-        if field not in field_lims:
+        if True or field not in field_lims:
             vmax = np.max(np.abs(fdat))
             vmin = -1*vmax
+            if len(fdat[fdat>0]) ==0:return 
             linthresh= 100*np.min(np.abs(fdat[fdat>0]))
     else:
         cmap = 'viridis'
         fdat = np.ma.masked_where(fdat==0, fdat)
         fdat = np.ma.masked_invalid(fdat)
-        if field not in field_lims:
+        if True or field not in field_lims:
             vmin, vmax = np.min(fdat), np.max(fdat)
 
         
@@ -126,12 +128,12 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
     plt.close()
 
 
-def run_sphere_flux(ds_names, ds_types, r, fields, velocity_field=None, make_plot=True):
+def run_sphere_flux(ds_names, ds_types, r, fields, ion_velocity, make_plot=True):
     xy, coords, rhat, area = create_sphere_mesh(r)
     indxs = get_path_idxs(coords, ds_names, ds_types)
     data = get_all_data(ds_names, ds_types, indxs, 
                         [f for f in fields if f != 'total_flux'],
-                        velocity_field=velocity_field, normal=rhat)
+                        ion_velocity=ion_velocity, normal=rhat)
 
     if 'total_flux' in fields:
         flux_dat = {}
@@ -159,11 +161,11 @@ def main(argv):
         print 'error'
         return
 
-    out_csv, total, velocity_field = False, False, 'velocity'
+    out_csv, total, ion_velocity = False, False, False
     for opt, arg in opts:
         if opt in ("-f", "--field"):
             if arg == "all": 
-                fields_suffix = ['flux', 'number_density', 'velocity_normal']
+                fields_suffix = ['flux', 'number_density']
             else:
                 fields_suffix = [arg]
         elif opt in ("-s", "--species"):
@@ -172,17 +174,18 @@ def main(argv):
         elif opt in ("-i", "--infile"):
             dsk = arg.split('/')[-1].split('.')[0]
             ds_names = {dsk:arg}
-            ds_types = {'heliosares':[dsk]}
+            if 'helio' in arg: ds_types = {'heliosares':[dsk]}
+            else: ds_types = {'batsrus':[dsk]}
         elif opt in ("-r", "--radius"):
             if arg == 'all': radii = np.arange(1.0, 3.0, 0.2)
-            else: radii = [arg]
+            else: radii = ast.literal_eval(arg)
+            if type(radii) == float: radii = [radii]
         elif opt in ("-o", "-output_csv"):
             out_csv = True
         elif opt in ("-t", "-total"):
             total = True
         elif opt in ("-v", "-ion_velocity"):
-            velocity_field = '{0}_velocity'
-    print velocity_field
+            ion_velocity = True
 
     fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
     if total: fields.append('total_flux')
@@ -192,8 +195,9 @@ def main(argv):
     for ds_type in ds_names.keys():
         for r in radii:    
             field_dat = run_sphere_flux(ds_names, ds_types, r, fields,
-                                        velocity_field=velocity_field)
-            print field_dat
+                                        ion_velocity=ion_velocity
+                                        )
+
             if out_csv:
                 for ion in ions:
                     total_ions = np.sum(np.nan_to_num(field_dat['area']*\
