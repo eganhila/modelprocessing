@@ -27,10 +27,18 @@ def load_data(ds_name, field=None, fields=None, vec_field=False):
             ds['x'] = f['xmesh'][:]/3390
             ds['y'] = f['ymesh'][:]/3390
             ds['z'] = f['zmesh'][:]/3390
+            grid=True
         else:
             ds['x'] = f['x'][:]
             ds['y'] = f['y'][:]
             ds['z'] = f['z'][:]
+            grid=False
+
+        p = np.array([ds['x'], ds['y'], ds['z']])
+        norm = p/np.sqrt(np.sum(p**2, axis=0))
+
+        if 'O2_p1_velocity_x' in f.keys(): ion_v = True
+        else: ion_v = False
             
         if vec_field:
             ds[field+'_x'] = f[field+'_x'][:]
@@ -38,13 +46,16 @@ def load_data(ds_name, field=None, fields=None, vec_field=False):
             ds[field+'_z'] = f[field+'_z'][:]
         elif fields is not None:
             for field in fields:
-                ds[field] = f[field][:]
+                ds[field] = get_ds_data(f, field, None, grid=grid, normal=norm, 
+                            ion_velocity=ion_v)
+
         elif field is not None:
-            ds[field] = f[field][:]
+            ds[field] = get_ds_data(f, field, None, grid=grid, normal=norm, 
+                        ion_velocity=ion_v)
             
     return ds
 
-def get_datasets( R2349=False, SDC_G1=False, maven=True):
+def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
     """
     Get datasets and related information (which datasets are the same type, etc)
 
@@ -62,11 +73,30 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True):
     if R2349:
         ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
-        ds_names['heliosares'] =  model_dir+'R2349/helio_60km.h5'
+        ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
+        ds_names['heliosares'] =  model_dir+'R2349/helio_temp.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
+                    'batsrus3':[key for key in ds_names.keys() if 'electron_pressure' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
+        if maven:
+            ds_names['maven'] = orbit_dir+'orbit_2349.csv'
+            ds_types['maven']=['maven']
+    elif helio_multi:
+        ds_names['t00550'] = model_dir+'R2349/Heliosares_Multi/t00550.h5'
+        ds_names['t00560'] = model_dir+'R2349/Heliosares_Multi/t00560.h5'
+        ds_names['t00570'] = model_dir+'R2349/Heliosares_Multi/t00570.h5'
+        ds_names['t00580'] = model_dir+'R2349/Heliosares_Multi/t00580.h5'
+        ds_names['t00590'] = model_dir+'R2349/Heliosares_Multi/t00590.h5'
+        ds_names['t00600'] = model_dir+'R2349/Heliosares_Multi/t00600.h5'
+        ds_names['t00610'] = model_dir+'R2349/Heliosares_Multi/t00610.h5'
+        ds_names['t00620'] = model_dir+'R2349/Heliosares_Multi/t00620.h5'
+        ds_names['t00630'] = model_dir+'R2349/Heliosares_Multi/t00630.h5'
+        ds_names['t00640'] = model_dir+'R2349/Heliosares_Multi/t00640.h5'
+        ds_names['t00650'] = model_dir+'R2349/Heliosares_Multi/t00650.h5'
+
+        ds_types = {'heliosares':[key for key in ds_names.keys()]}
         if maven:
             ds_names['maven'] = orbit_dir+'orbit_2349.csv'
             ds_types['maven']=['maven']
@@ -127,6 +157,9 @@ def cart_geo_vec_transform(ds, prefix, indx):
 def apply_flat_indx(ds, field, indx):
     return ds[field][:].flatten()[indx]
 
+def apply_all_indx(ds, field, indx):
+    return ds[field][:]
+
 def apply_grid_indx(ds, field, indx):
     dat = np.zeros(indx.shape[1])
     dat_flat = ds[field][:].flatten()
@@ -139,7 +172,7 @@ def apply_maven_indx(ds, field, indx):
     return ds.loc[indx, field].values
 
 
-def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None,
+def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
                 area=None, maven=False):
     """
     Get data from a dataset for a particular field and set of points
@@ -157,20 +190,21 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None,
     area : hacky way to get area for surface
     """
 
-    if grid: apply_indx = apply_grid_indx
+    if indx is None: apply_indx = apply_all_indx
+    elif grid: apply_indx = apply_grid_indx
     elif maven: apply_indx = apply_maven_indx
     else: apply_indx = apply_flat_indx
 
-    if velocity_field is not None: 
+    if ion_velocity: 
         ion = (field.split('_')[0])+'_'+(field.split('_')[1])
-        velocity_field = velocity_field.format(ion)
+        velocity_field = '{0}_velocity'.format(ion)
+    else:
+        velocity_field = 'velocity'
+
     
-    if type(indx)==str:
-        if field in ds.keys():  return ds[field][:].flatten()
-        else: return np.array([])
 
     if field in ds.keys():
-        return apply_indx(ds, field, indx)#ds[field][:].flatten()[indx]
+        return apply_indx(ds, field, indx)
     elif '_total' in field and field.replace('_total', '_x') in ds.keys():
         x = apply_indx(ds, field.replace('_total', '_x'), indx)**2
         y = apply_indx(ds, field.replace('_total', '_y'), indx)**2
@@ -184,7 +218,8 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None,
         vn = np.sum(normal*v, axis=0)
         return vn
     elif '_flux' in field:
-        vn = 1e5*get_ds_data(ds, velocity_field+'_normal', indx, grid, normal)
+        vn = 1e5*get_ds_data(ds, velocity_field+'_normal', indx, grid, 
+                             normal, ion_velocity)
         dens = get_ds_data(ds, field.replace('flux', "number_density"), indx, grid)
         return vn*dens
     elif 'area' == field:
@@ -196,6 +231,14 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, velocity_field=None,
 #        return cart_geo_vec_transform(ds,field.replace('_latitudinal', ''), indx)[1]
 #    elif 'longitudinal' in field and field.replace('_longitudinal', '_x') in ds.keys():
 #        return cart_geo_vec_transform(ds,field.replace('_longitudinal', ''), indx)[2]
+    elif 'xy' in field:
+        prefix = '_'.join(field.split('_')[:-1])
+        x = get_ds_data(ds, prefix+'_x', indx, grid=grid)
+        y = get_ds_data(ds, prefix+'_y', indx, grid=grid)
+        return np.sqrt(x**2+y**2)
+
+    elif '_'.join(field.split('_')[2:]) in ds.keys() and '_'.join(field.split('_')[2:]) not in ['x','y','z']:
+        return apply_indx(ds, '_'.join(field.split('_')[2:]), indx)
     else:
         print "Field {0} not found".format(field)
         return np.array([])
