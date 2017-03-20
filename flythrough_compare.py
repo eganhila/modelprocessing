@@ -10,6 +10,7 @@ Inputs:
         orbit, or predefine a group like G1
     --new_models (-n): Use the new models, flag passed to get
         datasets
+    --helio_multi (-h): use the multi helio models
 
 """
 
@@ -20,6 +21,7 @@ import h5py
 from general_functions import *
 import sys
 import getopt
+from matplotlib import cm
 import pandas as pd
 plt.style.use('seaborn-poster')
 
@@ -32,7 +34,7 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
         fields.insert(0,'altitude')
     Nfields = len(fields)
         
-    hrs = [1 for i in range(Nfields+1)]
+    hrs = [1 for i in range(Nfields)]
         
     hrs.insert(0,0.1)
     hrs.insert(0,0.1)
@@ -49,9 +51,12 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
               'bats_min_LS270_SSL270':'LightSkyBlue',
               'batsrus_multi_species':'MediumBlue',
               'batsrus_multi_fluid':'DodgerBlue',
+              'batsrus_electron_pressure':'LightSeaGreen',
               'heliosares':'MediumVioletRed',
               'helio_1':'LimeGreen',
               'helio_2':'ForestGreen'}
+
+    for i in range(550,660,10): colors['t00{0}'.format(i)] = cm.rainbow((i-550)/10.0)
     
     plot = {}
     plot['axes'] = {field:ax for field, ax in zip(fields, axes)}
@@ -82,7 +87,7 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
         ax.set_ylabel(label_lookup[f])
         if zeroline:
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
-        if f in field_lims: ax.set_ylim(field_lims[f])
+        #if f in field_lims: ax.set_ylim(field_lims[f])
         if f in log_fields2: ax.set_yscale('log')
             
     for i in range(plot['N_axes']):
@@ -122,7 +127,7 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
     
     #plot['ax_arr'][-1].legend()#(bbox_to_anchor=(1.4, 1))
     handles, labels = plot['ax_arr'][-1].get_legend_handles_labels()
-    plot['ax_arr'][0].legend(handles, labels)
+    #plot['ax_arr'][0].legend(handles, labels)
     plot['ax_arr'][0].set_zorder(1)
     plot['figure'].set_size_inches(8,10)
     if show:
@@ -190,61 +195,80 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
     """
 
     #coords, times = get_path_pts(trange, Npts=150)
-    coords, idx = get_orbit_coords(orbits[0], Npts=250, return_idx=True)
+    if orbits[0].isdigit():
+        coords, idx = get_orbit_coords(int(orbits[0]), Npts=250, return_idx=True)
+    elif orbits[0] == 'z':
+        z = np.linspace(1, 2, 250)
+        coords = np.array([np.zeros_like(z), np.zeros_like(z), z])
+        idx = []
+
     times = np.linspace(0,1,coords.shape[1])
     indxs = get_path_idxs(coords, ds_names, ds_types)
     indxs['maven'] = idx
 
-    if field == 'ion':
+    if field == 'low_ion':
         fields =['H_p1_number_density',
                 'O2_p1_number_density',
                 'O_p1_number_density',
                 'CO2_p1_number_density'] 
-        tlimit = (0.3, 0.7)
-        title = 'ion_flythrough'
+        tlimit = (0.43, 0.57)
+        title = 'low_alt_ion'
         skip = 1
+    elif field == 'plume':
+        fields =['O2_p1_number_density',
+                 'O2_p1_velocity_xy',
+                 'O2_p1_velocity_z',
+                 'H_p1_velocity_xy',
+                 'H_p1_velocity_z',
+                 ]
+        tlimit =(0.2, 0.45)
+        title = 'plume'
+        skip = 1
+
     elif field == 'mag':
         fields = ['magnetic_field_total', 'magnetic_field_x', 'magnetic_field_y',
               'magnetic_field_z']
         tlimit = None#(0.3, 0.7)
-        title = 'mag_flythrough'
+        title = 'mag'
         skip = 1
     else:
         fields = [field]
         tlimit = None
-        title = field+"_flythrough"
+        title = field
         skip=1
 
     data = get_all_data(ds_names, ds_types, indxs, fields)
     make_flythrough_plot(fields, data, ds_names, coords=coords,  
-                         subtitle=orbits[0],  tlimit=tlimit)
+                         subtitle='{0}_{1}'.format(title,orbits[0]),  tlimit=tlimit)
 
 
 def main(argv):
 
     try:
-        opts, args = getopt.getopt(argv,"f:o:n",["field=", "orbit=", "new_models"])
+        opts, args = getopt.getopt(argv,"f:o:nh",["field=", "orbit=", "new_models", "helio_models"])
     except getopt.GetoptError:
         print 'error'
         return
 
 
-    field, orbit, new_models = None, None, False
+    field, orbit, new_models, helio_models = None, None, False, False
 
     for opt, arg in opts:
         if opt in ("-f", "--field"):
             field = arg
         elif opt in ("-o", "--orbit"):
-            orbit = int(arg)
+            orbit = arg
         elif opt in ("-n", "-new_models"):
             print 'Using new models'
             new_models=True
+        elif opt in ('-h', '--helio_multi'):
+            helio_models = True
 
     if orbit == 371:
         orbit_groups = np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391])
     
     # Get Datasets setup
-    ds_names, ds_types = get_datasets(R2349=new_models)
+    ds_names, ds_types = get_datasets(R2349=new_models, helio_multi=helio_models)
     print ds_names, ds_types
 
     flythrough_orbit([orbit], ds_names, ds_types, field)
