@@ -13,9 +13,14 @@ df = pd.read_csv('Output/sphere_flux_batsrus_multi_species.csv')
 df = df.sort_values('Unnamed: 0')
 df_mspecies = df.set_index('Unnamed: 0')
 
-df = pd.read_csv('Output/Sphere_flux_helio_60km.csv')
+#df = pd.read_csv('Output/sphere_flux_batsrus_pe.csv')
+#df = df.sort_values('Unnamed: 0')
+#df_helio = df.set_index('Unnamed: 0')
+
+df = pd.read_csv('Output/sphere_flux_helio_multi.csv')
 df = df.sort_values('Unnamed: 0')
 df_helio = df.set_index('Unnamed: 0')
+
 
 dfs = {'fluid':df_mfluid, 'species':df_mspecies, 'helio':df_helio}
 ls = {'fluid':'o-', 'species':'o--', 'helio':'o:'}
@@ -43,6 +48,7 @@ for dsk in ['fluid', 'species', 'helio']:
 
 plt.legend(handles=handles, loc='upper right')
 plt.ylim(1e22, 1e25)
+plt.tight_layout()
 
 
 plt.savefig('Output/total_ion_flux.pdf')
