@@ -26,7 +26,19 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'batsrus_electron_pressure':"BATSRUS Electron Pressure", 
           'heliosares':'HELIOSARES',
           'total_flux':'$\mathrm{Total\; Ion\;Flux}$',
-          'x':'x', 'y':'y', 'z':'z'
+          'x':'x', 'y':'y', 'z':'z',
+          'O2_p1_velocity_x':'$\mathrm{v_x(O_2+)}$',
+          'O2_p1_velocity_y':'$\mathrm{v_y(O_2+)}$',
+          'O2_p1_velocity_z':'$\mathrm{v_z(O_2+)}$',
+          'O2_p1_velocity_xy':'$\mathrm{v_\perp(O_2+)}$',
+          'H_p1_velocity_x':'$\mathrm{v_x(H+)}$',
+          'H_p1_velocity_y':'$\mathrm{v_y(H+)}$',
+          'H_p1_velocity_z':'$\mathrm{v_z(H+)}$',
+          'H_p1_velocity_xy':'$\mathrm{v_\perp(H+)}$',
+          'electric_field_x':'$\mathrm{E_x}$',
+          'electric_field_y':'$\mathrm{E_y}$',
+          'electric_field_z':'$\mathrm{E_z}$',
+          'electric_field_xy':'$\mathrm{E_\perp}$'
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|\;(km/s)}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}\;(km/s)}$'
