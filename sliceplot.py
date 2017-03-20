@@ -1,7 +1,11 @@
+"""
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
-from matplotlib.colors import LogNorm, Normalize
+from matplotlib.colors import LogNorm, Normalize, SymLogNorm
+from matplotlib import ticker
 from general_functions import *
 from matplotlib.collections import LineCollection
 import getopt
@@ -46,16 +50,12 @@ def orbit_intersect_plane(coords, center, ax_i):
 def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
               show_center=False, lw=2.8):
     off_ax = [[1,2],[0,2],[0,1]]
-    #trange = get_orbit_times(orbit)
-    #coords, ltimes = get_path_pts(trange,Npts=250)
-    #coords = coords/3390
     coords = get_orbit_coords(orbit, Npts=250)
     ltimes = np.linspace(0,1,coords.shape[1])
+    #ltimes[np.logical_and(coords[ax_i]<0, np.sqrt(np.sum(coords[off_ax[ax_i]],axis=1))<1)] = 0
     
     x,y = coords[off_ax[ax_i][0]], coords[off_ax[ax_i][1]]
     
-    #z = coords[ax_i]/3390
-    #ltimes[np.logical_and(z<0, np.sqrt(x**2+y**2)<1)] = ltimes.min()
     
     points = np.array([x, y]).T.reshape(-1, 1, 2)
     segments = np.concatenate([points[:-1], points[1:]], axis=1)
@@ -71,10 +71,6 @@ def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
         p1, p2 = orbit_intersect_plane(coords, center, ax_i)
         ax.scatter([p1[off_ax[ax_i][0]], p2[off_ax[ax_i][0]]],
                    [p1[off_ax[ax_i][1]], p2[off_ax[ax_i][1]]],
-                   marker='x', color='grey', zorder=20)
-    if show_center:
-        ax.scatter([center[off_ax[ax_i][0]]],
-                   [center[off_ax[ax_i][1]]],
                    marker='x', color='grey', zorder=20)
 
 def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,
@@ -102,6 +98,12 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,
             
         ax.set_xlabel('$\mathrm{'+ax_labels[ax_i][0]+'} \;(R_M)$')
         ax.set_ylabel('$\mathrm{'+ax_labels[ax_i][1]+'} \;(R_M)$')
+
+        off_ax = [[1,2],[0,2],[0,1]]
+        if show_center:
+            ax.scatter([center[off_ax[ax_i][0]]],
+                       [center[off_ax[ax_i][1]]],
+                       marker='.', color='grey', zorder=20, s=3)
         
     plt.tight_layout()
     print 'Saving: {0}'.format(fname)
@@ -125,7 +127,6 @@ def get_offgrid_slice(ds, ax_i, field, vec_field, center, extra_fields=None):
 
     tol = 0.01
     idx0 = np.abs(ds[ax_lab]-ax_c) < np.min(np.abs(ds[ax_lab]-ax_c))+tol
-
     while sum(idx0) < 10000:
         tol *=5
         idx0 = np.abs(ds[ax_lab]-ax_c) < np.min(np.abs(ds[ax_lab]-ax_c))+tol
@@ -156,7 +157,7 @@ def get_offgrid_slice(ds, ax_i, field, vec_field, center, extra_fields=None):
 
 def slice_regrid(ds, ax_i, field, vec_field=False, test=False, center=None, extra_fields=None):
     if test: lin = np.linspace(-4, 4, 50)
-    else: lin = np.linspace(-1.5, 1.5, 250)
+    else: lin = np.linspace(-4, 4, 250)
     grid_0, grid_1 = np.meshgrid(lin, lin)
     g0_flat, g1_flat = grid_0.flatten(), grid_1.flatten()
     
@@ -228,7 +229,7 @@ def slice_onax(ds, ax_i, field, vec_field=False, idx=None, center=None, test=Fal
         slc_1 = ds['y'][:,:,idx]
         if vec_field: field = [ds[field+'_x'][:,:,idx], ds[field+'_y'][:,:,idx]]
         else: field = ds[field][:,:,idx]
-    
+
     return (slc_0, slc_1, field)
     
 def slice_data(ds, ax_i, field, regrid_data, **kwargs):
@@ -253,19 +254,35 @@ def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True
     #zlim = (-180,180)
     #if zlim is None: vmin, vmax = 1e-3, field_lims[field][1] #np.nanmax(field_dat), 1e-3
     #else: vmin, vmax = zlim
+    field_lims = field_lims_slices
 
-    if field in field_lims.keys(): vmin, vmax = field_lims[field]
+    if field in field_lims.keys(): vmin, vmax = field_lims_slices[field]
     else: vmin, vmax = np.nanmin(field_dat), np.nanmax(field_dat)
 
-    diverging, logscale=False, False
+    diverging, logscale, symlogscale=False, False, False
     if sum([1 for dfk in diverging_field_keys if dfk in field])>0: diverging=True
     if sum([1 for lfk in log_field_keys if lfk in field])>0: logscale=True
+    if sum([1 for sfk in symlog_field_keys if sfk in field])>0: symlogscale=True
+
     
-    if logscale and not diverging: norm = LogNorm(vmax=vmax, vmin=vmin)
-    elif logscale and diverging: norm = SymLogNorm(vmin=vmin, vmax=vmax, linthresh=1)
+    if logscale: norm = LogNorm(vmax=vmax, vmin=vmin)
+    elif symlogscale: 
+        linthresh=1e5
+        norm = SymLogNorm(vmin=vmin, vmax=vmax, linthresh=linthresh)
+	maxlog=int(np.ceil( np.log10(vmax) ))
+	minlog=int(np.ceil( np.log10(-vmin) ))
+	linlog=int(np.ceil(np.log10(linthresh)))
+
+	#generate logarithmic ticks 
+	tick_locations=([-(10**x) for x in xrange(minlog,linlog-1,-1)]
+			+[0.0]
+			+[(10**x) for x in xrange(linlog,maxlog+1)] )
+    elif diverging: 
+        vm = np.max(np.abs([vmin, vmax]))
+        norm = Normalize(vmax=vm, vmin=-1*vm)
     else: norm = Normalize(vmax=vmax, vmin=vmin)
 
-    if diverge_cmap: cmap=cmocean.cm.delta
+    if diverging: cmap='RdBu' # cmap=cmocean.cm.delta
     else: cmap='viridis'
 
     if field in label_lookup: label=label_lookup[field]
@@ -276,7 +293,13 @@ def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True
         im = plot['axes'][ax_i].pcolormesh(slc_0.T, slc_1.T, field_dat.T,
                                            norm=norm, cmap=cmap, rasterized=True)
         if cbar:
-            plt.colorbar(im, ax=plot['axes'][ax_i],label=label)
+            if symlogscale:
+                plt.colorbar(im, ax=plot['axes'][ax_i], label=label,
+                             ticks=tick_locations,
+                             format=ticker.LogFormatterMathtext())
+            else:
+                plt.colorbar(im, ax=plot['axes'][ax_i],label=label)
+
     
     plot['axes'][ax_i].set_xlim(slc_0.min(), slc_0.max())
     plot['axes'][ax_i].set_ylim(slc_1.min(), slc_1.max())
@@ -287,24 +310,24 @@ def plot_data(plot, slc, ax_i, vec_field, field,**kwargs):
     
 
 def make_plot(ds_name, field, center=None, orbit=None, regrid_data=False,
-              vec_field=False, fname=None, test=False):
+              vec_field=False, fname=None, test=False, mark=False):
     ds = load_data(ds_name,field=field, vec_field=vec_field)
     plot = setup_sliceplot()
     
     for ax in [0,1,2]:
         slc = slice_data(ds, ax, field, regrid_data=regrid_data, vec_field=vec_field, test=test, center=center)
         plot_data(plot, slc, ax, vec_field, field)
-    finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname)
+    finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark)
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:",["field=","infile=", "orbit=", "center=", "test","dir="])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:m",["field=","infile=", "orbit=", "center=", "test","dir=", "mark"])
     except getopt.GetoptError:
         print getopt.GetoptError()
         print 'error'
         return
     
-    infile, field, orbit, center, test, fdir = None, None, None, None, False, None
+    infile, field, orbit, center, test, fdir, mark = None, None, None, None, False, None, False
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
@@ -319,6 +342,8 @@ def main(argv):
         elif opt in ("-c", "--center"):
             import ast
             center = np.array(ast.literal_eval(arg))
+        elif opt in ('-m', '--mark'):
+            mark=True
     
     if infile is None and fdir is None: 
         print 'must supply file'
@@ -337,7 +362,7 @@ def main(argv):
     
     if field == 'all_ion':
         with h5py.File(infile, 'r') as f: fields = f.keys()
-        fields = [f for f in fields if 'number_density' in f]
+        fields = [f for f in fields if 'p1_number_density' in f]
     else: fields = [field]
 
 
@@ -346,7 +371,7 @@ def main(argv):
         for field in fields:
             print infile, field
             make_plot(infile, field, orbit=orbit, test=test,
-                      regrid_data=regrid_data, vec_field=vec_field, center=center,
+                      regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark,
                       fname='Output/slice_{0}_{1}_{2}.pdf'.format(field, infile.split('/')[-1][:-3], orbit))
     
 if __name__ == '__main__':
