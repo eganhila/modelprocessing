@@ -46,6 +46,8 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     
     #f, axes = plt.subplots(len(fields), 1)
     colors = {'maven':'k', 
+              'maven1':'k', 
+              'maven2':'r', 
               'bats_min_LS270_SSL0':'CornflowerBlue',
               'bats_min_LS270_SSL180':'DodgerBlue',
               'bats_min_LS270_SSL270':'LightSkyBlue',
@@ -62,8 +64,8 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     plot['axes'] = {field:ax for field, ax in zip(fields, axes)}
     plot['kwargs'] = {ds:{ 'label':label_lookup[ds], 'color':colors[ds], 'lw':1.5}
                         for ds in ds_names}
-    plot['kwargs']['maven']['alpha'] = 0.6
-    plot['kwargs']['maven']['lw'] = 1
+   # plot['kwargs']['maven']['alpha'] = 1#0.6
+#    plot['kwargs']['maven']['lw'] = 1
     plot['figure'] = f
     plot['ax_arr'] = axes
     plot['N_axes'] = Nfields #len(fields)
@@ -87,7 +89,7 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
         ax.set_ylabel(label_lookup[f])
         if zeroline:
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
-        #if f in field_lims: ax.set_ylim(field_lims[f])
+        if f in field_lims: ax.set_ylim(field_lims[f])
         if f in log_fields2: ax.set_yscale('log')
             
     for i in range(plot['N_axes']):
@@ -129,7 +131,8 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
     handles, labels = plot['ax_arr'][-1].get_legend_handles_labels()
     #plot['ax_arr'][0].legend(handles, labels)
     plot['ax_arr'][0].set_zorder(1)
-    plot['figure'].set_size_inches(8,10)
+    #plot['figure'].set_size_inches(8,10)
+    plot['figure'].set_size_inches(8, 16)
     if show:
         plt.show()
     elif fname is None:
@@ -178,8 +181,7 @@ def make_flythrough_plot(fields, data, ds_names, title='flythrough',
         for dsk, ds_dat in data[field].items():
                         
             if ds_dat.size != 0:
-                times = np.linspace(0, 1, ds_dat.shape[0])
-                plot_field_ds(times, ds_dat, plot['axes'][field], plot['kwargs'][dsk])
+                plot_field_ds(data['time'][dsk], ds_dat, plot['axes'][field], plot['kwargs'][dsk])
             else:
                 plot_field_ds(np.array([0]),np.array([0]),
                               plot['axes'][field], plot['kwargs'][dsk])
@@ -201,10 +203,13 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
         z = np.linspace(1, 2, 250)
         coords = np.array([np.zeros_like(z), np.zeros_like(z), z])
         idx = []
+    else:
+        print 'Orbit not supported'
+        raise(RuntimeError)
 
-    times = np.linspace(0,1,coords.shape[1])
     indxs = get_path_idxs(coords, ds_names, ds_types)
     indxs['maven'] = idx
+    
 
     if field == 'low_ion':
         fields =['H_p1_number_density',
@@ -218,6 +223,12 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
         fields =['O2_p1_number_density',
                  'O2_p1_velocity_xy',
                  'O2_p1_velocity_z',
+                 'O_p1_number_density',
+                 'O_p1_velocity_xy',
+                 'O_p1_velocity_z',
+                 'CO2_p1_number_density',
+                 'CO2_p1_velocity_xy',
+                 'CO2_p1_velocity_z',
                  'H_p1_velocity_xy',
                  'H_p1_velocity_z',
                  ]

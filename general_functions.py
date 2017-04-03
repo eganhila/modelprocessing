@@ -74,15 +74,16 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
         ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
-        ds_names['heliosares'] =  model_dir+'R2349/helio_temp.h5'
+        ds_names['heliosares'] =  model_dir+'R2349/helio_multi.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
                     'batsrus3':[key for key in ds_names.keys() if 'electron_pressure' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
         if maven:
-            ds_names['maven'] = orbit_dir+'orbit_2349.csv'
-            ds_types['maven']=['maven']
+            ds_names['maven1'] = model_dir+'Maven/static_v_ions_2349.csv' 
+            ds_names['maven2']=orbit_dir+'orbit_2349.csv'
+            ds_types['maven']=['maven1', 'maven2']
     elif helio_multi:
         ds_names['t00550'] = model_dir+'R2349/Heliosares_Multi/t00550.h5'
         ds_names['t00560'] = model_dir+'R2349/Heliosares_Multi/t00560.h5'
@@ -169,7 +170,8 @@ def apply_grid_indx(ds, field, indx):
     return dat
 
 def apply_maven_indx(ds, field, indx):
-    return ds.loc[indx, field].values
+#    return ds.loc[indx, field].values
+    return ds.loc[:,field].values
 
 
 def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
@@ -201,8 +203,6 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
     else:
         velocity_field = 'velocity'
 
-    
-
     if field in ds.keys():
         return apply_indx(ds, field, indx)
     elif '_total' in field and field.replace('_total', '_x') in ds.keys():
@@ -233,8 +233,8 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
 #        return cart_geo_vec_transform(ds,field.replace('_longitudinal', ''), indx)[2]
     elif 'xy' in field:
         prefix = '_'.join(field.split('_')[:-1])
-        x = get_ds_data(ds, prefix+'_x', indx, grid=grid)
-        y = get_ds_data(ds, prefix+'_y', indx, grid=grid)
+        x = get_ds_data(ds, prefix+'_x', indx, grid=grid, maven=maven)
+        y = get_ds_data(ds, prefix+'_y', indx, grid=grid, maven=maven)
         return np.sqrt(x**2+y**2)
 
     elif '_'.join(field.split('_')[2:]) in ds.keys() and '_'.join(field.split('_')[2:]) not in ['x','y','z']:
@@ -371,7 +371,7 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
     Get data for all fields for indexes that were 
     already found.
     """
-    data = {f:{} for f in fields}
+    data = {f:{} for f in fields+['time']}
 
     for ds_type, keys in ds_types.items():
         for dsk in keys:
@@ -384,6 +384,12 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
                     ds_dat = get_ds_data(ds, field, indxs[ds_type],
                             maven=True, grid=False)
                     data[field][dsk] = ds_dat
+                time = get_ds_data(ds, 'time', indxs[ds_type],
+                        maven=True, grid=False)
+                time = time-time[0]
+                time = time/time[-1]
+                data['time'][dsk] = time
+            
 
 
             else:
@@ -392,5 +398,8 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
                         ds_dat = get_ds_data(ds, field, indxs[ds_type],
                                              grid=ds_type=='heliosares', **kwargs)
                         data[field][dsk] = ds_dat
+
+                data['time'][dsk] = np.linspace(0, 1, np.max(indxs[ds_type].shape))
+
     return data
 
