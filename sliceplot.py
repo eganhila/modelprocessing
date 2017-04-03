@@ -229,6 +229,7 @@ def slice_onax(ds, ax_i, field, vec_field=False, idx=None, center=None, test=Fal
         slc_1 = ds['y'][:,:,idx]
         if vec_field: field = [ds[field+'_x'][:,:,idx], ds[field+'_y'][:,:,idx]]
         else: field = ds[field][:,:,idx]
+    print field
 
     return (slc_0, slc_1, field)
     
@@ -349,7 +350,7 @@ def main(argv):
         print 'must supply file'
         raise(RuntimeError)
     
-    if 'velocity' in field or 'magnetic_field' == field:
+    if 'velocity' == field[-8:] or 'magnetic_field' == field:
         vec_field = True
     else: vec_field = False
 

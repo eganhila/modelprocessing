@@ -40,8 +40,8 @@ plt.style.use(['seaborn-poster', 'poster'])
 
 
 def create_sphere_mesh(r):
-    lon = np.arange(0,361, 5)
-    lat = np.arange(-90,91, 5)
+    lon = np.arange(-90,271, 5.0)
+    lat = np.arange(-90,91, 5.0)
     phi = -1*(lat-90)*np.pi/180.0
     theta = lon*np.pi/180.0
     phi_v, theta_v = np.meshgrid(phi, theta)
@@ -70,14 +70,14 @@ def create_sphere_mesh(r):
 def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
     
     # Check to see if the field diverges
-    if field in field_lims:
-        vmin, vmax = field_lims[field]
-        linthresh = int(np.ceil(np.log10(vmax)))-4
+    if field in field_lims_shells:
+        vmin, vmax = field_lims_shells[field]
+        linthresh = 10**(int(np.ceil(np.log10(vmax)))-4.5)
 
     if sum([1 for k in diverging_field_keys if k in field]):
         cmap = 'RdBu'
         fdat = np.ma.filled(np.ma.masked_invalid( fdat),0)
-        if True or field not in field_lims:
+        if field not in field_lims_shells:
             vmax = np.max(np.abs(fdat))
             vmin = -1*vmax
             if len(fdat[fdat>0]) ==0:return 
@@ -86,13 +86,13 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
         cmap = 'viridis'
         fdat = np.ma.masked_where(fdat==0, fdat)
         fdat = np.ma.masked_invalid(fdat)
-        if True or field not in field_lims:
+        if field not in field_lims_shells:
             vmin, vmax = np.min(fdat), np.max(fdat)
 
         
     symlog=False
     if sum([1 for k in symlog_field_keys if k in field]):
-        norm = SymLogNorm(vmin=vmin, vmax=vmax, linthresh=1e5)
+        norm = SymLogNorm(vmin=vmin, vmax=vmax, linthresh=linthresh)
 	maxlog=int(np.ceil( np.log10(vmax) ))
 	minlog=int(np.ceil( np.log10(-vmin) ))
 	linlog=int(np.ceil(np.log10(linthresh)))
@@ -116,7 +116,7 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
         plt.colorbar(label=label_lookup[field])
         
     plt.ylim(-90,90)
-    plt.xlim(0,360)
+    plt.xlim(-90,270)
     plt.xlabel('Longitude (0=Dayside, 180=Nightside)')
     plt.ylabel('Latitude')
     plt.title('R = {0} (RM)'.format(r))

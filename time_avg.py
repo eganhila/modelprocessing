@@ -28,28 +28,53 @@ def combine_datasets(fdir, outname):
         shape = f[var_names[0]].shape
 
     for var in var_names:
-        if var in ['x','y','z', 'xmesh', 'ymesh', 'zmesh']: continue
+        # Skip separating Hpl and Hsw for speed
+        if 'Hpl' in var or 'Hsw' in var: continue
+
+
         print "Processing variable: {0}".format(var)
 
-        dat = np.zeros(shape)
+        #Process var that's the same in every file 
+        if var in ['x','y','z', 'xmesh', 'ymesh', 'zmesh', 'latitude', 'longitude', 'altitude']: 
+            with h5py.File(fnames[0], 'r') as f:
+                dat = f[var][:]
+            with h5py.File(outname, 'r+') as f:
+                f.create_dataset(var, data=dat)
+        #Process var that's a strict average
+        elif ('magnetic_field' in var) or ('number_density' in var):
 
-        for fname in fnames:
-            with h5py.File(fname, 'r') as f:
-                dat += f[var][:]
+            dat = np.zeros(shape)
 
-
-        dat = dat/N_files
-
-        with h5py.File(outname, 'r+') as f:
-            f.create_dataset(var, data=dat)
-
-    for var in ['x','y','z', 'xmesh', 'ymesh', 'zmesh']:
-        with h5py.File(fnames[0], 'r') as f:
-            dat = f[var][:]
-        with h5py.File(outname, 'r+') as f:
-            f.create_dataset(var, data=dat)
+            for fname in fnames:
+                with h5py.File(fname, 'r') as f:
+                    dat += f[var][:]
 
 
+            dat = dat/N_files
+
+            with h5py.File(outname, 'r+') as f:
+                f.create_dataset(var, data=dat)
+
+        #Process var that should be density weighted
+        else:
+            dat = np.zeros(shape)
+            weights = np.zeros(shape)
+            
+            # Get species
+            if 'electron' in var: species = 'electron'
+            elif 'He' in var: species = 'He'
+            else: species = '_'.join(var.split('_')[:2])
+
+            for fname in fnames:
+                with h5py.File(fname, 'r') as f:
+                    weight = f[species+'_number_density'][:]
+                    dat += f[var][:]*weight
+                    weights += weight
+
+            dat = dat/weights
+
+            with h5py.File(outname, 'r+') as f:
+                f.create_dataset(var, data=dat)
 
     
 
