@@ -73,17 +73,17 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
     if R2349:
         ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
-        ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
-        ds_names['heliosares'] =  model_dir+'R2349/helio_multi.h5'
+        #ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
+        ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_pe_test.h5'
+        ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
                     'batsrus3':[key for key in ds_names.keys() if 'electron_pressure' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
         if maven:
-            ds_names['maven1'] = model_dir+'Maven/static_v_ions_2349.csv' 
-            ds_names['maven2']=orbit_dir+'orbit_2349.csv'
-            ds_types['maven']=['maven1', 'maven2']
+            ds_names['maven']=orbit_dir+'orbit_2349.csv'
+            ds_types['maven']=['maven']
     elif helio_multi:
         ds_names['t00550'] = model_dir+'R2349/Heliosares_Multi/t00550.h5'
         ds_names['t00560'] = model_dir+'R2349/Heliosares_Multi/t00560.h5'

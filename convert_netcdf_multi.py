@@ -44,10 +44,11 @@ def convert_dataset(fdir, h5_name):
 
     # Get grid
     with nc.Dataset(fnames[0], mode='r') as ds:
-        x = ds.variables[axis_labels[0]][:]
-        y = ds.variables[axis_labels[1]][:]
-        z = ds.variables[axis_labels[2]][:]
+        x = ds.variables[axis_labels[0]][:]+61.8125
+        y = ds.variables[axis_labels[1]][:]+61.8125
+        z = ds.variables[axis_labels[2]][:]-61.8125
 
+    print 'Setting up grid'
     zmesh, ymesh, xmesh = np.meshgrid(z, y, x, indexing='ij')
     xmesh = xmesh.T
     ymesh = ymesh.T
@@ -57,19 +58,21 @@ def convert_dataset(fdir, h5_name):
     dims = (x.shape[0], y.shape[0], z.shape[0])
 
     # Going to make the lat/lon/alt fields
-    lat, lon, alt = convert_coords_cart_sphere(np.array([xmesh, ymesh, zmesh]))
+    print 'Converting cartesian to spherical'
+    #lat, lon, alt = convert_coords_cart_sphere(np.array([xmesh, ymesh, zmesh]))
 
     # Save data that we've created so far
     with h5py.File(fdir+h5_name, 'w') as f:
+        print 'Saving spatial data'
         f.create_dataset('x', data=x)
         f.create_dataset('y', data=y)
         f.create_dataset('z', data=z)
         f.create_dataset('xmesh', data=xmesh)
         f.create_dataset('ymesh', data=ymesh)
         f.create_dataset('zmesh', data=zmesh)
-        f.create_dataset('latitude', data=lat)
-        f.create_dataset('longitude', data=lon)
-        f.create_dataset('altitude', data=alt)
+        #f.create_dataset('latitude', data=lat)
+        #f.create_dataset('longitude', data=lon)
+        #f.create_dataset('altitude', data=alt)
 
     # Set up name conversion dictionary
     name_conversion = {}

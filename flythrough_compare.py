@@ -221,16 +221,20 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
         skip = 1
     elif field == 'plume':
         fields =['O2_p1_number_density',
-                 'O2_p1_velocity_xy',
+                 'O2_p1_velocity_x',
+                 'O2_p1_velocity_y',
                  'O2_p1_velocity_z',
                  'O_p1_number_density',
-                 'O_p1_velocity_xy',
+                 'O_p1_velocity_x',
+                 'O_p1_velocity_y',
                  'O_p1_velocity_z',
-                 'CO2_p1_number_density',
-                 'CO2_p1_velocity_xy',
-                 'CO2_p1_velocity_z',
-                 'H_p1_velocity_xy',
+                 'H_p1_number_density',
+                 'H_p1_velocity_x',
+                 'H_p1_velocity_y',
                  'H_p1_velocity_z',
+                 'magnetic_field_x',
+                 'magnetic_field_y',
+                 'magnetic_field_z'
                  ]
         tlimit =(0.2, 0.45)
         title = 'plume'

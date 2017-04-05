@@ -19,10 +19,14 @@ import getopt
 from general_functions import *
 
 
-data_conversion = {'H_p1_number_density':lambda x: x/1.00794, 
-                   'O2_p1_number_density':lambda x: x/(2*15.9994), 
-                   'O_p1_number_density':lambda x: x/15.9994, 
-                   'CO2_p1_number_density':lambda x: x/(15.9994*2+12.0107)}
+data_conversion = {'H_p1_number_density':lambda x: 0.5*x/1.00794, 
+                   'O2_p1_number_density':lambda x: 0.5*x/(2*15.9994), 
+                   'O_p1_number_density':lambda x: 0.5*x/15.9994, 
+                   'CO2_p1_number_density':lambda x: 0.5*x/(15.9994*2+12.0107)}
+data_conversion = {'H_p1_number_density':lambda x: 0.5*x, 
+                   'O2_p1_number_density':lambda x: 0.5*x, 
+                   'O_p1_number_density':lambda x: 0.5*x, 
+                   'CO2_p1_number_density':lambda x: 0.5*x}
 f_var_rename = 'Misc/name_conversion.txt'
 
 
@@ -80,7 +84,7 @@ def convert_file(fname, h5_name):
     # Save data
     with h5py.File(h5_name, 'w') as f:
         for k, v in data.items():
-            if name_conversion[k] in data_conversion.keys():
+            if  name_conversion[k] in data_conversion.keys():
                 v = data_conversion[name_conversion[k]](v)
             f.create_dataset(name_conversion[k], data=v)
 
