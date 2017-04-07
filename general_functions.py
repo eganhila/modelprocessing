@@ -170,8 +170,8 @@ def apply_grid_indx(ds, field, indx):
     return dat
 
 def apply_maven_indx(ds, field, indx):
-#    return ds.loc[indx, field].values
-    return ds.loc[:,field].values
+    return ds.loc[indx, field].values
+ #   return ds.loc[:,field].values
 
 
 def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
@@ -197,20 +197,21 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
     elif maven: apply_indx = apply_maven_indx
     else: apply_indx = apply_flat_indx
 
-    if ion_velocity: 
+    if ion_velocity and '_' in field: 
         ion = (field.split('_')[0])+'_'+(field.split('_')[1])
         velocity_field = '{0}_velocity'.format(ion)
     else:
         velocity_field = 'velocity'
 
     if field in ds.keys():
+        if field == 'y' and grid==True: return np.array([])
         return apply_indx(ds, field, indx)
     elif '_total' in field and field.replace('_total', '_x') in ds.keys():
         x = apply_indx(ds, field.replace('_total', '_x'), indx)**2
         y = apply_indx(ds, field.replace('_total', '_y'), indx)**2
         z = apply_indx(ds, field.replace('_total', '_z'), indx)**2
         return np.sqrt(x+y+z)
-    elif '_normal' in field and field.replace('_normal', '_x') in ds.keys():
+    elif '_normal' in field: # field.replace('_normal', '_x') in ds.keys():
         vx = apply_indx(ds, field.replace('_normal', '_x'), indx)
         vy = apply_indx(ds, field.replace('_normal', '_y'), indx)
         vz = apply_indx(ds, field.replace('_normal', '_z'), indx)
@@ -219,15 +220,15 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         return vn
     elif '_flux' in field:
         vn = 1e5*get_ds_data(ds, velocity_field+'_normal', indx, grid, 
-                             normal, ion_velocity)
-        dens = get_ds_data(ds, field.replace('flux', "number_density"), indx, grid)
+                             normal, ion_velocity, maven=maven)
+        dens = get_ds_data(ds, field.replace('flux', "number_density"), indx, grid, maven=maven)
         return vn*dens
     elif 'area' == field:
         return area
                                    
 #    elif '_radial' in field and field.replace('_radial', '_x') in ds.keys():
 #        return cart_geo_vec_transform(ds,field.replace('_radial', ''), indx)[0]
-#    elif '_latitudinal'in field and field.replace('_latitudinal', '_x') in ds.keys():
+#    elif '_latitudinal'in field and field.replace('_latitudinal', '_x') in ds.keys(:
 #        return cart_geo_vec_transform(ds,field.replace('_latitudinal', ''), indx)[1]
 #    elif 'longitudinal' in field and field.replace('_longitudinal', '_x') in ds.keys():
 #        return cart_geo_vec_transform(ds,field.replace('_longitudinal', ''), indx)[2]
@@ -239,8 +240,13 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
 
     elif '_'.join(field.split('_')[2:]) in ds.keys() and '_'.join(field.split('_')[2:]) not in ['x','y','z']:
         return apply_indx(ds, '_'.join(field.split('_')[2:]), indx)
+    elif field == 'magnetic_pressure':
+        return get_ds_data(ds, 'magnetic_field_total', indx, grid=grid, maven=maven)**2/(2*1.26E-6*1e9)
     else:
-        print "Field {0} not found".format(field)
+        if maven: dstype = 'maven'
+        elif grid: dstype = 'heliosares'
+        else: dstype= 'batsrus'
+        print "Field {0} not found in {1}".format(field, dstype)
         return np.array([])
         #raise(ValueError)
 

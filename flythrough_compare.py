@@ -29,7 +29,7 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     """
     Setup plotting environment and corresponding data structures
     """
-    if add_altitude: 
+    if add_altitude and False: 
         fields = fields[:]
         fields.insert(0,'altitude')
     Nfields = len(fields)
@@ -40,7 +40,7 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     hrs.insert(0,0.1)
     import matplotlib.gridspec as gridspec
     gs = gridspec.GridSpec(Nfields+2, 1,
-                           height_ratios=hrs, hspace=0.05)
+                           height_ratios=hrs, hspace=0.05, wspace=3)
     axes = [plt.subplot(gs[i, 0]) for i in range(2, Nfields+2)]
     f = plt.gcf()
     
@@ -86,7 +86,10 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
                                                   plot['altitude'],
                                                   **plot['kwargs']['maven'])
     for f, ax in plot['axes'].items():
-        ax.set_ylabel(label_lookup[f])
+        if f in label_lookup:
+            ax.set_ylabel(label_lookup[f])
+        else:
+            ax.set_ylabel(f)
         if zeroline:
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
         if f in field_lims: ax.set_ylim(field_lims[f])
@@ -131,8 +134,10 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
     handles, labels = plot['ax_arr'][-1].get_legend_handles_labels()
     #plot['ax_arr'][0].legend(handles, labels)
     plot['ax_arr'][0].set_zorder(1)
-    #plot['figure'].set_size_inches(8,10)
-    plot['figure'].set_size_inches(8, 16)
+    plot['figure'].set_size_inches(8,10)
+    #plot['figure'].set_size_inches(8, 16)
+    
+
     if show:
         plt.show()
     elif fname is None:
@@ -219,26 +224,77 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
         tlimit = (0.43, 0.57)
         title = 'low_alt_ion'
         skip = 1
-    elif field == 'plume':
-        fields =['O2_p1_number_density',
-                 'O2_p1_velocity_x',
-                 'O2_p1_velocity_y',
-                 'O2_p1_velocity_z',
-                 'O_p1_number_density',
+    elif 'plume' in field:
+        if field == 'plume_O2':
+            fields =['O2_p1_number_density',
+                     'O2_p1_velocity_x',
+                     'O2_p1_velocity_y',
+                     'O2_p1_velocity_z',
+                     'O2_p1_velocity_total']
+            title = 'plume_O2'
+        elif field == 'plume_O':
+            fields = ['O_p1_number_density',
                  'O_p1_velocity_x',
                  'O_p1_velocity_y',
                  'O_p1_velocity_z',
-                 'H_p1_number_density',
+                 'O_p1_velocity_total']
+            title = 'plume_O'
+        elif field == 'plume_mag':
+            fields = ['magnetic_field_x',
+                 'magnetic_field_y',
+                 'magnetic_field_z',
+                 'magnetic_field_total'
+                 ]
+            title = 'plume_mag'
+        elif field == 'plume_pressure':
+            fields = ['magnetic_pressure',
+             'pressure',
+             ' electron_pressure']
+            title = 'plume_pressure'
+        tlimit =(0.2, 0.45)
+        skip = 1
+    elif 'outbound' in field:
+        if field == 'outbound_O2':
+            fields =['O2_p1_number_density',
+                     'O2_p1_velocity_x',
+                     'O2_p1_velocity_y',
+                     'O2_p1_velocity_z',
+                     'O2_p1_velocity_total']
+            title = 'outbound_O2'
+        elif field == 'outbound_O':
+            fields = ['O_p1_number_density',
+                 'O_p1_velocity_x',
+                 'O_p1_velocity_y',
+                 'O_p1_velocity_z',
+                 'O_p1_velocity_total']
+            title = 'outbound_O'
+        elif field == 'outbound_H':
+            fields = ['H_p1_number_density',
                  'H_p1_velocity_x',
                  'H_p1_velocity_y',
                  'H_p1_velocity_z',
-                 'magnetic_field_x',
+                 'H_p1_velocity_total']
+            title = 'outbound_H'
+        elif field == 'outbound_mag':
+            fields = ['magnetic_field_x',
                  'magnetic_field_y',
-                 'magnetic_field_z'
+                 'magnetic_field_z',
+                 'magnetic_field_total'
                  ]
-        tlimit =(0.2, 0.45)
-        title = 'plume'
-        skip = 1
+            title = 'outbound_mag'
+      #fields = ['O2_p1_number_density',
+      #          'O2_p1_velocity_total',
+      #          'O_p1_number_density',
+      #         'O_p1_velocity_total',
+      #         'H_p1_number_density',
+      #         'H_p1_velocity_total',
+      #         'magnetic_field_x',
+      #         'magnetic_field_y',
+      #         'magnetic_field_z']
+        tlimit = (0.55, 0.9)
+        #title = 'outbound'
+                
+
 
     elif field == 'mag':
         fields = ['magnetic_field_total', 'magnetic_field_x', 'magnetic_field_y',

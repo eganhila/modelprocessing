@@ -1,27 +1,32 @@
 field_lims = {#'magnetic_field_x':(-50,50),
               #'magnetic_field_y':(-50,50),
               #'magnetic_field_z':(-50,50),
-              'magnetic_field_x':(-15,15),
-              'magnetic_field_y':(-15,15),
-              'magnetic_field_z':(-15,15),
-              #'O2_p1_number_density':(1e-4, 1e3), #(1e0,6e4),
-              #'O_p1_number_density': (1e-4, 1e3),#(4e0, 2e4),
-              #'H_p1_number_density': (1e-4, 1e3),#(4e0, 2e4),
-              'H_p1_number_density':(7e-1,7e4),
-              'O2_p1_number_density':(1e0,6e4),
-              'O_p1_number_density': (4e0, 2e4),
-              'CO2_p1_number_density':(1e0,6e3),
+              'magnetic_field_x':(-20,30),
+              'magnetic_field_y':(-10,20),
+              'magnetic_field_z':(-10,20),
+              'magnetic_field_total':(0,30),
+
+              'O2_p1_number_density':(1e-9, 1e3), #(1e0,6e4),
+              'O_p1_number_density': (1e-4, 1e3),#(4e0, 2e4),
+              'H_p1_number_density': (1e-4, 1e3),#(4e0, 2e4),
+              #'H_p1_number_density':(7e-1,7e4),
+              #'O2_p1_number_density':(1e0,6e4),
+              #'O_p1_number_density': (4e0, 2e4),
+              #'CO2_p1_number_density':(1e0,6e3),
               'H_number_density':(1e-2, 1e5), 
               'He_number_density':(1e-2, 1e5),
               'electron_number_density':(1e-2, 1e5),
-              'magnetic_field_total':(0,120),
+              #'magnetic_field_total':(0,120),
               'altitude':(5E1, 1e4),
+#              'magnetic_pressure':(0,0.3)
               }
 
 field_lims_slices = {'O_p1_number_density': (1e-2, 5e4),
                      'O2_p1_number_density': (1e-2, 5e4),
                      'H_p1_number_density':(1e-3, 1e3),
-                     'O_p1_temperature':(1e-3,1e2)}
+                     'O_p1_temperature':(1e-3,1e2),
+                     'pressure':(5e-3,4),
+                     'magnetic_pressure':(5e-3, 30)}
 
 field_lims_shells = {'O2_p1_flux':(-1e8, 1e8),
                      'O_p1_flux':(-4e7, 4e7),
@@ -33,7 +38,9 @@ log_fields2 = ['H_p1_number_density',
                'O_p1_number_density',
                'CO2_p1_number_density',
                'altitude',
-               'number_density']
+               'number_density',
+               'magnetic_pressure',
+               'pressure']
 diverging_field_keys = ['flux', 'velocity', 'magnetic_field']
 symlog_field_keys = ['flux', 'velocity_normal']
-log_field_keys = ['number_density', 'temperature']
+log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressure']

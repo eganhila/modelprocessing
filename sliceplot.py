@@ -318,6 +318,7 @@ def make_plot(ds_name, field, center=None, orbit=None, regrid_data=False,
     for ax in [0,1,2]:
         slc = slice_data(ds, ax, field, regrid_data=regrid_data, vec_field=vec_field, test=test, center=center)
         plot_data(plot, slc, ax, vec_field, field)
+    print orbit, mark
     finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark)
 
 def main(argv):

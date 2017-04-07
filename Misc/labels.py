@@ -48,7 +48,10 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'electric_field_x':'$\mathrm{E_x}$',
           'electric_field_y':'$\mathrm{E_y}$',
           'electric_field_z':'$\mathrm{E_z}$',
-          'electric_field_xy':'$\mathrm{E_\perp}$'
+          'electric_field_xy':'$\mathrm{E_\perp}$',
+          'electron_pressure': '$P_e$',
+          'magnetic_pressure': '$P_B$',
+          'pressure':'$P$'
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|\;(km/s)}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}\;(km/s)}$'
