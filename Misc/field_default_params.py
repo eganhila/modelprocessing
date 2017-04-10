@@ -18,7 +18,7 @@ field_lims = {#'magnetic_field_x':(-50,50),
               'electron_number_density':(1e-2, 1e5),
               #'magnetic_field_total':(0,120),
               'altitude':(5E1, 1e4),
-#              'magnetic_pressure':(0,0.3)
+              'magnetic_pressure':(0,0.3)
               }
 
 field_lims_slices = {'O_p1_number_density': (1e-2, 5e4),
@@ -39,8 +39,7 @@ log_fields2 = ['H_p1_number_density',
                'CO2_p1_number_density',
                'altitude',
                'number_density',
-               'magnetic_pressure',
-               'pressure']
+               ]
 diverging_field_keys = ['flux', 'velocity', 'magnetic_field']
 symlog_field_keys = ['flux', 'velocity_normal']
 log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressure']
