@@ -17,6 +17,17 @@ for pair in file(f_var_rename):
     k,v = pair.split(',')
     name_conversion[k] = v[:-1] #remove newline
 
+data_conversion = {'O2_p1_number_density': lambda x: x*1e-6,
+                   'O_p1_number_density': lambda x: x*1e-6,
+                   'H_p1_number_density': lambda x: x*1e-6,
+                   'He_p2_number_density': lambda x: x*1e-6,
+                   'magnetic_field': lambda x: x*1e9,
+                   'O2_p1_velocity':lambda x: x*1e-3,
+                   'O_p1_velocity':lambda x: x*1e-3,
+                   'H_p1_velocity':lambda x: x*1e-3,
+                   'He_p2_velocity':lambda x: x*1e-3,}
+
+
 def convert_dataset(infile, outname):
 
     # Read in file using vlsv reader from pytools
@@ -48,28 +59,54 @@ def convert_dataset(infile, outname):
         for v in vars_1D_complete:
             dat = vr.read_variable(v)
             dat = dat[locs_sorted_idx].reshape(nz, ny, nx).T
+            if name_conversion[v] in data_conversion.keys():
+                dat = data_conversion[name_conversion[v]](dat)
             f.create_dataset(name_conversion[v], data=dat)
 
         for v in vars_3D_complete:
             for x_i, x in enumerate(['_x','_y', '_z']):
                 dat = vr.read_variable(v)[:, x_i]
                 dat = dat[locs_sorted_idx].reshape(nz, ny, nx).T
+                if name_conversion[v] in data_conversion.keys():
+                    dat = data_conversion[name_conversion[v]](dat)
                 f.create_dataset(name_conversion[v]+x, data=dat)
 
-        for v_add_list, v_ave_list in zip(vars_1D_add, vars_3D_ave):
-            dat_add = np.zeros_like(dat)
-            dat_ave = np.zeros_like(dat)
+        # Do the sw/pl ion averaging
+        n_dat = np.zeros_like(dat)
+        v_dat = [np.zeros_like(dat) for i in range(3)]
 
-            for v_add, v_ave in zip(v_add_list, v_ave_list): 
-                dat = vr.read_variable(v_add)
-                dat = dat[locs_sorted_idx].reshape(nz, ny, nx).T
+        for ptype in ['sw_ave', 'planet_ave']:
+            temp = vr.read_variable('n_H+'+ptype)
+            temp = data_conversion['H_p1_number_density'](temp)
+            n_dat += temp[locs_sorted_idx].reshape(nz, ny, nx).T
 
-                dat_all += dat
 
-            f.create_dataset(name_conversion[v_list[0]], data=dat_all)
+            for x_i, x in enumerate(['_x','_y', '_z']):
+                tempv = vr.read_variable('v_H+'+ptype)[:, x_i]*temp
+                v_dat[x_i] += tempv[locs_sorted_idx].reshape(nz, ny, nx).T
 
-        for v in vars_3D_ave:
-            dat_all = np.zeros_like(dat)
+        v_dat = [v/n_dat for v in v_dat]
+        v_dat = [v*1e-3 for v in v_dat]
+        f.create_dataset('H_p1_number_density', data=n_dat)
+        for x_i, x in enumerate(['_x','_y', '_z']):
+            f.create_dataset('H_p1_velocity'+x, data=v_dat[x_i])
+
+
+        # Make spatial vars
+        x = np.linspace(xmin, xmax, nx)/1000
+        y = np.linspace(ymin, ymax, ny)/1000
+        z = np.linspace(zmin, zmax, nz)/1000
+
+        zmesh, ymesh, xmesh = np.meshgrid(z, y, x, indexing='ij')
+        xmesh = xmesh.T
+        ymesh = ymesh.T
+        zmesh = zmesh.T
+
+        for var, name in zip([x,y,z,xmesh,ymesh,zmesh],
+                             ['x','y','z','xmesh','ymesh','zmesh']):
+            f.create_dataset(name, data=var)
+
+
 
 
 def main(argv):

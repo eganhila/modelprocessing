@@ -283,7 +283,7 @@ def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True
         norm = Normalize(vmax=vm, vmin=-1*vm)
     else: norm = Normalize(vmax=vmax, vmin=vmin)
 
-    if diverging: cmap='RdBu' # cmap=cmocean.cm.delta
+    if diverging: cmap='RdBu_r' # cmap=cmocean.cm.delta
     else: cmap='viridis'
 
     if field in label_lookup: label=label_lookup[field]
@@ -323,13 +323,13 @@ def make_plot(ds_name, field, center=None, orbit=None, regrid_data=False,
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:m",["field=","infile=", "orbit=", "center=", "test","dir=", "mark"])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:m",["field=","infile=", "orbit=", "center=", "test","dir=", "mark", "subtitle="])
     except getopt.GetoptError:
         print getopt.GetoptError()
         print 'error'
         return
     
-    infile, field, orbit, center, test, fdir, mark = None, None, None, None, False, None, False
+    infile, field, orbit, center, test, fdir, mark, subtitle = None, None, None, None, False, None, False,''
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
@@ -344,6 +344,8 @@ def main(argv):
         elif opt in ("-c", "--center"):
             import ast
             center = np.array(ast.literal_eval(arg))
+        elif opt in ("-s", "--subtitle"):
+            subtitle = arg
         elif opt in ('-m', '--mark'):
             mark=True
     
@@ -358,7 +360,7 @@ def main(argv):
     if fdir is not None: infiles = glob.glob(fdir+"*.h5")
     else: infiles = [infile]
 
-    if 'Heliosares' in infiles[0] or 'helio' in infiles[0]: regrid_data = False
+    if 'Heliosares' in infiles[0] or 'helio' in infiles[0] or 'rhybrid' in infiles[0]: regrid_data = False
     else: regrid_data = True
 
     
@@ -374,7 +376,7 @@ def main(argv):
             print infile, field
             make_plot(infile, field, orbit=orbit, test=test,
                       regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark,
-                      fname='Output/slice_{0}_{1}_{2}.pdf'.format(field, infile.split('/')[-1][:-3], orbit))
+                      fname='Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle))
     
 if __name__ == '__main__':
     main(sys.argv[1:])

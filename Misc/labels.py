@@ -51,18 +51,23 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'electric_field_xy':'$\mathrm{E_\perp}$',
           'electron_pressure': '$P_e$',
           'magnetic_pressure': '$P_B$',
-          'pressure':'$P$'
+          'pressure':'$P$',
+          'rhybrid':'Rhybrid',
+          'rhybrid2':'Rhybrid',
+          'rhcsv':'RHybrid-Analysator',
+          'maven_plume':'maven',
+          'maven_low_alt':'maven',
           }
-label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|\;(km/s)}$'
-label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}\;(km/s)}$'
+label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|}$'
+label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}}$'
 label_lookup['H_p1_flux'] = "$\mathrm{\Phi(H+)\;(\#/ (cm^{2} s) }$"
-label_lookup['O2_p1_velocity_total'] = '$\mathrm{|v(O_2+)|\;(km/s)}$'
+label_lookup['O2_p1_velocity_total'] = '$\mathrm{|v(O_2+)|}$'
 label_lookup['O2_p1_velocity_normal'] = '$\mathrm{v(O_2+)\cdot \hat{r}\;(km/s)}$'
 label_lookup['O2_p1_flux'] = "$\mathrm{\Phi(O_2+)\;(\#/ (cm^{2} s) }$"
 label_lookup['CO2_p1_velocity_total'] = '$\mathrm{|v(CO_2+)|\;(km/s)}$'
 label_lookup['CO2_p1_velocity_normal'] = '$\mathrm{v(CO_2+)\cdot \hat{r}\;(km/s)}$'
 label_lookup['CO2_p1_flux'] = "$\mathrm{\Phi(CO_2+)\;(\#/ (cm^{2} s) }$"
-label_lookup['O_p1_velocity_total'] = '$\mathrm{|v(O+)|\;(km/s)}$'
+label_lookup['O_p1_velocity_total'] = '$\mathrm{|v(O+)|}$'
 label_lookup['O_p1_velocity_normal'] = '$\mathrm{v(O+)\cdot \hat{r}\;(km/s)}$'
 label_lookup['O_p1_flux'] = "$\mathrm{\Phi(O+)\;(\#/ (cm^{2} s) }$"
 label_lookup['area'] = '$\mathrm{dA}\;(cm^{2})$'

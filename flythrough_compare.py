@@ -46,15 +46,17 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     
     #f, axes = plt.subplots(len(fields), 1)
     colors = {'maven':'k', 
-              'maven1':'k', 
-              'maven2':'r', 
+              'maven_low_alt':'k', 
+              'maven_plume':'k', 
+              'rhcsv':'red',
               'bats_min_LS270_SSL0':'CornflowerBlue',
               'bats_min_LS270_SSL180':'DodgerBlue',
               'bats_min_LS270_SSL270':'LightSkyBlue',
               'batsrus_multi_species':'MediumBlue',
               'batsrus_multi_fluid':'DodgerBlue',
               'batsrus_electron_pressure':'LightSeaGreen',
-              'heliosares':'MediumVioletRed',
+              'heliosares': 'MediumVioletRed',
+              'rhybrid':'orchid', 
               'helio_1':'LimeGreen',
               'helio_2':'ForestGreen'}
 
@@ -63,9 +65,12 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     plot = {}
     plot['axes'] = {field:ax for field, ax in zip(fields, axes)}
     plot['kwargs'] = {ds:{ 'label':label_lookup[ds], 'color':colors[ds], 'lw':1.5}
-                        for ds in ds_names}
-   # plot['kwargs']['maven']['alpha'] = 1#0.6
-#    plot['kwargs']['maven']['lw'] = 1
+            for ds in ds_names }
+    
+
+    
+    #plot['kwargs']['maven']['alpha'] = 0.6
+    #plot['kwargs']['maven']['lw'] = 1
     plot['figure'] = f
     plot['ax_arr'] = axes
     plot['N_axes'] = Nfields #len(fields)
@@ -136,6 +141,7 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
     plot['ax_arr'][0].set_zorder(1)
     plot['figure'].set_size_inches(8,10)
     #plot['figure'].set_size_inches(8, 16)
+    plot['figure'].subplots_adjust(left=0.2)
     
 
     if show:
@@ -152,7 +158,8 @@ def get_path_idxs(coords, ds_names, ds_types):
         if len(keys) == 0: continue
         print 'getting indxs: '+ds_type
         indxs[ds_type] = bin_coords(coords, ds_names[keys[0]], 
-                                    grid=ds_type=='heliosares')
+                                    grid='helio' in ds_type)
+                                    #grid=ds_type=='heliosares')
     indxs['maven'] = 'all'
     return indxs
 
@@ -193,14 +200,12 @@ def make_flythrough_plot(fields, data, ds_names, title='flythrough',
 
     finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle), **kwargs)
     print 'Saving: ', 'Output/{0}_{1}.pdf'.format(title, subtitle)
-    
 
-def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
+def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     """
     Setup an orbit, find the appropriate date, and make
     a flythrough plot.
     """
-
     #coords, times = get_path_pts(trange, Npts=150)
     if orbits[0].isdigit():
         coords, idx = get_orbit_coords(int(orbits[0]), Npts=250, return_idx=True)
@@ -216,113 +221,65 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, **kwargs):
     indxs['maven'] = idx
     
 
-    if field == 'low_ion':
+
+    if region == 'plume':
+        tlimit = (0.15,0.45)
+    elif region == 'low_alt':
+        tlimit = (0.43, 0.57)
+    elif region == 'outbound':
+        tlimit = (0.55, 0.9) 
+    else:
+        tlimit = (0,1)
+        region = 'all'
+
+    if field == 'all_ion':
         fields =['H_p1_number_density',
                 'O2_p1_number_density',
                 'O_p1_number_density',
                 'CO2_p1_number_density'] 
-        tlimit = (0.43, 0.57)
-        title = 'low_alt_ion'
-        skip = 1
-    elif 'plume' in field:
-        if field == 'plume_O2':
-            fields =['O2_p1_number_density',
-                     'O2_p1_velocity_x',
-                     'O2_p1_velocity_y',
-                     'O2_p1_velocity_z',
-                     'O2_p1_velocity_total']
-            title = 'plume_O2'
-        elif field == 'plume_O':
-            fields = ['O_p1_number_density',
-                 'O_p1_velocity_x',
-                 'O_p1_velocity_y',
-                 'O_p1_velocity_z',
-                 'O_p1_velocity_total']
-            title = 'plume_O'
-        elif field == 'plume_mag':
-            fields = ['magnetic_field_x',
-                 'magnetic_field_y',
-                 'magnetic_field_z',
-                 'magnetic_field_total'
-                 ]
-            title = 'plume_mag'
-        elif field == 'plume_pressure':
-            fields = ['magnetic_pressure',
-             'pressure',
-             ' electron_pressure']
-            title = 'plume_pressure'
-        tlimit =(0.2, 0.45)
-        skip = 1
-    elif 'outbound' in field:
-        if field == 'outbound_O2':
-            fields =['O2_p1_number_density',
-                     'O2_p1_velocity_x',
-                     'O2_p1_velocity_y',
-                     'O2_p1_velocity_z',
-                     'O2_p1_velocity_total']
-            title = 'outbound_O2'
-        elif field == 'outbound_O':
-            fields = ['O_p1_number_density',
-                 'O_p1_velocity_x',
-                 'O_p1_velocity_y',
-                 'O_p1_velocity_z',
-                 'O_p1_velocity_total']
-            title = 'outbound_O'
-        elif field == 'outbound_H':
-            fields = ['H_p1_number_density',
-                 'H_p1_velocity_x',
-                 'H_p1_velocity_y',
-                 'H_p1_velocity_z',
-                 'H_p1_velocity_total']
-            title = 'outbound_H'
-        elif field == 'outbound_mag':
-            fields = ['magnetic_field_x',
-                 'magnetic_field_y',
-                 'magnetic_field_z',
-                 'magnetic_field_total'
-                 ]
-            title = 'outbound_mag'
-      #fields = ['O2_p1_number_density',
-      #          'O2_p1_velocity_total',
-      #          'O_p1_number_density',
-      #         'O_p1_velocity_total',
-      #         'H_p1_number_density',
-      #         'H_p1_velocity_total',
-      #         'magnetic_field_x',
-      #         'magnetic_field_y',
-      #         'magnetic_field_z']
-        tlimit = (0.55, 0.9)
-        #title = 'outbound'
-                
-
-
+    elif field == 'O2':
+        fields =['O2_p1_number_density',
+                 'O2_p1_velocity_x',
+                 'O2_p1_velocity_y',
+                 'O2_p1_velocity_z',
+                 'O2_p1_velocity_total']
+    elif field == 'O':
+        fields = ['O_p1_number_density',
+             'O_p1_velocity_x',
+             'O_p1_velocity_y',
+             'O_p1_velocity_z',
+             'O_p1_velocity_total']
+    elif field == 'H':
+        fields = ['H_p1_number_density',
+             'H_p1_velocity_x',
+             'H_p1_velocity_y',
+             'H_p1_velocity_z',
+             'H_p1_velocity_total']
     elif field == 'mag':
-        fields = ['magnetic_field_total', 'magnetic_field_x', 'magnetic_field_y',
-              'magnetic_field_z']
-        tlimit = None#(0.3, 0.7)
-        title = 'mag'
-        skip = 1
+        fields = ['magnetic_field_x',
+             'magnetic_field_y',
+             'magnetic_field_z',
+             'magnetic_field_total']
+    elif field == 'pressure':
+        fields = ['magnetic_pressure', 'pressure', 'electron_pressure', 'total_pressure']
     else:
         fields = [field]
-        tlimit = None
-        title = field
-        skip=1
 
     data = get_all_data(ds_names, ds_types, indxs, fields)
     make_flythrough_plot(fields, data, ds_names, coords=coords,  
-                         subtitle='{0}_{1}'.format(title,orbits[0]),  tlimit=tlimit)
+                         subtitle='{0}_{1}_{2}'.format(region, field,orbits[0]),  tlimit=tlimit)
 
 
 def main(argv):
 
     try:
-        opts, args = getopt.getopt(argv,"f:o:nh",["field=", "orbit=", "new_models", "helio_models"])
+        opts, args = getopt.getopt(argv,"f:o:nh",["field=", "orbit=", "new_models", "helio_models", "region="])
     except getopt.GetoptError:
         print 'error'
         return
 
 
-    field, orbit, new_models, helio_models = None, None, False, False
+    field, orbit, new_models, helio_models, region = None, None, False, False, None
 
     for opt, arg in opts:
         if opt in ("-f", "--field"):
@@ -334,6 +291,8 @@ def main(argv):
             new_models=True
         elif opt in ('-h', '--helio_multi'):
             helio_models = True
+        elif opt in ("--region"):
+             region = arg
 
     if orbit == 371:
         orbit_groups = np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391])
@@ -342,7 +301,7 @@ def main(argv):
     ds_names, ds_types = get_datasets(R2349=new_models, helio_multi=helio_models)
     print ds_names, ds_types
 
-    flythrough_orbit([orbit], ds_names, ds_types, field)
+    flythrough_orbit([orbit], ds_names, ds_types, field, region)
 
 
 if __name__ == "__main__":

@@ -76,14 +76,18 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
         #ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_pe_test.h5'
         ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
+        ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
                     'batsrus3':[key for key in ds_names.keys() if 'electron_pressure' in key],
-                    'heliosares':[key for key in ds_names.keys() if 'helio' in key]}
+                    'heliosares':[key for key in ds_names.keys() if 'helio' in key],
+                    'rhybrid_helio':['rhybrid']}
         if maven:
-            ds_names['maven']=orbit_dir+'orbit_2349.csv'
-            ds_types['maven']=['maven']
+            ds_names['maven_low_alt']=orbit_dir+'orbit_2349.csv'
+            ds_names['maven_plume']='/Volumes/triton/Data/ModelChallenge/Maven/static_plume_moments.csv'
+            ds_types['maven']=['maven_low_alt', 'maven_plume']
+
     elif helio_multi:
         ds_names['t00550'] = model_dir+'R2349/Heliosares_Multi/t00550.h5'
         ds_names['t00560'] = model_dir+'R2349/Heliosares_Multi/t00560.h5'
@@ -170,8 +174,8 @@ def apply_grid_indx(ds, field, indx):
     return dat
 
 def apply_maven_indx(ds, field, indx):
-    return ds.loc[indx, field].values
- #   return ds.loc[:,field].values
+#    return ds.loc[indx, field].values
+    return ds.loc[:,field].values
 
 
 def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
@@ -185,7 +189,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
     field : field to get data for
     indx : indexes of the points get the data for
     grid : boolean indicating if the dataset was saved in array or
-        list of points form
+        list of points forp 
     normal : hacky way to get nhat for surface
     velocity_field : what velocity field to use in calculation of
         flux values
@@ -204,8 +208,9 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         velocity_field = 'velocity'
 
     if field in ds.keys():
-        if field == 'y' and grid==True: return np.array([])
         return apply_indx(ds, field, indx)
+    elif field == 'electron_pressure':
+        return get_ds_data(ds, ' electron_pressure', indx, grid=grid, maven=maven)
     elif '_total' in field and field.replace('_total', '_x') in ds.keys():
         x = apply_indx(ds, field.replace('_total', '_x'), indx)**2
         y = apply_indx(ds, field.replace('_total', '_y'), indx)**2
@@ -242,6 +247,24 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         return apply_indx(ds, '_'.join(field.split('_')[2:]), indx)
     elif field == 'magnetic_pressure':
         return get_ds_data(ds, 'magnetic_field_total', indx, grid=grid, maven=maven)**2/(2*1.26E-6*1e9)
+    elif field == 'total_pressure':
+        if maven: return np.array([])
+        pe = get_ds_data(ds, 'electron_pressure', indx, grid=grid, maven=maven)
+        pt = get_ds_data(ds, 'thermal_pressure', indx, grid=grid, maven=maven)
+        pb = get_ds_data(ds, 'magnetic_pressure', indx, grid=grid, maven=maven)
+        p = pb
+        if pe.shape == p.shape: p += pe
+        if pt.shape == p.shape: p += pt
+
+        return p
+    elif 'density' in field and field != 'density':
+        return get_ds_data(ds, 'density', indx, grid=grid, maven=maven)
+    elif 'velocity_x' in field and field != 'velocity_x':
+        return get_ds_data(ds, 'velocity_x', indx, grid=grid, maven=maven)
+    elif 'velocity_y' in field and field != 'velocity_y':
+        return get_ds_data(ds, 'velocity_y', indx, grid=grid, maven=maven)
+    elif 'velocity_z' in field and field != 'velocity_z':
+        return get_ds_data(ds, 'velocity_z', indx, grid=grid, maven=maven)
     else:
         if maven: dstype = 'maven'
         elif grid: dstype = 'heliosares'
@@ -390,7 +413,8 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
                     ds_dat = get_ds_data(ds, field, indxs[ds_type],
                             maven=True, grid=False)
                     data[field][dsk] = ds_dat
-                time = get_ds_data(ds, 'time', indxs[ds_type],
+                    if field == 'O2_p1_number_density' and dsk == 'rhcsv': print indxs[ds_type] 
+                    time = get_ds_data(ds, 'time', indxs[ds_type],
                         maven=True, grid=False)
                 time = time-time[0]
                 time = time/time[-1]
@@ -402,7 +426,8 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
                 for field in fields:
                     with h5py.File(dsf, 'r') as ds:
                         ds_dat = get_ds_data(ds, field, indxs[ds_type],
-                                             grid=ds_type=='heliosares', **kwargs)
+                                             grid='helio' in ds_type, **kwargs)
+                                             #grid=ds_type=='heliosares', **kwargs)
                         data[field][dsk] = ds_dat
 
                 data['time'][dsk] = np.linspace(0, 1, np.max(indxs[ds_type].shape))

@@ -174,7 +174,7 @@ def main(argv):
         elif opt in ("-i", "--infile"):
             dsk = arg.split('/')[-1].split('.')[0]
             ds_names = {dsk:arg}
-            if 'helio' in arg: ds_types = {'heliosares':[dsk]}
+            if 'helio' in arg or 'rhybrid' in arg: ds_types = {'heliosares':[dsk]}
             else: ds_types = {'batsrus':[dsk]}
         elif opt in ("-r", "--radius"):
             if arg == 'all': radii = np.arange(1.0, 3.0, 0.2)
