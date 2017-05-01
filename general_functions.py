@@ -84,8 +84,7 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key],
                     'rhybrid_helio':['rhybrid']}
         if maven:
-            ds_names['maven_low_alt']=orbit_dir+'orbit_2349.csv'
-            ds_names['maven_plume']='/Volumes/triton/Data/ModelChallenge/Maven/static_plume_moments.csv'
+            ds_names['maven']=orbit_dir+'orbit_2349.csv'
             ds_types['maven']=['maven_low_alt', 'maven_plume']
 
     elif helio_multi:
@@ -302,7 +301,7 @@ def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0
         account for a non-spherical mars
     """
     Nskip = 10000/Npts
-    data = pd.read_csv(orbit_dir+'orbit_{0:04d}.csv'.format(orbit))[::Nskip]
+    data = pd.read_csv(orbit_dir+'orbit_{0:04d}.csv'.format(orbit))#[::Nskip]
     pos = np.array([data['x'], data['y'], data['z']])
     alt = data['altitude']
      
