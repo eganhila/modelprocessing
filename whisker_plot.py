@@ -21,7 +21,7 @@ def setup_whiskerplot():
 
 def plot_whisker_data(plot, data, coords, showz=False):
 
-    norm = 2.0/(np.max(data))
+    norm = 2.0/(np.nanmax(data))
     off_ax = [[1,2],[0,2],[0,1]]
 
     for ax_i in range(3):
@@ -101,19 +101,15 @@ def get_whisker_data(infile, field, orbit, ds_type):
     if ds_type == 'maven': 
         coords = get_all_data({'ds':infile}, {ds_type:['ds']},
                               {ds_type:[]}, ['x','y','z'])
-        coords = np.array([coords['x']['ds'], coords['y']['ds'], coords['z']['ds']])#/3390
+        coords = np.array([coords['x']['ds'], coords['y']['ds'], coords['z']['ds']])/3390
         time = get_all_data({'ds':infile}, {ds_type:['ds']},
                               {ds_type:[]}, ['time'])['time']['ds']
         time = (time-time[0])/(time[-1]-time[0])
-
         indx = []
 
     else:
-        coords = get_orbit_coords(int(orbit), Npts=250)
-        indx = bin_coords(coords, infile, 'helio' in ds_type)
-        time = np.linspace(0,1,indx.shape[0])
-
-
+        coords, time  = get_orbit_coords(int(orbit), Npts=25, return_time=True)
+        indx = bin_coords(coords, infile, ('helio' in ds_type) or ('rhybrid' in ds_type) )
 
     dat = get_all_data({'ds':infile}, {ds_type:['ds']}, {ds_type:indx}, fields)
 
@@ -134,9 +130,6 @@ def make_plot(infile, field, orbit, ds_type, showz, showp, region=None):
         coords = coords[:, t_i:t_f]
         dat = dat[:, t_i:t_f]
 
-    if ds_type == 'maven' and field == 'magnetic_field':
-        coords = coords[:, ::50]
-        dat = dat[:, ::50]
 
     plot = setup_whiskerplot()
 

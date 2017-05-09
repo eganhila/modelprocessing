@@ -29,13 +29,13 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     """
     Setup plotting environment and corresponding data structures
     """
-    if add_altitude and False: 
+    if add_altitude and False:
         fields = fields[:]
         fields.insert(0,'altitude')
     Nfields = len(fields)
-        
+
     hrs = [1 for i in range(Nfields)]
-        
+
     hrs.insert(0,0.1)
     hrs.insert(0,0.1)
     import matplotlib.gridspec as gridspec
@@ -43,11 +43,11 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
                            height_ratios=hrs, hspace=0.05, wspace=3)
     axes = [plt.subplot(gs[i, 0]) for i in range(2, Nfields+2)]
     f = plt.gcf()
-    
+
     #f, axes = plt.subplots(len(fields), 1)
-    colors = {'maven':'k', 
-              'maven_low_alt':'k', 
-              'maven_plume':'k', 
+    colors = {'maven':'k',
+              'maven_low_alt':'k',
+              'maven_plume':'k',
               'rhcsv':'red',
               'bats_min_LS270_SSL0':'CornflowerBlue',
               'bats_min_LS270_SSL180':'DodgerBlue',
@@ -56,19 +56,19 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
               'batsrus_multi_fluid':'DodgerBlue',
               'batsrus_electron_pressure':'LightSeaGreen',
               'heliosares': 'MediumVioletRed',
-              'rhybrid':'orchid', 
+              'rhybrid':'orchid',
               'helio_1':'LimeGreen',
               'helio_2':'ForestGreen'}
 
     for i in range(550,660,10): colors['t00{0}'.format(i)] = cm.rainbow((i-550)/10.0)
-    
+
     plot = {}
     plot['axes'] = {field:ax for field, ax in zip(fields, axes)}
     plot['kwargs'] = {ds:{ 'label':label_lookup[ds], 'color':colors[ds], 'lw':1.5}
             for ds in ds_names }
-    
 
-    
+
+
     #plot['kwargs']['maven']['alpha'] = 0.6
     #plot['kwargs']['maven']['lw'] = 1
     plot['figure'] = f
@@ -79,17 +79,47 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     plot['tlimit'] = tlimit
     plot['shadow'] = np.logical_and(coords[0]<0,
                                     np.sqrt(coords[1]**2+coords[2]**2)<3390)
+    plot['altitude'] = (np.sqrt(np.sum(coords**2,axis=0))-1)*3390
     return plot
 
+def add_tbars(plot):
+    tb = plot['timebar']
+    sb = plot['shadowbar']
+
+    t_xv, t_yv = np.meshgrid(np.linspace(0,1, 100), [0,1])
+    s_xv, s_yv = np.meshgrid(np.linspace(0, 1, plot['shadow'].shape[0]),[0,1])
+
+    t_dat = np.array([np.linspace(0,1,100), np.linspace(0,1,100)])
+    s_dat = np.array([plot['shadow'], plot['shadow']])
+
+    tb.pcolormesh(t_xv, t_yv, t_dat, cmap='inferno',rasterized=True)
+    sb.pcolormesh(s_xv, s_yv, s_dat, cmap='inferno_r',rasterized=True,
+                  vmin=-0.1,vmax=1.2)
+
+    if plot['tlimit'] is None: tlim = (0,1)
+    else: tlim = plot['tlimit']
+
+    tb.set_xlim(tlim)
+    sb.set_xlim(tlim)
+
+    tb.axis('off')
+    sb.axis('off')
+    
+    
+def change_xticks(plot):
+    ax = plot['ax_arr'][-1]
+    tick_locs = ax.get_xticks().tolist()
+    t = plot['time']
+    alt = plot['altitude']
+    
+    alt_vals = [alt[np.argmin(np.abs(t-tick))] for tick in tick_locs]
+    ax.set_xticklabels(['{0:02d}'.format(int(av)) for av in alt_vals])
+    ax.set_xticks(tick_locs)
+    
 def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
     """
     Make final plotting adjustments and save/show image
     """
-    if 'altitude' in plot.keys():
-        plot['axes']['altitude'].plot(np.linspace(plot['time'][0], plot['time'][-1],
-                                                  plot['altitude'].shape[0]), 
-                                                  plot['altitude'],
-                                                  **plot['kwargs']['maven'])
     for f, ax in plot['axes'].items():
         if f in label_lookup:
             ax.set_ylabel(label_lookup[f])
@@ -99,50 +129,22 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
         if f in field_lims: ax.set_ylim(field_lims[f])
         if f in log_fields2: ax.set_yscale('log')
-            
+
     for i in range(plot['N_axes']):
         ax = plot['ax_arr'][i]
-        if i == plot['N_axes']-1: ax.set_xlabel('$\mathrm{Time}$')
+        if i == plot['N_axes']-1: ax.set_xlabel('$\mathrm{Altitude}$')
         else: ax.set_xticks([])
-        
-        if plot['tlimit'] is not None:
-            #lim, t = plot['tlimit'], plot['time']
-            #tlim = (t[int(lim[0]*t.shape[0])], t[int(lim[1]*t.shape[0])])
-            tlim = plot['tlimit']
-            ax.set_xlim(tlim)
-        else:
-            ax.set_xlim(0,1)
-            
-    tb = plot['timebar']
-    sb = plot['shadowbar']
-    
-    t_xv, t_yv = np.meshgrid(np.linspace(0,1, 100), [0,1])
-    s_xv, s_yv = np.meshgrid(np.linspace(0, 1, plot['shadow'].shape[0]),[0,1])
-                             
-    t_dat = np.array([np.linspace(0,1,100), np.linspace(0,1,100)])
-    s_dat = np.array([plot['shadow'], plot['shadow']])
-    
-    tb.pcolormesh(t_xv, t_yv, t_dat, cmap='inferno',rasterized=True)
-    sb.pcolormesh(s_xv, s_yv, s_dat, cmap='inferno_r',rasterized=True,
-                  vmin=-0.1,vmax=1.2)
-    
-    if plot['tlimit'] is None: tlim = (0,1)
-    else: tlim = plot['tlimit']
-    
-    tb.set_xlim(tlim)
-    sb.set_xlim(tlim)
-    
-    tb.axis('off')
-    sb.axis('off')
-    
-    #plot['ax_arr'][-1].legend()#(bbox_to_anchor=(1.4, 1))
-    handles, labels = plot['ax_arr'][-1].get_legend_handles_labels()
-    #plot['ax_arr'][0].legend(handles, labels)
-    plot['ax_arr'][0].set_zorder(1)
+
+        if plot['tlimit'] is not None: ax.set_xlim(plot['tlimit'])
+        else: ax.set_xlim(0,1)
+
+    add_tbars(plot)
+    change_xticks(plot)
+
+
     plot['figure'].set_size_inches(8,10)
     #plot['figure'].set_size_inches(8, 16)
     plot['figure'].subplots_adjust(left=0.2)
-    
 
     if show:
         plt.show()
@@ -150,6 +152,7 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
         plt.savefig('Output/test.pdf')
     else:
         plt.savefig(fname)
+
 
 def get_path_idxs(coords, ds_names, ds_types):
     indxs = {}
@@ -188,10 +191,11 @@ def make_flythrough_plot(fields, data, ds_names, title='flythrough',
     """
     plot = setup_plot(fields, ds_names.keys(), coords,
                       tlimit=tlimit, add_altitude=True)
+    plot['time'] = data['time']['time']
 
     for field in fields:
         for dsk, ds_dat in data[field].items():
-                        
+            if 'magnetic_field' in field and dsk == 'maven': ds_dat = ds_dat *1e3#print ds_dat 
             if ds_dat.size != 0:
                 plot_field_ds(data['time'][dsk], ds_dat, plot['axes'][field], plot['kwargs'][dsk])
             else:
@@ -208,7 +212,7 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     """
     #coords, times = get_path_pts(trange, Npts=150)
     if orbits[0].isdigit():
-        coords, idx = get_orbit_coords(int(orbits[0]), Npts=250, return_idx=True)
+        coords, time = get_orbit_coords(int(orbits[0]), Npts=250, return_time=True)
     elif orbits[0] == 'z':
         z = np.linspace(1, 2, 250)
         coords = np.array([np.zeros_like(z), np.zeros_like(z), z])
@@ -218,12 +222,11 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
         raise(RuntimeError)
 
     indxs = get_path_idxs(coords, ds_names, ds_types)
-    indxs['maven'] = idx
-    
+    indxs['maven'] = []
 
 
     if region == 'plume':
-        tlimit = (0.15,0.45)
+        tlimit = (0.3,0.45)
     elif region == 'low_alt':
         tlimit = (0.43, 0.57)
     elif region == 'outbound':
@@ -260,12 +263,18 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
              'magnetic_field_y',
              'magnetic_field_z',
              'magnetic_field_total']
+    elif field == 'plume1': fields  = ['O2_p1_number_density', 'O2_p1_velocity_total', 'O_p1_number_density', "O_p1_velocity_total"]
+    elif field == 'plume2': fields  = ['O2_p1_number_density','O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'pressure':
         fields = ['magnetic_pressure', 'pressure', 'electron_pressure', 'total_pressure']
+    elif field == 'current':
+        fields = ['current_y', 'electron_pressure','pressure', 'hall_velocity_y', 'electron_velocity_y',  'velocity_y']
     else:
         fields = [field]
 
     data = get_all_data(ds_names, ds_types, indxs, fields)
+    data['time'] = {dsk:time for dsk in ds_names.keys()}
+    data['time']['time'] = time
     make_flythrough_plot(fields, data, ds_names, coords=coords,  
                          subtitle='{0}_{1}_{2}'.format(region, field,orbits[0]),  tlimit=tlimit)
 
@@ -306,3 +315,4 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+

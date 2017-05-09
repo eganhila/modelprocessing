@@ -12,7 +12,51 @@ import getopt
 import sys
 import cmocean
 import glob
+from matplotlib.patches import Wedge
+import ast
 plt.style.use('seaborn-poster')
+
+def add_mars(ax_i, **kwargs):
+    if ax_i == 2: add_mars_xy(**kwargs)
+    if ax_i == 1: add_mars_xz(**kwargs)
+    if ax_i == 0: add_mars_yz(**kwargs)
+        
+def add_mars_xy(ax=None,alpha=1):
+    if ax is None: ax = plt.gca()
+    center = (0,0)
+    radius = 1
+    theta1, theta2 = 90, 270
+    
+    for radius in [1, 0.66, 0.3]:
+        w1 = Wedge(center, radius, theta1, theta2, fc='k', lw=1, ec='k',alpha=alpha,width=0.33)
+        w2 = Wedge(center, radius, theta2, theta1, fc='white', ec='k',lw=1,alpha=alpha)
+        for wedge in [w1, w2]:
+            ax.add_artist(wedge)     
+
+def add_mars_xz(ax=None,alpha=1):
+    if ax is None: ax = plt.gca()
+    center = (0,0)
+    radius = 1
+    theta1, theta2 = 90, 270
+    
+    w1 = Wedge(center, radius, theta1, theta2, fc='k', lw=1, ec='k',alpha=alpha)
+    w2 = Wedge(center, radius, theta2, theta1, fc='white', ec='k', lw=1,alpha=alpha)
+    for wedge in [w1, w2]:
+        ax.add_artist(wedge)
+        
+    for theta in [-np.pi/5,np.pi/5, 0]:
+        x,y = [-np.cos(theta),np.cos(theta)],[np.sin(theta), np.sin(theta)]
+        ax.plot(x,y,color='k',lw=1,alpha=alpha)
+        
+def add_mars_yz(ax=None,alpha=1):
+    if ax is None: ax = plt.gca()
+    circle = plt.Circle((0, 0), 1, color='w', ec='k', lw=1,alpha=alpha)
+    ax.add_artist(circle)
+    
+    for theta in [-np.pi/5,np.pi/5, 0]:
+        x,y = [-np.cos(theta),np.cos(theta)],[np.sin(theta), np.sin(theta)]
+        ax.plot(x,y,color='k',lw=1,alpha=alpha)
+
 
 def setup_sliceplot():
     plot = {}
@@ -88,11 +132,15 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,
         else: 
             mars_frac = np.real(np.sqrt(1-center[ax_i]**2))
             ax.set_title('$\mathrm{'+ax_title_lab[ax_i]+'= '+"{0:0.02}".format(center[ax_i])+'}\;(R_M)$')
+
+        alpha = np.nanmax([mars_frac, 0.1])
+
+	add_mars(ax_i,ax=ax, alpha = alpha)
         
-        circle = plt.Circle((0, 0), mars_frac, color='k')
-        ax.add_artist(circle)
-        circle = plt.Circle((0, 0), 1, color='k', alpha=0.1, zorder=0)
-        ax.add_artist(circle)
+        #circle = plt.Circle((0, 0), mars_frac, color='k')
+        #ax.add_artist(circle)
+        #circle = plt.Circle((0, 0), 1, color='k', alpha=0.1, zorder=0)
+        #ax.add_artist(circle)
         
         if orbit is not None: add_orbit(ax,ax_i, orbit, center, show_center=show_center, show_intersect=True)
             
@@ -229,7 +277,6 @@ def slice_onax(ds, ax_i, field, vec_field=False, idx=None, center=None, test=Fal
         slc_1 = ds['y'][:,:,idx]
         if vec_field: field = [ds[field+'_x'][:,:,idx], ds[field+'_y'][:,:,idx]]
         else: field = ds[field][:,:,idx]
-    print field
 
     return (slc_0, slc_1, field)
     
@@ -318,18 +365,17 @@ def make_plot(ds_name, field, center=None, orbit=None, regrid_data=False,
     for ax in [0,1,2]:
         slc = slice_data(ds, ax, field, regrid_data=regrid_data, vec_field=vec_field, test=test, center=center)
         plot_data(plot, slc, ax, vec_field, field)
-    print orbit, mark
     finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark)
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:m",["field=","infile=", "orbit=", "center=", "test","dir=", "mark", "subtitle="])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:m",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle="])
     except getopt.GetoptError:
         print getopt.GetoptError()
         print 'error'
         return
     
-    infile, field, orbit, center, test, fdir, mark, subtitle = None, None, None, None, False, None, False,''
+    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type = None, None, None, None, False, None, False,'', None
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
@@ -339,19 +385,24 @@ def main(argv):
             orbit = int(arg)
         elif opt in ("-t", "--test"):
             test = True
-        elif opt in ("-d", "--dir"):
+        elif opt in ("-d", "--indir"):
             fdir = arg
         elif opt in ("-c", "--center"):
-            import ast
-            center = np.array(ast.literal_eval(arg))
+            center = arg 
         elif opt in ("-s", "--subtitle"):
             subtitle = arg
         elif opt in ('-m', '--mark'):
             mark=True
+        elif opt in ("-t", "--type"):
+            ds_type = arg
     
-    if infile is None and fdir is None: 
+    if infile is None and fdir is None and ds_type is None: 
         print 'must supply file'
         raise(RuntimeError)
+    
+    if ds_type is not None and infile is None:
+        ds_names, ds_types = get_datasets(R2349=True) 
+        infile = ds_names[ds_type] 
     
     if 'velocity' == field[-8:] or 'magnetic_field' == field:
         vec_field = True
@@ -362,6 +413,10 @@ def main(argv):
 
     if 'Heliosares' in infiles[0] or 'helio' in infiles[0] or 'rhybrid' in infiles[0]: regrid_data = False
     else: regrid_data = True
+
+    if center == 'plume': center = [0.22996261,0.27413697,1.51051213]
+    elif center == 'shemi': center = [-0.25569435,-0.05906954,-1.58311669]
+    else: center = np.array(ast.literal_eval(arg))
 
     
     if field == 'all_ion':

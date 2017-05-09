@@ -85,7 +85,7 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
                     'rhybrid_helio':['rhybrid']}
         if maven:
             ds_names['maven']=orbit_dir+'orbit_2349.csv'
-            ds_types['maven']=['maven_low_alt', 'maven_plume']
+            ds_types['maven']=['maven']
 
     elif helio_multi:
         ds_names['t00550'] = model_dir+'R2349/Heliosares_Multi/t00550.h5'
@@ -256,6 +256,21 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         if pt.shape == p.shape: p += pt
 
         return p
+    elif 'electron_velocity' in field and 'current_x' in ds.keys():
+        print 'evel'
+        vec = field[-1]
+        u = get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven)
+        J = get_ds_data(ds, 'current_'+vec, indx, grid=grid, maven=maven)
+        n = get_ds_data(ds, 'number_density', indx, grid=grid, maven=maven)
+        return u-(J/n)/6.24e6
+
+    elif 'hall_velocity' in field and 'current_x' in ds.keys():
+        print 'hvel'
+        vec = field[-1]
+        J = get_ds_data(ds, 'current_'+vec, indx, grid=grid, maven=maven)
+        n = get_ds_data(ds, 'number_density', indx, grid=grid, maven=maven)
+        return (J/n)/6.24e6
+
     elif 'density' in field and field != 'density':
         return get_ds_data(ds, 'density', indx, grid=grid, maven=maven)
     elif 'velocity_x' in field and field != 'velocity_x':
@@ -283,7 +298,7 @@ def adjust_spherical_positions(pos, alt, Rm0):
         
 
 def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0,
-                 adjust_spherical=True, return_idx=False):
+                 adjust_spherical=True, return_time=False):
     """
     A function that returns coordinates of the spacecraft for
     a given orbit.
@@ -303,6 +318,8 @@ def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0
     Nskip = 10000/Npts
     data = pd.read_csv(orbit_dir+'orbit_{0:04d}.csv'.format(orbit))#[::Nskip]
     pos = np.array([data['x'], data['y'], data['z']])
+    time = data['time'].values
+    time = (time-time[0])/(time[-1]-time[0])
     alt = data['altitude']
      
     if adjust_spherical:
@@ -311,7 +328,7 @@ def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0
     if units_rm:
         pos = pos/sim_mars_r
 
-    if return_idx: return (pos,alt.index)
+    if return_time: return (pos,time)
     else: return pos
 
 
@@ -412,7 +429,6 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
                     ds_dat = get_ds_data(ds, field, indxs[ds_type],
                             maven=True, grid=False)
                     data[field][dsk] = ds_dat
-                    if field == 'O2_p1_number_density' and dsk == 'rhcsv': print indxs[ds_type] 
                     time = get_ds_data(ds, 'time', indxs[ds_type],
                         maven=True, grid=False)
                 time = time-time[0]
@@ -425,7 +441,7 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
                 for field in fields:
                     with h5py.File(dsf, 'r') as ds:
                         ds_dat = get_ds_data(ds, field, indxs[ds_type],
-                                             grid='helio' in ds_type, **kwargs)
+                                             grid=('helio' in ds_type) or ('rhybrid' in ds_type), **kwargs)
                                              #grid=ds_type=='heliosares', **kwargs)
                         data[field][dsk] = ds_dat
 
