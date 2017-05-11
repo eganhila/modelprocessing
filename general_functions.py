@@ -449,3 +449,12 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
 
     return data
 
+
+def rotate_coords_simmso(coords):
+
+   xz_theta = np.pi*4.18/180
+   xy_theta = np.pi*5.1/180
+   Rxz = np.array([[np.cos(xz_theta), 0, np.sin(xz_theta)],[0,1,0],[-np.sin(xz_theta),0,np.cos(xz_theta)]])
+   Rxy = np.array([[np.cos(xy_theta), -1*np.sin(xy_theta),0],[np.sin(xy_theta), np.cos(xy_theta),0],[0,0,1]])
+   return np.matmul(Rxz, np.matmul(Rxy, coords))
+

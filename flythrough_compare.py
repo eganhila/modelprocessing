@@ -26,7 +26,7 @@ import pandas as pd
 import datetime
 plt.style.use('seaborn-poster')
 
-def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
+def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single_out=None):
     """
     Setup plotting environment and corresponding data structures
     """
@@ -37,12 +37,13 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
 
     hrs = [1 for i in range(Nfields)]
 
+    hrs.insert(0,0.3)
     hrs.insert(0,0.1)
     hrs.insert(0,0.1)
     import matplotlib.gridspec as gridspec
-    gs = gridspec.GridSpec(Nfields+2, 1,
+    gs = gridspec.GridSpec(Nfields+3, 1,
                            height_ratios=hrs, hspace=0.05, wspace=3)
-    axes = [plt.subplot(gs[i, 0]) for i in range(2, Nfields+2)]
+    axes = [plt.subplot(gs[i, 0]) for i in range(3, Nfields+3)]
     f = plt.gcf()
 
     #f, axes = plt.subplots(len(fields), 1)
@@ -67,6 +68,10 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     plot['axes'] = {field:ax for field, ax in zip(fields, axes)}
     plot['kwargs'] = {ds:{ 'label':label_lookup[ds], 'color':colors[ds], 'lw':1.5}
             for ds in ds_names }
+
+    if single_out is not None:
+        for ds in plot['kwargs'].keys():
+            if ds != single_out: plot['kwargs'][ds]['alpha']=0.2
 
 
 
@@ -118,6 +123,13 @@ def change_xticks(plot):
     time_vals = [datetime.datetime.fromtimestamp(t*4.5*60*60+1450110477).strftime("%H:%M") for t in tick_locs]
     ax.set_xticklabels(['{1:02d}'.format(tv, int(av)) for tv, av in zip(time_vals, alt_vals)])
     ax.set_xticks(tick_locs)
+
+    ax = plot['ax_arr'][0]
+    ax2 = ax.twiny()
+    ax2.set_xlim(ax.get_xlim())
+    ax2.set_xticklabels(time_vals[::2])
+    ax2.set_xticks(tick_locs[::2])
+
     
 def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False, 
                     reset_timebar=False):
@@ -188,13 +200,13 @@ def plot_field_ds(x, data, ax, kwargs):
 
 
 def make_flythrough_plot(fields, data, ds_names, title='flythrough', 
-                         coords=None,  subtitle=None, tlimit=None, **kwargs):
+                         coords=None,  subtitle=None, tlimit=None, single_out=None, **kwargs):
     """
     Main function for creating plot, must have already found
     data
     """
     plot = setup_plot(fields, ds_names.keys(), coords,
-                      tlimit=tlimit, add_altitude=True)
+                      tlimit=tlimit, add_altitude=True, single_out=single_out)
     plot['time'] = data['time']['time']
 
     for field in fields:
@@ -223,6 +235,8 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     else:
         print 'Orbit not supported'
         raise(RuntimeError)
+
+    coords = rotate_coords_simmso(coords)
 
     indxs = get_path_idxs(coords, ds_names, ds_types)
     indxs['maven'] = []
@@ -285,13 +299,13 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
 def main(argv):
 
     try:
-        opts, args = getopt.getopt(argv,"f:o:nhz",["field=", "orbit=", "new_models", "helio_models", "region=", "reset_timebar"])
+        opts, args = getopt.getopt(argv,"f:o:nhz",["field=", "orbit=", "new_models", "helio_models", "region=", "reset_timebar", "single_out="])
     except getopt.GetoptError:
         print 'error'
         return
 
 
-    field, orbit, new_models, helio_models, region, reset_timebar = None, None, False, False, None, False
+    field, orbit, new_models, helio_models, region, reset_timebar, single_out = None, None, False, False, None, False, None
 
     for opt, arg in opts:
         if opt in ("-f", "--field"):
@@ -307,6 +321,8 @@ def main(argv):
             region = arg
         elif opt in ("--reset_timebar", "-z"):
             reset_timebar = True
+        elif opt in ("--single_out"):
+            single_out = arg
 
     if orbit == 371:
         orbit_groups = np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391])
@@ -315,7 +331,7 @@ def main(argv):
     ds_names, ds_types = get_datasets(R2349=new_models, helio_multi=helio_models)
     print ds_names, ds_types
 
-    flythrough_orbit([orbit], ds_names, ds_types, field, region, reset_timebar=reset_timebar)
+    flythrough_orbit([orbit], ds_names, ds_types, field, region, reset_timebar=reset_timebar, single_out=single_out)
 
 
 if __name__ == "__main__":

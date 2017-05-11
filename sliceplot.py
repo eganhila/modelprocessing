@@ -92,9 +92,16 @@ def orbit_intersect_plane(coords, center, ax_i):
     return (p1, coords[:,p2_idx])
 
 def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
-              show_center=False, lw=2.8):
+              show_center=False, lw=5, tlimit=None):
     off_ax = [[1,2],[0,2],[0,1]]
-    coords = get_orbit_coords(orbit, Npts=250)
+    coords, time = get_orbit_coords(orbit, Npts=250, return_time=True)
+
+    if tlimit is not None:
+        i0 = next(x[0] for x in enumerate(time) if x[1] > tlimit[0])
+        i1 = next(x[0] for x in enumerate(time) if x[1] > tlimit[1])
+        coords = coords[:, i0:i1]
+
+
     ltimes = np.linspace(0,1,coords.shape[1])
     #ltimes[np.logical_and(coords[ax_i]<0, np.sqrt(np.sum(coords[off_ax[ax_i]],axis=1))<1)] = 0
     
@@ -117,7 +124,7 @@ def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
                    [p1[off_ax[ax_i][1]], p2[off_ax[ax_i][1]]],
                    marker='x', color='grey', zorder=20)
 
-def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,
+def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=None,
                        show_intersect=False, fname='Output/test.pdf'):
     plot['figure'].set_size_inches(5,10)
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
@@ -142,7 +149,7 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,
         #circle = plt.Circle((0, 0), 1, color='k', alpha=0.1, zorder=0)
         #ax.add_artist(circle)
         
-        if orbit is not None: add_orbit(ax,ax_i, orbit, center, show_center=show_center, show_intersect=True)
+        if orbit is not None: add_orbit(ax,ax_i, orbit, center, show_center=show_center, show_intersect=False, tlimit=tlimit)
             
         ax.set_xlabel('$\mathrm{'+ax_labels[ax_i][0]+'} \;(R_M)$')
         ax.set_ylabel('$\mathrm{'+ax_labels[ax_i][1]+'} \;(R_M)$')
@@ -153,6 +160,8 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,
                        [center[off_ax[ax_i][1]]],
                        marker='.', color='grey', zorder=20, s=3)
         
+        ax.set_xlim(-2.5,2.5)
+        ax.set_ylim(-2.5,2.5)
     plt.tight_layout()
     print 'Saving: {0}'.format(fname)
     plt.savefig(fname)
@@ -358,24 +367,30 @@ def plot_data(plot, slc, ax_i, vec_field, field,**kwargs):
     
 
 def make_plot(ds_name, field, center=None, orbit=None, regrid_data=False,
-              vec_field=False, fname=None, test=False, mark=False):
+              vec_field=False, fname=None, test=False, mark=False, tlimit=None):
+    if field is None:
+        plot = setup_sliceplot()
+        finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark, tlimit=tlimit)
+        return
+
+
     ds = load_data(ds_name,field=field, vec_field=vec_field)
     plot = setup_sliceplot()
     
     for ax in [0,1,2]:
         slc = slice_data(ds, ax, field, regrid_data=regrid_data, vec_field=vec_field, test=test, center=center)
         plot_data(plot, slc, ax, vec_field, field)
-    finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark)
+    finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark, tlimit=tlimit)
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:m",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle="])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:m",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit="])
     except getopt.GetoptError:
         print getopt.GetoptError()
         print 'error'
         return
     
-    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type = None, None, None, None, False, None, False,'', None
+    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim = None, None, None, None, False, None, False,'', None, None
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
@@ -395,6 +410,8 @@ def main(argv):
             mark=True
         elif opt in ("-t", "--type"):
             ds_type = arg
+        elif opt in ("--tlimit"):
+            tlim = ast.literal_eval(arg)
     
     if infile is None and fdir is None and ds_type is None: 
         print 'must supply file'
@@ -404,9 +421,10 @@ def main(argv):
         ds_names, ds_types = get_datasets(R2349=True) 
         infile = ds_names[ds_type] 
     
-    if 'velocity' == field[-8:] or 'magnetic_field' == field:
-        vec_field = True
-    else: vec_field = False
+    vec_field = False
+    if field is not None:
+        if 'velocity' == field[-8:] or 'magnetic_field' == field:
+            vec_field = True
 
     if fdir is not None: infiles = glob.glob(fdir+"*.h5")
     else: infiles = [infile]
@@ -416,7 +434,8 @@ def main(argv):
 
     if center == 'plume': center = [0.22996261,0.27413697,1.51051213]
     elif center == 'shemi': center = [-0.25569435,-0.05906954,-1.58311669]
-    else: center = np.array(ast.literal_eval(arg))
+    elif center is None: pass
+    else: center = np.array(ast.literal_eval(center))
 
     
     if field == 'all_ion':
@@ -430,7 +449,7 @@ def main(argv):
         for field in fields:
             print infile, field
             make_plot(infile, field, orbit=orbit, test=test,
-                      regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark,
+                      regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark, tlimit=tlim, 
                       fname='Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle))
     
 if __name__ == '__main__':

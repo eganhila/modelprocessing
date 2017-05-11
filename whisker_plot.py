@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 from general_functions import *
+from sliceplot import add_mars
 from matplotlib.collections import LineCollection
 import sys
 import getopt
@@ -66,10 +67,11 @@ def finalize_whiskerplot(plot, fname='Output/whisker.pdf', show=False, showp=Non
         mars_frac = 1
         ax.set_title('$\mathrm{'+ax_title_lab[ax_i]+'= 0}\;(R_M)$')
 
-        circle = plt.Circle((0, 0), mars_frac, color='k')
-        ax.add_artist(circle)
-        circle = plt.Circle((0, 0), 1, color='k', alpha=0.1, zorder=0)
-        ax.add_artist(circle)
+        add_mars(ax_i, ax=ax)
+        #circle = plt.Circle((0, 0), mars_frac, color='k')
+        #ax.add_artist(circle)
+        #circle = plt.Circle((0, 0), 1, color='k', alpha=0.1, zorder=0)
+        #ax.add_artist(circle)
 
         ax.set_xlabel('$\mathrm{'+ax_labels[ax_i][0]+'} \;(R_M)$')
         ax.set_ylabel('$\mathrm{'+ax_labels[ax_i][1]+'} \;(R_M)$')
@@ -168,7 +170,8 @@ def main(argv):
             showz=True
         elif opt in ("-p", "--showp"):
             import ast
-            showp = np.array(ast.literal_eval(arg))
+            if arg == 'plume': showp = [0.22996261,0.27413697,1.51051213]
+            else: showp = np.array(ast.literal_eval(arg))
         elif opt in ("-r", "--region"):
             region = arg
 
