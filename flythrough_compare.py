@@ -23,6 +23,7 @@ import sys
 import getopt
 from matplotlib import cm
 import pandas as pd
+import datetime
 plt.style.use('seaborn-poster')
 
 def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
@@ -82,7 +83,7 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False):
     plot['altitude'] = (np.sqrt(np.sum(coords**2,axis=0))-1)*3390
     return plot
 
-def add_tbars(plot):
+def add_tbars(plot, reset_timebar):
     tb = plot['timebar']
     sb = plot['shadowbar']
 
@@ -99,7 +100,8 @@ def add_tbars(plot):
     if plot['tlimit'] is None: tlim = (0,1)
     else: tlim = plot['tlimit']
 
-    tb.set_xlim(tlim)
+    if not reset_timebar:
+        tb.set_xlim(tlim)
     sb.set_xlim(tlim)
 
     tb.axis('off')
@@ -113,10 +115,12 @@ def change_xticks(plot):
     alt = plot['altitude']
     
     alt_vals = [alt[np.argmin(np.abs(t-tick))] for tick in tick_locs]
-    ax.set_xticklabels(['{0:02d}'.format(int(av)) for av in alt_vals])
+    time_vals = [datetime.datetime.fromtimestamp(t*4.5*60*60+1450110477).strftime("%H:%M") for t in tick_locs]
+    ax.set_xticklabels(['{1:02d}'.format(tv, int(av)) for tv, av in zip(time_vals, alt_vals)])
     ax.set_xticks(tick_locs)
     
-def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
+def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False, 
+                    reset_timebar=False):
     """
     Make final plotting adjustments and save/show image
     """
@@ -138,7 +142,7 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False):
         if plot['tlimit'] is not None: ax.set_xlim(plot['tlimit'])
         else: ax.set_xlim(0,1)
 
-    add_tbars(plot)
+    add_tbars(plot, reset_timebar)
     change_xticks(plot)
 
 
@@ -195,7 +199,6 @@ def make_flythrough_plot(fields, data, ds_names, title='flythrough',
 
     for field in fields:
         for dsk, ds_dat in data[field].items():
-            if 'magnetic_field' in field and dsk == 'maven': ds_dat = ds_dat *1e3#print ds_dat 
             if ds_dat.size != 0:
                 plot_field_ds(data['time'][dsk], ds_dat, plot['axes'][field], plot['kwargs'][dsk])
             else:
@@ -276,19 +279,19 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     data['time'] = {dsk:time for dsk in ds_names.keys()}
     data['time']['time'] = time
     make_flythrough_plot(fields, data, ds_names, coords=coords,  
-                         subtitle='{0}_{1}_{2}'.format(region, field,orbits[0]),  tlimit=tlimit)
+                         subtitle='{0}_{1}_{2}'.format(region, field,orbits[0]),  tlimit=tlimit, **kwargs)
 
 
 def main(argv):
 
     try:
-        opts, args = getopt.getopt(argv,"f:o:nh",["field=", "orbit=", "new_models", "helio_models", "region="])
+        opts, args = getopt.getopt(argv,"f:o:nhz",["field=", "orbit=", "new_models", "helio_models", "region=", "reset_timebar"])
     except getopt.GetoptError:
         print 'error'
         return
 
 
-    field, orbit, new_models, helio_models, region = None, None, False, False, None
+    field, orbit, new_models, helio_models, region, reset_timebar = None, None, False, False, None, False
 
     for opt, arg in opts:
         if opt in ("-f", "--field"):
@@ -301,7 +304,9 @@ def main(argv):
         elif opt in ('-h', '--helio_multi'):
             helio_models = True
         elif opt in ("--region"):
-             region = arg
+            region = arg
+        elif opt in ("--reset_timebar", "-z"):
+            reset_timebar = True
 
     if orbit == 371:
         orbit_groups = np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391])
@@ -310,7 +315,7 @@ def main(argv):
     ds_names, ds_types = get_datasets(R2349=new_models, helio_multi=helio_models)
     print ds_names, ds_types
 
-    flythrough_orbit([orbit], ds_names, ds_types, field, region)
+    flythrough_orbit([orbit], ds_names, ds_types, field, region, reset_timebar=reset_timebar)
 
 
 if __name__ == "__main__":

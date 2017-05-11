@@ -77,19 +77,14 @@ pro make_orbit, orbit, outname
     msox = insitu.spacecraft.MSO_X
     msoy = insitu.spacecraft.MSO_Y
     msoz = insitu.spacecraft.MSO_Z
-    magx = insitu.mag.mso_x/3390
-    magy = insitu.mag.mso_y/3390
-    magz = insitu.mag.mso_z/3390
+    magx = insitu.mag.mso_x
+    magy = insitu.mag.mso_y
+    magz = insitu.mag.mso_z
 
     dat = [time, alt, msox,msoy,msoz,number_dens[*,0],velocity[*,0,0], velocity[*,1,0], velocity[*,2,0],number_dens[*,1],velocity[*,0,1], velocity[*,1,1], velocity[*,2,1],magx,magy,magz]
     header = ['time','altitude',  'x','y','z', 'O_p1_number_density', 'O_p1_velocity_x', 'O_p1_velocity_y', 'O_p1_velocity_z', 'O2_p1_number_density', 'O2_p1_velocity_x', 'O2_p1_velocity_y', 'O2_p1_velocity_z', 'magnetic_field_x', 'magnetic_field_y', 'magnetic_field_z']
 
     dat_t = transpose(reform(dat,size(msox, /N_elements), 16))
     write_csv, outname, dat_t, header=header
-
-
-
-    
-
 
 end
