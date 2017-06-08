@@ -1,4 +1,5 @@
 """
+hilary you didn't document this :(
 """
 
 import numpy as np
