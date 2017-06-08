@@ -367,8 +367,19 @@ def plot_data(plot, slc, ax_i, vec_field, field,**kwargs):
     else: plot_data_scalar(plot, slc, ax_i, field, **kwargs)
     
 
-def make_plot(ds_name, field, center=None, orbit=None, regrid_data=False,
+def make_sliceplot(ds_name, field, center=None, orbit=None, regrid_data=False,
               vec_field=False, fname=None, test=False, mark=False, tlimit=None):
+    """
+    ds_name: path for file you want to plot
+    field: name of field you want to plot
+    center (optional): center you want to slice through, defaults to [0,0,0]
+    orbit: set to an orbit number if you want to overplot an orbit
+    regrid_data: set to true if using BATSRUS, default false
+    vec_field: set to true if you're plotting a vector field
+    fname: name to save the slice to
+    mark: set to true to mark the center
+    tlimit: set to a tuple with orbit fraction if you just want to overplot part of an orbit
+    """
     if field is None:
         plot = setup_sliceplot()
         finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark, tlimit=tlimit)
