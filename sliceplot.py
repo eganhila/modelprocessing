@@ -126,7 +126,7 @@ def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
                    marker='x', color='grey', zorder=20)
 
 def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=None,
-                       show_intersect=False, fname='Output/test.pdf'):
+                       show_intersect=False, fname='Output/test.pdf', show=False):
     plot['figure'].set_size_inches(5,10)
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
     ax_title_lab = ["X", "Y", "Z"]
@@ -164,8 +164,11 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=N
         ax.set_xlim(-2.5,2.5)
         ax.set_ylim(-2.5,2.5)
     plt.tight_layout()
-    print 'Saving: {0}'.format(fname)
-    plt.savefig(fname)
+    if show:
+        plt.show()
+    else:
+        print 'Saving: {0}'.format(fname)
+        plt.savefig(fname)
 
 def get_offgrid_slice(ds, ax_i, field, vec_field, center, extra_fields=None):
     if center is None: ax_c = 0
@@ -368,7 +371,7 @@ def plot_data(plot, slc, ax_i, vec_field, field,**kwargs):
     
 
 def make_sliceplot(ds_name, field, center=None, orbit=None, regrid_data=False,
-              vec_field=False, fname=None, test=False, mark=False, tlimit=None):
+              vec_field=False, fname=None, test=False, mark=False, tlimit=None, show=False):
     """
     ds_name: path for file you want to plot
     field: name of field you want to plot
@@ -379,6 +382,7 @@ def make_sliceplot(ds_name, field, center=None, orbit=None, regrid_data=False,
     fname: name to save the slice to
     mark: set to true to mark the center
     tlimit: set to a tuple with orbit fraction if you just want to overplot part of an orbit
+    show: set to True if you want to make a plot in an ipython notebook
     """
     if field is None:
         plot = setup_sliceplot()
@@ -392,7 +396,7 @@ def make_sliceplot(ds_name, field, center=None, orbit=None, regrid_data=False,
     for ax in [0,1,2]:
         slc = slice_data(ds, ax, field, regrid_data=regrid_data, vec_field=vec_field, test=test, center=center)
         plot_data(plot, slc, ax, vec_field, field)
-    finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark, tlimit=tlimit)
+    finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark, tlimit=tlimit, show=show)
 
 def main(argv):
     try:
@@ -460,7 +464,7 @@ def main(argv):
     for infile in infiles:
         for field in fields:
             print infile, field
-            make_plot(infile, field, orbit=orbit, test=test,
+            make_sliceplot(infile, field, orbit=orbit, test=test,
                       regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark, tlimit=tlim, 
                       fname='Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle))
     
