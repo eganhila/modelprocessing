@@ -74,7 +74,7 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
         ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
         #ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
-        ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_pe_test.h5'
+        ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
         ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
         
@@ -426,6 +426,7 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
             if ds_type == 'maven':
                 ds = pd.read_csv(dsf)
                 for field in fields:
+
                     ds_dat = get_ds_data(ds, field, indxs[ds_type],
                             maven=True, grid=False)
                     data[field][dsk] = ds_dat
@@ -440,14 +441,40 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
             else:
                 for field in fields:
                     with h5py.File(dsf, 'r') as ds:
-                        ds_dat = get_ds_data(ds, field, indxs[ds_type],
+                        if '_x' in field or '_y' in field or '_z' in field:
+                            ds_dat = get_rotated_data(ds, field, indxs[ds_type],
                                              grid=('helio' in ds_type) or ('rhybrid' in ds_type), **kwargs)
+                        else:
+                            ds_dat = get_ds_data(ds, field, indxs[ds_type],
+                                                 grid=('helio' in ds_type) or ('rhybrid' in ds_type), **kwargs)
                                              #grid=ds_type=='heliosares', **kwargs)
                         data[field][dsk] = ds_dat
 
                 data['time'][dsk] = np.linspace(0, 1, np.max(indxs[ds_type].shape))
 
     return data
+
+def get_rotated_data(ds, field, indxs, **kwargs):
+    fprefix = field[:-2]
+    fsuffix = field[-1]
+
+    dat = np.array([get_ds_data(ds, fprefix+'_x', indxs, **kwargs), 
+                    get_ds_data(ds, fprefix+'_y', indxs, **kwargs),
+                    get_ds_data(ds, fprefix+'_z', indxs, **kwargs)])
+
+    dat = rotate_vec_simmso(dat)
+
+    if fsuffix == 'x': return dat[0] 
+    if fsuffix == 'y': return dat[1]
+    if fsuffix == 'z': return dat[2]
+
+def rotate_vec_simmso(vec):
+   xz_theta = -1*np.pi*4.18/180
+   xy_theta = -1*np.pi*5.1/180
+   Rxz = np.array([[np.cos(xz_theta), 0, np.sin(xz_theta)],[0,1,0],[-np.sin(xz_theta),0,np.cos(xz_theta)]])
+   Rxy = np.array([[np.cos(xy_theta), -1*np.sin(xy_theta),0],[np.sin(xy_theta), np.cos(xy_theta),0],[0,0,1]])
+   return np.matmul(Rxz, np.matmul(Rxy, vec))
+
 
 
 def rotate_coords_simmso(coords):

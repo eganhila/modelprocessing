@@ -7,3 +7,4 @@ Output/*
 *.orig
 .ipynb_checkpoints/*
 *.ipynb
+Notebooks/*

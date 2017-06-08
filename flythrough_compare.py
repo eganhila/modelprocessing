@@ -73,6 +73,8 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single
         for ds in plot['kwargs'].keys():
             if ds != single_out: plot['kwargs'][ds]['alpha']=0.2
 
+    plot['kwargs']['rhybrid']['alpha']=0
+
 
 
     #plot['kwargs']['maven']['alpha'] = 0.6
@@ -246,8 +248,8 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
         tlimit = (0.3,0.45)
     elif region == 'low_alt':
         tlimit = (0.43, 0.57)
-    elif region == 'outbound':
-        tlimit = (0.55, 0.9) 
+    elif region == 'shemi':
+        tlimit = (0.55, 0.7) 
     else:
         tlimit = (0,1)
         region = 'all'
