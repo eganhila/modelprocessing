@@ -47,7 +47,7 @@ U_z^H^p [km/s],H_p1_velocity_z
 p^H^p [nPa],H_p1_pressure
 `r^O^2^p [amu/cm^3],O2_p1_number_density
 U_x^O^2^p [km/s],O2_p1_velocity_x
-U_y^O^2^p [km/s],O2_p1_velocity_x
+U_y^O^2^p [km/s],O2_p1_velocity_y
 U_z^O^2^p [km/s],O2_p1_velocity_z
 p^O^2^p [nPa],O2_p1_pressure
 `r^O^p^p [amu/cm^3],O_p1_number_density
