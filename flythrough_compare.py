@@ -284,6 +284,7 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
              'magnetic_field_total']
     elif field == 'plume1': fields  = ['O2_p1_number_density', 'O2_p1_velocity_total', 'O_p1_number_density', "O_p1_velocity_total"]
     elif field == 'plume2': fields  = ['O2_p1_number_density','O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
+    elif field == 'plume': fields = ['O_p1_number_density', 'O_p1_velocity_total', 'O2_p1_number_density', 'O_p1_velocity_total', 'O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'pressure':
         fields = ['magnetic_pressure', 'pressure', 'electron_pressure', 'total_pressure']
     elif field == 'current':
