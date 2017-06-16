@@ -52,6 +52,7 @@ field_lims_slices = {'O_p1_number_density': (1e-2, 5e4),
 
 field_lims_shells = {'O2_p1_flux':(-1e8, 1e8),
                      'O_p1_flux':(-4e7, 4e7),
+                     'total_flux':(-1e8, 1e8),
                      'O_p1_number_density':(1e-7, 20),
                      'O2_p1_number_density':(1e-9, 50)}
 

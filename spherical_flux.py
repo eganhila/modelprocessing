@@ -139,7 +139,7 @@ def run_sphere_flux(ds_names, ds_types, r, fields, ion_velocity, make_plot=True)
         flux_dat = {}
         for dsk in ds_names.keys(): 
             fluxes = np.array([v[dsk] for k,v in data.items() if 'flux' in k])
-            flux_dat[dsk] = np.sum(fluxes, axis=0)
+            flux_dat[dsk] = np.sum(np.nan_to_num(fluxes), axis=0)
         data['total_flux'] = flux_dat
     
     if make_plot:

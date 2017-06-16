@@ -279,6 +279,8 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         return get_ds_data(ds, 'velocity_y', indx, grid=grid, maven=maven)
     elif 'velocity_z' in field and field != 'velocity_z':
         return get_ds_data(ds, 'velocity_z', indx, grid=grid, maven=maven)
+    elif 'velocity_total' in field and field != 'velocity_total':
+        return get_ds_data(ds, 'velocity_total', indx, grid=grid, maven=maven)
     else:
         if maven: dstype = 'maven'
         elif grid: dstype = 'heliosares'

@@ -73,9 +73,6 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single
         for ds in plot['kwargs'].keys():
             if ds != single_out: plot['kwargs'][ds]['alpha']=0.2
 
-    plot['kwargs']['rhybrid']['alpha']=0
-
-
 
     #plot['kwargs']['maven']['alpha'] = 0.6
     #plot['kwargs']['maven']['lw'] = 1
@@ -94,22 +91,22 @@ def add_tbars(plot, reset_timebar):
     tb = plot['timebar']
     sb = plot['shadowbar']
 
-    t_xv, t_yv = np.meshgrid(np.linspace(0,1, 100), [0,1])
-    s_xv, s_yv = np.meshgrid(np.linspace(0, 1, plot['shadow'].shape[0]),[0,1])
+   #t_xv, t_yv = np.meshgrid(np.linspace(0,1, 100), [0,1])
+   #s_xv, s_yv = np.meshgrid(np.linspace(0, 1, plot['shadow'].shape[0]),[0,1])
 
-    t_dat = np.array([np.linspace(0,1,100), np.linspace(0,1,100)])
-    s_dat = np.array([plot['shadow'], plot['shadow']])
+   #t_dat = np.array([np.linspace(0,1,100), np.linspace(0,1,100)])
+   #s_dat = np.array([plot['shadow'], plot['shadow']])
 
-    tb.pcolormesh(t_xv, t_yv, t_dat, cmap='inferno',rasterized=True)
-    sb.pcolormesh(s_xv, s_yv, s_dat, cmap='inferno_r',rasterized=True,
-                  vmin=-0.1,vmax=1.2)
+   #tb.pcolormesh(t_xv, t_yv, t_dat, cmap='inferno',rasterized=True)
+   #sb.pcolormesh(s_xv, s_yv, s_dat, cmap='inferno_r',rasterized=True,
+   #              vmin=-0.1,vmax=1.2)
 
-    if plot['tlimit'] is None: tlim = (0,1)
-    else: tlim = plot['tlimit']
+   #if plot['tlimit'] is None: tlim = (0,1)
+   #else: tlim = plot['tlimit']
 
-    if not reset_timebar:
-        tb.set_xlim(tlim)
-    sb.set_xlim(tlim)
+   #if not reset_timebar:
+   #    tb.set_xlim(tlim)
+   #sb.set_xlim(tlim)
 
     tb.axis('off')
     sb.axis('off')
@@ -284,7 +281,7 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
              'magnetic_field_total']
     elif field == 'plume1': fields  = ['O2_p1_number_density', 'O2_p1_velocity_total', 'O_p1_number_density', "O_p1_velocity_total"]
     elif field == 'plume2': fields  = ['O2_p1_number_density','O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
-    elif field == 'plume': fields = ['O_p1_number_density', 'O_p1_velocity_total', 'O2_p1_number_density', 'O_p1_velocity_total', 'O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
+    elif field == 'plume': fields = ['O_p1_number_density', 'O_p1_velocity_total', 'O2_p1_number_density', 'O2_p1_velocity_total', 'O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'pressure':
         fields = ['magnetic_pressure', 'pressure', 'electron_pressure', 'total_pressure']
     elif field == 'current':

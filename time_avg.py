@@ -30,8 +30,7 @@ def combine_datasets(fdir, outname):
     for var in var_names:
         # Skip separating Hpl and Hsw for speed
         if 'Hpl' in var or 'Hsw' in var: continue
-
-
+        
         print "Processing variable: {0}".format(var)
 
         #Process var that's the same in every file 
@@ -67,8 +66,8 @@ def combine_datasets(fdir, outname):
 
             for fname in fnames:
                 with h5py.File(fname, 'r') as f:
-                    weight = f[species+'_number_density'][:]
-                    dat += f[var][:]*weight
+                    weight = np.nan_to_num(f[species+'_number_density'][:])
+                    dat += np.nan_to_num(f[var][:])*weight
                     weights += weight
 
             dat = dat/weights
