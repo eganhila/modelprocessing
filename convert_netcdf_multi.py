@@ -21,6 +21,7 @@ Inputs:
 
     --outname (-o): filename to save h5 output to. Default heliosares.h5
     --indir (-i): Directory to find files in. Defaults to current dir
+    --flip (-f): Flip the x-component of the magnetic for that buggy file
     --test (-t): Doesn't do anything right now, will eventually test
 
 """
@@ -38,7 +39,7 @@ mars_r = 3390
 axis_labels = ['X_axis', 'Y_axis', 'Z_axis']
 # axis_labels = ['x','y','z']
 
-def convert_dataset(fdir, h5_name):
+def convert_dataset(fdir, h5_name, flip=False):
     print 'Starting: {0}'.format(h5_name)
     fnames = glob.glob(fdir+'*.nc')
 
@@ -99,6 +100,8 @@ def convert_dataset(fdir, h5_name):
 
                     if species in ['Hpl', 'Hsw']: 
                         data[key] = v[:].T
+                    elif flip and key == 'magnetic_field_x':
+                        v = -1*v   
                     else:
                         with h5py.File(fdir+h5_name, 'r+') as f:
                             f.create_dataset(key, data=v[:].T)
@@ -130,6 +133,7 @@ def main(argv):
     test = False
     outname = "heliosares.h5"
     fdir = ""
+    flip = False
 
     for opt, arg in opts:
         if opt in ("-t", "--test"):
@@ -138,8 +142,10 @@ def main(argv):
             fdir = arg
         elif opt in ("-o", "--outname"):
             outname = arg
+        elif opt in ("-f", "--flip"):
+            flip = True
 
-    convert_dataset(fdir, outname)
+    convert_dataset(fdir, outname, flip=flip)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
