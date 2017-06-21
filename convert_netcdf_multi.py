@@ -126,7 +126,7 @@ def convert_dataset(fdir, h5_name, flip=False):
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "i:t:o:", ["indir=","test","outname="])
+        opts, args = getopt.getopt(argv, "i:t:o:f", ["indir=","test","outname=", "flip"])
     except getopt.GetoptError:
         return
 
