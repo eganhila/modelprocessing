@@ -72,20 +72,23 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
     ds_names = {}
     if R2349:
         ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
+        ds_names['batsrus_mf_lr'] =  model_dir+'R2349/batsrus_3d_multi_fluid_lowres.h5'
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
         #ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
-        ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
-        ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
+        #ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
+        #ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
                     'batsrus3':[key for key in ds_names.keys() if 'electron_pressure' in key],
-                    'heliosares':[key for key in ds_names.keys() if 'helio' in key],
-                    'rhybrid_helio':['rhybrid']}
+                    'batsrus4':[key for key in ds_names.keys() if 'mf_lr' in key],
+                    }#'heliosares':[key for key in ds_names.keys() if 'helio' in key],
+                    #'rhybrid_helio':['rhybrid']}
         if maven:
-            ds_names['maven']=orbit_dir+'orbit_2349.csv'
-            ds_types['maven']=['maven']
+            pass
+            #ds_names['maven']=orbit_dir+'orbit_2349.csv'
+            #ds_types['maven']=['maven']
 
     elif helio_multi:
         ds_names['t00550'] = model_dir+'R2349/Heliosares_Multi/t00550.h5'
@@ -216,6 +219,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         z = apply_indx(ds, field.replace('_total', '_z'), indx)**2
         return np.sqrt(x+y+z)
     elif '_normal' in field: # field.replace('_normal', '_x') in ds.keys():
+        print 'normal'
         vx = apply_indx(ds, field.replace('_normal', '_x'), indx)
         vy = apply_indx(ds, field.replace('_normal', '_y'), indx)
         vz = apply_indx(ds, field.replace('_normal', '_z'), indx)
@@ -256,6 +260,46 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         if pt.shape == p.shape: p += pt
 
         return p
+
+    elif  'J_cross_B' in field:
+
+        J = np.array([get_ds_data(ds, 'current_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+        B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+
+        if field[-1] == 'x': v = J[1]*B[2]-J[2]*B[1]
+        if field[-1] == 'y': v = J[2]*B[0]-J[0]*B[2]
+        if field[-1] == 'z': v = J[0]*B[1]-J[1]*B[0]
+        if 'total' in field: 
+            v0 = J[1]*B[2]-J[2]*B[1]
+            v1 = J[2]*B[0]-J[0]*B[2]
+            v2 = J[0]*B[1]-J[1]*B[0]
+            v = np.sqrt(v0**2+v1**2+v2**2)
+
+        return v
+    elif  'v_cross_B' in field:
+
+        v = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+        B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+
+        if field[-1] == 'x': x = v[1]*B[2]-v[2]*B[1]
+        if field[-1] == 'y': x = v[2]*B[0]-v[0]*B[2]
+        if field[-1] == 'z': x = v[0]*B[1]-v[1]*B[0]
+        if 'total' in field: 
+            x0 = v[1]*B[2]-v[2]*B[1]
+            x1 = v[2]*B[0]-v[0]*B[2]
+            x2 = v[0]*B[1]-v[1]*B[0]
+            x = np.sqrt(x0**2+x1**2+x2**2)
+
+        return x 
+
+
+
+
+
     elif 'electron_velocity' in field and 'current_x' in ds.keys():
         print 'evel'
         vec = field[-1]
