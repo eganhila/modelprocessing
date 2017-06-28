@@ -328,7 +328,8 @@ def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True
     
     if logscale: norm = LogNorm(vmax=vmax, vmin=vmin)
     elif symlogscale: 
-        linthresh=1e5
+        if field in linthresh_slices: linthresh = linthresh_slices[field]
+        else: linthresh = 1e5
         norm = SymLogNorm(vmin=vmin, vmax=vmax, linthresh=linthresh)
 	maxlog=int(np.ceil( np.log10(vmax) ))
 	minlog=int(np.ceil( np.log10(-vmin) ))
