@@ -101,7 +101,7 @@ def convert_dataset(fdir, h5_name, flip=False):
                     if species in ['Hpl', 'Hsw']: 
                         data[key] = v[:].T
                     elif flip and key == 'magnetic_field_x':
-                        v = -1*v   
+                        v = -1*v[:]   
                     else:
                         with h5py.File(fdir+h5_name, 'r+') as f:
                             f.create_dataset(key, data=v[:].T)
