@@ -64,7 +64,7 @@ B1_x [nT],magnetic_field_1_x
 B1_y [nT],magnetic_field_1_y
 B1_z [nT],magnetic_field_1_z
 E [J/m^3],electric_field
-J_x [`mA/m^2],curent_x
+J_x [`mA/m^2],current_x
 J_y [`mA/m^2],current_y
 J_z [`mA/m^2],current_z
 Hp [amu/cm^3],H_p1_number_density
@@ -83,3 +83,4 @@ v_O2+_ave,O2_p1_velocity
 v_He++sw_ave,He_p2_velocity
 n_H+sw_ave,H_p1_number_density
 v_H+sw_ave,H_p1_velocity
+ electron_pressure,electron_pressure

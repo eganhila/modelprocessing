@@ -6,16 +6,16 @@ field_lims = {#'magnetic_field_x':(-50,50),
               'magnetic_field_z':(-20,20),
               'magnetic_field_total':(0,40),
 
-              'O2_p1_number_density':(1e-4, 30), 
-              #'O2_p1_number_density':(1e-2,6e4),
-              #'O_p1_number_density': (4e0, 7e3),#(4e0, 2e4),
-              'O_p1_number_density': (1e-2, 2e2),
+              #'O_p1_number_density': (2e-4, 2e2),
+              #'O2_p1_number_density':(1e-4, 30), 
+              #'CO2_p1_number_density':(1e-4,1),
+              'O2_p1_number_density':(1e-2,6e4),
+              'O_p1_number_density': (4e0, 7e3),#(4e0, 2e4),
+              'CO2_p1_number_density':(1e-2,6e3),
+
               #'H_p1_number_density': (1e-4, 1e3),#(4e0, 2e4),
-              #'H_p1_number_density':(7e-1,7e4),
-              'H_p1_number_density':(1e-1,1e2),
-              #'O2_p1_number_density':(1e0,6e4),
-              #'CO2_p1_number_density':(1e-2,6e3),
-              'CO2_p1_number_density':(1e-4,1),
+              'H_p1_number_density':(7e-1,7e4),
+              #'H_p1_number_density':(1e-1,1e2),
               'H_number_density':(1e-2, 1e5), 
               'He_number_density':(1e-2, 1e5),
               'electron_number_density':(1e-2, 1e5),
@@ -48,7 +48,24 @@ field_lims_slices = {'O_p1_number_density': (1e-2, 5e4),
                      'magnetic_field_x':(-30,30),
                      'magnetic_field_y':(-30,30),
                      'magnetic_field_z':(-10,10),
+                     'magnetic_field_total':(0,100),
+                     'J_cross_B_total':(1e-4,5),
+                     'J_cross_B_x':(-1,1),
+                     'J_cross_B_y':(-5,5),
+                     'J_cross_B_z':(-5,5),
+                     'v_cross_B_total':(0,5000),
+                     'v_cross_B_x':(-5000,5000),
+                     'v_cross_B_y':(-5000,5000),
+                     'v_cross_B_z':(-5000,5000),
                      }
+linthresh_slices = { 'v_cross_B_x':1,
+                     'v_cross_B_y':1,
+                     'v_cross_B_z':1,
+                     'J_cross_B_x':1e-2,
+                     'J_cross_B_y':1e-2,
+                     'J_cross_B_z':1e-2,
+                     }
+
 
 field_lims_shells = {'O2_p1_flux':(-1e8, 1e8),
                      'O_p1_flux':(-4e7, 4e7),
@@ -63,7 +80,10 @@ log_fields2 = ['H_p1_number_density',
                'altitude',
                'number_density',
                'current_total',
+               'J_cross_B_total'
                ]
-diverging_field_keys = ['flux', 'velocity', 'magnetic_field']
-symlog_field_keys = ['flux', 'velocity_normal']
-log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressure','current_total']
+diverging_field_keys = ['flux', 'velocity', 'magnetic_field','J_cross_B_x', 'J_cross_B_y', 'J_cross_B_z',
+                        'v_cross_B_x', 'v_cross_B_y', 'v_cross_B_z']
+symlog_field_keys = ['flux', 'velocity_normal','J_cross_B_x','J_cross_B_y','J_cross_B_z','v_cross_B_x']
+log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressure','current_total', 'J_cross_B_total',
+                   ]
