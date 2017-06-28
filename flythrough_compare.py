@@ -56,6 +56,7 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single
               'bats_min_LS270_SSL270':'LightSkyBlue',
               'batsrus_multi_species':'MediumBlue',
               'batsrus_multi_fluid':'DodgerBlue',
+              'batsrus_mf_lr':'red',
               'batsrus_electron_pressure':'LightSeaGreen',
               'heliosares': 'MediumVioletRed',
               'rhybrid':'orchid',
@@ -149,6 +150,13 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False,
         ax = plot['ax_arr'][i]
         if i == plot['N_axes']-1: ax.set_xlabel('$\mathrm{Altitude}$')
         else: ax.set_xticks([])
+
+        if i % 2 == 0:
+            ylab = ax.get_ylabel()
+            ax.set_ylabel(ylab, labelpad=40)
+        else:
+            ylab = ax.get_ylabel()
+            ax.set_ylabel(ylab, labelpad=10)
 
         if plot['tlimit'] is not None: ax.set_xlim(plot['tlimit'])
         else: ax.set_xlim(0,1)
