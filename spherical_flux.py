@@ -166,11 +166,14 @@ def main(argv):
         if opt in ("-f", "--field"):
             if arg == "all": 
                 fields_suffix = ['flux', 'number_density']
+            if arg == 'mag':
+                fields_suffix = ['magnetic_field_normal', 'magnetic_field_total', 'magnetic_field_x', 'magnetic_field_y', 'magnetic_field_z']
             else:
                 fields_suffix = [arg]
         elif opt in ("-s", "--species"):
-            if arg == 'all': ions = ['O2_p1',  'O_p1']#'CO2_p1',
-            else: ions = [arg]
+            if arg == 'all': ions = ['O2_p1_',  'O_p1_']#'CO2_p1',
+            if arg == 'None': ions = ['']
+            else: ions = [arg+"_"]
         elif opt in ("-i", "--infile"):
             dsk = arg.split('/')[-1].split('.')[0]
             ds_names = {dsk:arg}
@@ -187,7 +190,7 @@ def main(argv):
         elif opt in ("-v", "-ion_velocity"):
             ion_velocity = True
 
-    fields = [ion+'_'+suff for ion, suff in iproduct(ions, fields_suffix)]
+    fields = [ion+suff for ion, suff in iproduct(ions, fields_suffix)]
     if total: fields.append('total_flux')
 
     if out_csv: df = pd.DataFrame(columns=ions, index=radii)
