@@ -8,3 +8,4 @@ Output/*
 .ipynb_checkpoints/*
 *.ipynb
 Notebooks/*
+*.sh
