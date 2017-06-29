@@ -74,6 +74,9 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single
         for ds in plot['kwargs'].keys():
             if ds != single_out: plot['kwargs'][ds]['alpha']=0.2
 
+    #for ds in ds_names:
+    #    if ds != 'rhybrid' and ds != 'batsrus_multi_fluid':
+    #        plot['kwargs'][ds]['alpha'] = 0.2
 
     #plot['kwargs']['maven']['alpha'] = 0.6
     #plot['kwargs']['maven']['lw'] = 1
@@ -260,10 +263,10 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
         region = 'all'
 
     if field == 'all_ion':
-        fields =['H_p1_number_density',
+        fields =[
                 'O2_p1_number_density',
                 'O_p1_number_density',
-                'CO2_p1_number_density'] 
+                ] 
     elif field == 'O2':
         fields =['O2_p1_number_density',
                  'O2_p1_velocity_x',
@@ -287,6 +290,7 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
              'magnetic_field_y',
              'magnetic_field_z',
              'magnetic_field_total']
+    elif field == 'plume': fields = ['O_p1_number_density', 'O2_p1_number_density', 'O_p1_velocity_total', 'O2_p1_velocity_total', 'O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'plume1': fields  = ['O2_p1_number_density', 'O2_p1_velocity_total', 'O_p1_number_density', "O_p1_velocity_total"]
     elif field == 'plume2': fields  = ['O2_p1_number_density','O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'plume': fields = ['O_p1_number_density', 'O_p1_velocity_total', 'O2_p1_number_density', 'O2_p1_velocity_total', 'O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
