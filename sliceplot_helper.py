@@ -3,6 +3,10 @@ Helper functions for sliceplots
 """
 
 
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+from matplotlib.patches import Wedge
 
 def add_mars(ax_i, **kwargs):
     """
@@ -79,10 +83,10 @@ def orbit_intersect_plane(coords, center, ax_i):
 
 
 def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
+              show_center=False, lw=5, tlimit=None):
     """
     Overplot an orbit on top of a sliceplot
     """
-              show_center=False, lw=5, tlimit=None):
     off_ax = [[1,2],[0,2],[0,1]]
     coords, time = get_orbit_coords(orbit, Npts=250, return_time=True)
 

@@ -62,6 +62,7 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'J_cross_B_y':r'$(J\times B)_y$',
           'J_cross_B_z':r'$(J\times B)_z$',
           'J_cross_B_total':r'$|J\times B|$',
+          'v_cross_B_total':r'$|v\times B|$',
           'batsrus_mf_lr':'BATSRUS-MF-LR',
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|}$'

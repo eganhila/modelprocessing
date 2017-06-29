@@ -18,8 +18,8 @@ def load_data(ds_name, field=None, fields=None, vec_field=False):
     ds_name (string): full file name to be loaded
     field (optional, string): field to load
     fields (optional, list): fields to load
-    vec_field (boolean, default False): if true, automatically load 
-        field + "_x", "_y", and "_z". Must be used with field, not fields
+    vec_field (boolean, default False): if not none, automatically load 
+        vec_field + "_x", "_y", and "_z".
     """
     ds = {}
     with h5py.File(ds_name, 'r') as f:
@@ -39,17 +39,16 @@ def load_data(ds_name, field=None, fields=None, vec_field=False):
 
         if 'O2_p1_velocity_x' in f.keys(): ion_v = True
         else: ion_v = False
-            
-        if vec_field:
-            ds[field+'_x'] = f[field+'_x'][:]
-            ds[field+'_y'] = f[field+'_y'][:]
-            ds[field+'_z'] = f[field+'_z'][:]
-        elif fields is not None:
-            for field in fields:
-                ds[field] = get_ds_data(f, field, None, grid=grid, normal=norm, 
-                            ion_velocity=ion_v)
 
-        elif field is not None:
+        if fields is None:
+            fields = []
+
+        if vec_field is not None:
+            for v in ['_x', '_y', '_z']: fields.append(vec_field+v)
+            
+        if field is not None: fields.append(field)
+
+        for field in fields:
             ds[field] = get_ds_data(f, field, None, grid=grid, normal=norm, 
                         ion_velocity=ion_v)
             
@@ -281,6 +280,23 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
     elif  'v_cross_B' in field:
 
         v = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+        B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+
+        if field[-1] == 'x': x = v[1]*B[2]-v[2]*B[1]
+        if field[-1] == 'y': x = v[2]*B[0]-v[0]*B[2]
+        if field[-1] == 'z': x = v[0]*B[1]-v[1]*B[0]
+        if 'total' in field: 
+            x0 = v[1]*B[2]-v[2]*B[1]
+            x1 = v[2]*B[0]-v[0]*B[2]
+            x2 = v[0]*B[1]-v[1]*B[0]
+            x = np.sqrt(x0**2+x1**2+x2**2)
+
+        return x 
+    elif  'O2_p1_v_cross_B' in field:
+
+        v = np.array([get_ds_data(ds, 'O2_p1_velocity_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
         B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])

@@ -8,12 +8,10 @@ import h5py
 from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 from matplotlib import ticker
 from general_functions import *
-from matplotlib.collections import LineCollection
 import getopt
 import sys
 import cmocean
 import glob
-from matplotlib.patches import Wedge
 import ast
 from sliceplot_helper import *
 plt.style.use('seaborn-poster')
@@ -203,17 +201,26 @@ def slice_data(ds, ax_i, field, regrid_data, **kwargs):
     if regrid_data: return slice_regrid(ds, ax_i, field, **kwargs)
     else: return slice_onax(ds, ax_i, field, **kwargs)
 
-def plot_data_vec(plot, slc, ax_i):
+def plot_data_vec(plot, slc, ax_i, field):
     slc_0, slc_1, field_dat = slc
-    Ns = np.array(slc_0.shape, dtype=int)/15
-    lws = np.sqrt(np.sum(np.array(field_dat)**2,axis=0))
-    lws = 1.2*lws[::Ns[0], ::Ns[1]].flatten()/lws.max()
-    #lws[lws==0] = 0.001
+    Ns = np.array(slc_0.shape, dtype=int)/20
+    
+    min_pos_val = np.min(np.abs(field_dat)[np.abs(field_dat)>0])
+    if min_pos_val < 1: field_scale = np.log10(min_pos_val)
+    else: field_scale = 0
+
+    log_mag = -1*field_scale+np.log10(np.abs(field_dat))
+    sign = field_dat/np.abs(field_dat)
+
+    field_dat = sign*log_mag
+
+    if field in vec_field_scale: scale = vec_field_scale[field]
+    else: scale = None
 
     plot['axes'][ax_i].quiver(slc_0.T[::Ns[0], ::Ns[1]], slc_1.T[::Ns[0], ::Ns[1]],
-                              field_dat[0].T[::Ns[0], ::Ns[1]], 
+                              field_dat[0].T[::Ns[0], ::Ns[1]],
                               field_dat[1].T[::Ns[0], ::Ns[1]],
-                              linewidth=0.5)
+                              width=0.008, minshaft=2, scale=scale)
 
 def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
     slc_0, slc_1, field_dat = slc
@@ -228,6 +235,7 @@ def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True
 
     diverging, logscale, symlogscale=False, False, False
     if sum([1 for dfk in diverging_field_keys if dfk in field])>0: diverging=True
+    if '_x' == field[-2] or '_y' == field[-2] or '_z' == field[-2]: diverging=True
     if sum([1 for lfk in log_field_keys if lfk in field])>0: logscale=True
     if sum([1 for sfk in symlog_field_keys if sfk in field])>0: symlogscale=True
 
@@ -273,25 +281,26 @@ def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True
     plot['axes'][ax_i].set_ylim(slc_1.min(), slc_1.max())
     
 def plot_data(plot, slc, ax_i, vec_field, field,**kwargs):
-    if vec_field: plot_data_vec(plot, slc, ax_i, **kwargs)
+    if vec_field: plot_data_vec(plot, slc, ax_i, field,  **kwargs)
     else: plot_data_scalar(plot, slc, ax_i, field, **kwargs)
     
 
-def make_sliceplot(ds_name, field, center=None, orbit=None, regrid_data=False,
+def make_sliceplot(ds_name=None, field=None, center=None, orbit=None, regrid_data=False,
               vec_field=False, fname=None, test=False, mark=False, tlimit=None, show=False):
     """
     ds_name: path for file you want to plot
-    field: name of field you want to plot
+    field: name of field you want to plot as a scalar slice, leave empty or set to none
+        if you just want to show a vector field
     center (optional): center you want to slice through, defaults to [0,0,0]
     orbit: set to an orbit number if you want to overplot an orbit
     regrid_data: set to true if using BATSRUS, default false
-    vec_field: set to true if you're plotting a vector field
+    vec_field: set to the name of a field if you want to plot a vector field 
     fname: name to save the slice to
     mark: set to true to mark the center
     tlimit: set to a tuple with orbit fraction if you just want to overplot part of an orbit
     show: set to True if you want to make a plot in an ipython notebook
     """
-    if field is None:
+    if field is None and vec_field is None:
         plot = setup_sliceplot()
         finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark, tlimit=tlimit)
         return
@@ -301,24 +310,34 @@ def make_sliceplot(ds_name, field, center=None, orbit=None, regrid_data=False,
     plot = setup_sliceplot()
     
     for ax in [0,1,2]:
-        slc = slice_data(ds, ax, field, regrid_data=regrid_data, vec_field=vec_field, test=test, center=center)
-        plot_data(plot, slc, ax, vec_field, field)
+        if field is not None:
+            slc = slice_data(ds, ax, field, regrid_data=regrid_data,test=test, center=center)
+            plot_data(plot, slc, ax, False, field)
+
+        if vec_field is not None:
+            slc = slice_data(ds, ax, vec_field, regrid_data=regrid_data, vec_field=True, test=test, center=center)
+            plot_data(plot, slc, ax, True, vec_field)
+
     finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark, tlimit=tlimit, show=show)
+
+
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:m",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit="])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field="])
     except getopt.GetoptError:
         print getopt.GetoptError()
         print 'error'
         return
     
-    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim = None, None, None, None, False, None, False,'', None, None
+    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field = None, None, None, None, False, None, False,'', None, None, None
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
         elif opt in ("-f", "--field"):
             field = arg
+        elif opt in ("-v", "--vec_field"):
+            vec_field = arg
         elif opt in ("-o", "--orbit"):
             orbit = int(arg)
         elif opt in ("-t", "--test"):
@@ -344,10 +363,6 @@ def main(argv):
         ds_names, ds_types = get_datasets(R2349=True) 
         infile = ds_names[ds_type] 
     
-    vec_field = False
-    if field is not None:
-        if 'velocity' == field[-8:] or 'magnetic_field' == field:
-            vec_field = True
 
     if fdir is not None: infiles = glob.glob(fdir+"*.h5")
     else: infiles = [infile]

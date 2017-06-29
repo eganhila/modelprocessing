@@ -48,12 +48,12 @@ field_lims_slices = {'O_p1_number_density': (1e-2, 5e4),
                      'magnetic_field_x':(-30,30),
                      'magnetic_field_y':(-30,30),
                      'magnetic_field_z':(-10,10),
-                     'magnetic_field_total':(0,100),
+                     'magnetic_field_total':(1e-1,1e2), #(0,100),
                      'J_cross_B_total':(1e-4,5),
                      'J_cross_B_x':(-1,1),
                      'J_cross_B_y':(-5,5),
                      'J_cross_B_z':(-5,5),
-                     'v_cross_B_total':(0,5000),
+                     'v_cross_B_total':(1, 1e4),
                      'v_cross_B_x':(-5000,5000),
                      'v_cross_B_y':(-5000,5000),
                      'v_cross_B_z':(-5000,5000),
@@ -82,8 +82,12 @@ log_fields2 = ['H_p1_number_density',
                'current_total',
                'J_cross_B_total'
                ]
-diverging_field_keys = ['flux', 'velocity', 'magnetic_field','J_cross_B_x', 'J_cross_B_y', 'J_cross_B_z',
-                        'v_cross_B_x', 'v_cross_B_y', 'v_cross_B_z']
+diverging_field_keys = ['flux']
 symlog_field_keys = ['flux', 'velocity_normal','J_cross_B_x','J_cross_B_y','J_cross_B_z','v_cross_B_x']
 log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressure','current_total', 'J_cross_B_total',
-                   ]
+                   'magnetic_field_total', 'v_cross_B_total']
+
+
+vec_field_scale = {'magnetic_field':20,
+                   'J_cross_B':100,
+                   'v_cross_B':80}
