@@ -23,6 +23,7 @@ data_conversion = {'H_p1_number_density':lambda x: 0.5*x/1.00794,
                    'O2_p1_number_density':lambda x: 0.5*x/(2*15.9994), 
                    'O_p1_number_density':lambda x: 0.5*x/15.9994, 
                    'CO2_p1_number_density':lambda x: 0.5*x/(15.9994*2+12.0107)}
+#                   'magnetic_field_x':lambda x: -1*x}
 #data_conversion = {'H_p1_number_density':lambda x: 0.5*x, 
 #                   'O2_p1_number_density':lambda x: 0.5*x, 
 #                   'O_p1_number_density':lambda x: 0.5*x, 
@@ -83,6 +84,7 @@ def convert_file(fname, h5_name):
 
     # Save data
     with h5py.File(h5_name, 'w') as f:
+        print 'Writing to {0}'.format(h5_name)
         for k, v in data.items():
             if  name_conversion[k] in data_conversion.keys():
                 v = data_conversion[name_conversion[k]](v)

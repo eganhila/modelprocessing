@@ -31,6 +31,8 @@ field_lims = {#'magnetic_field_x':(-50,50),
               'O_p1_velocity_y':(-50,150),
               'O_p1_velocity_z':(-50,250),
               'O_p1_velocity_total':(0,325),
+              'v_cross_B_total':(1, 1e4),
+              'J_cross_B_total':(1e-4,5),
               }
 
 field_lims_slices = {'O_p1_number_density': (1e-2, 5e4),
