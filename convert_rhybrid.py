@@ -47,6 +47,8 @@ def convert_dataset(infile, outname):
     locs_sorted_idx = np.array([ii[1] for ii in locs_sorted])
 
     #variables to process
+    vars_calc = ['PTensor']
+
     vars_1D_complete = ['n_O+_ave', 'n_O2+_ave', 'n_He++sw_ave']
     vars_3D_complete = ['v_O+_ave', 'v_O2+_ave', 'v_He++sw_ave', 'cellBAverage']
     vars_1D_add = [('n_H+sw_ave','n_H+planet_ave')]
@@ -55,6 +57,9 @@ def convert_dataset(infile, outname):
 
 
     with h5py.File(outname) as f:
+        for v in vars_calc:
+            dat = vr.read(v)
+            print dat
 
         for v in vars_1D_complete:
             dat = vr.read_variable(v)

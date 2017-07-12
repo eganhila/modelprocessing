@@ -204,23 +204,27 @@ def slice_data(ds, ax_i, field, regrid_data, **kwargs):
 def plot_data_vec(plot, slc, ax_i, field):
     slc_0, slc_1, field_dat = slc
     Ns = np.array(slc_0.shape, dtype=int)/20
+
+    mag = np.sqrt(np.sum(np.array(field_dat)**2,axis=0))
+
+    log_mag = np.log10(mag)
+    min_scale = np.min(log_mag[np.isfinite(log_mag)])
+    if min_scale < 0:
+        log_mag = log_mag +-1*min_scale
     
-    min_pos_val = np.min(np.abs(field_dat)[np.abs(field_dat)>0])
-    if min_pos_val < 1: field_scale = np.log10(min_pos_val)
-    else: field_scale = 0
+    frac_x = field_dat[0]/mag
+    frac_y = field_dat[1]/mag
 
-    log_mag = -1*field_scale+np.log10(np.abs(field_dat))
-    sign = field_dat/np.abs(field_dat)
-
-    field_dat = sign*log_mag
-
+    field_dat[0] = log_mag*frac_x
+    field_dat[1] = log_mag*frac_y
+    
     if field in vec_field_scale: scale = vec_field_scale[field]
     else: scale = None
 
     plot['axes'][ax_i].quiver(slc_0.T[::Ns[0], ::Ns[1]], slc_1.T[::Ns[0], ::Ns[1]],
                               field_dat[0].T[::Ns[0], ::Ns[1]],
                               field_dat[1].T[::Ns[0], ::Ns[1]],
-                              width=0.008, minshaft=2, scale=scale)
+                              width=0.008, minshaft=2, scale=scale, pivot='mid')
 
 def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
     slc_0, slc_1, field_dat = slc
