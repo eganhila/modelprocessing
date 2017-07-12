@@ -60,6 +60,8 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single
               'batsrus_electron_pressure':'LightSeaGreen',
               'heliosares': 'MediumVioletRed',
               'rhybrid':'orchid',
+              'rhybrid240':'orchid',
+              'rhybrid120':'MediumVioletRed',
               'helio_1':'LimeGreen',
               'helio_2':'ForestGreen'}
 
@@ -187,7 +189,7 @@ def get_path_idxs(coords, ds_names, ds_types):
         if len(keys) == 0: continue
         print 'getting indxs: '+ds_type
         indxs[ds_type] = bin_coords(coords, ds_names[keys[0]], 
-                                    grid='helio' in ds_type)
+                                    grid='helio' in ds_type or 'rhybrid' in ds_type)
                                     #grid=ds_type=='heliosares')
     indxs['maven'] = 'all'
     return indxs
@@ -311,24 +313,21 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
 def main(argv):
 
     try:
-        opts, args = getopt.getopt(argv,"f:o:nhz",["field=", "orbit=", "new_models", "helio_models", "region=", "reset_timebar", "single_out="])
+        opts, args = getopt.getopt(argv,"f:o:l:z",["field=", "orbit=", "load_key=",  "region=", "reset_timebar", "single_out="])
     except getopt.GetoptError:
         print 'error'
         return
 
 
-    field, orbit, new_models, helio_models, region, reset_timebar, single_out = None, None, False, False, None, False, None
+    field, orbit, load_key, region, reset_timebar, single_out = None, None, 'R2349',  None, False, None
 
     for opt, arg in opts:
         if opt in ("-f", "--field"):
             field = arg
         elif opt in ("-o", "--orbit"):
             orbit = arg
-        elif opt in ("-n", "-new_models"):
-            print 'Using new models'
-            new_models=True
-        elif opt in ('-h', '--helio_multi'):
-            helio_models = True
+        elif opt in ("-l", "--load_key"):
+            load_key = arg
         elif opt in ("--region"):
             region = arg
         elif opt in ("--reset_timebar", "-z"):
@@ -340,7 +339,7 @@ def main(argv):
         orbit_groups = np.array([353, 360, 363, 364, 364, 365, 366, 367, 367, 368, 369, 370, 371,375, 376, 376, 380, 381, 381, 382, 386, 386, 387, 390, 391])
     
     # Get Datasets setup
-    ds_names, ds_types = get_datasets(R2349=new_models, helio_multi=helio_models)
+    ds_names, ds_types = get_datasets(load_key=load_key)
     print ds_names, ds_types
 
     flythrough_orbit([orbit], ds_names, ds_types, field, region, reset_timebar=reset_timebar, single_out=single_out)

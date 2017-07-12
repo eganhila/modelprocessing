@@ -11,7 +11,7 @@ mars_r = 3390
 orbit_dir = '/Volumes/triton/Data/OrbitDat/Flythroughs/'
 model_dir = '/Volumes/triton/Data/ModelChallenge/'
 
-def load_data(ds_name, field=None, fields=None, vec_field=False):
+def load_data(ds_name, field=None, fields=None, vec_field=None):
     """
     Load data for a standard hdf5 dataset into a dictionary
 
@@ -54,7 +54,7 @@ def load_data(ds_name, field=None, fields=None, vec_field=False):
             
     return ds
 
-def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
+def get_datasets(load_key=None, maven=True):
     """
     Get datasets and related information (which datasets are the same type, etc)
 
@@ -69,7 +69,7 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
     a new type for each dataset.
     """
     ds_names = {}
-    if R2349:
+    if load_key == 'R2349': 
         ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
         ds_names['batsrus_mf_lr'] =  model_dir+'R2349/batsrus_3d_multi_fluid_lowres.h5'
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
@@ -89,7 +89,7 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
             #ds_names['maven']=orbit_dir+'orbit_2349.csv'
             #ds_types['maven']=['maven']
 
-    elif helio_multi:
+    elif load_key ==  'helio_multi':
         ds_names['t00550'] = model_dir+'R2349/Heliosares_Multi/t00550.h5'
         ds_names['t00560'] = model_dir+'R2349/Heliosares_Multi/t00560.h5'
         ds_names['t00570'] = model_dir+'R2349/Heliosares_Multi/t00570.h5'
@@ -106,7 +106,7 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
         if maven:
             ds_names['maven'] = orbit_dir+'orbit_2349.csv'
             ds_types['maven']=['maven']
-    elif SDC_G1:
+    elif load_key == 'SDC_G1':
         #BATSRUS
         ds_names['bats_min_LS270_SSL0'] = \
                 model_dir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG0.h5'
@@ -129,6 +129,11 @@ def get_datasets( R2349=False, SDC_G1=False, maven=True, helio_multi=False):
             pass
             #ds_names['maven'] = orbit_dir+'orbit_2349.csv'
             #ds_types['maven']=['maven']
+
+    elif load_key == 'rhybrid_res':
+        ds_names = {'rhybrid240':'/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5',
+                    'rhybrid120':'/Volumes/triton/Data/ModelChallenge/R2349/HYB/state00030000.h5'}
+        ds_types = {'rhybrid1':['rhybrid240'], 'rhybrid2':['rhybrid120']}
 
     else:
         print 'No datasets selected'

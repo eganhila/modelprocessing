@@ -220,6 +220,7 @@ def plot_data_vec(plot, slc, ax_i, field):
     
     if field in vec_field_scale: scale = vec_field_scale[field]
     else: scale = None
+    scale=None
 
     plot['axes'][ax_i].quiver(slc_0.T[::Ns[0], ::Ns[1]], slc_1.T[::Ns[0], ::Ns[1]],
                               field_dat[0].T[::Ns[0], ::Ns[1]],
