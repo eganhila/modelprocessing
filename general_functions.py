@@ -281,10 +281,11 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
             v2 = J[0]*B[1]-J[1]*B[0]
             v = np.sqrt(v0**2+v1**2+v2**2)
 
-        return v
+        return v/1e2
     elif  'v_cross_B' in field:
+        ion = field[:-10]
 
-        v = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
+        v = np.array([get_ds_data(ds, ion+'_velocity_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
         B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
@@ -298,27 +299,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
             x2 = v[0]*B[1]-v[1]*B[0]
             x = np.sqrt(x0**2+x1**2+x2**2)
 
-        return x 
-    elif  'O2_p1_v_cross_B' in field:
-
-        v = np.array([get_ds_data(ds, 'O2_p1_velocity_'+vec, indx, grid=grid, maven=maven) \
-                      for vec in ['x','y','z']])
-        B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
-                      for vec in ['x','y','z']])
-
-        if field[-1] == 'x': x = v[1]*B[2]-v[2]*B[1]
-        if field[-1] == 'y': x = v[2]*B[0]-v[0]*B[2]
-        if field[-1] == 'z': x = v[0]*B[1]-v[1]*B[0]
-        if 'total' in field: 
-            x0 = v[1]*B[2]-v[2]*B[1]
-            x1 = v[2]*B[0]-v[0]*B[2]
-            x2 = v[0]*B[1]-v[1]*B[0]
-            x = np.sqrt(x0**2+x1**2+x2**2)
-
-        return x 
-
-
-
+        return -1*x/(1.6E-5)
 
 
     elif 'electron_velocity' in field and 'current_x' in ds.keys():

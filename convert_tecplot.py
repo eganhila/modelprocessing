@@ -19,15 +19,15 @@ import getopt
 from general_functions import *
 
 
-data_conversion = {'H_p1_number_density':lambda x: 0.5*x/1.00794, 
-                   'O2_p1_number_density':lambda x: 0.5*x/(2*15.9994), 
-                   'O_p1_number_density':lambda x: 0.5*x/15.9994, 
-                   'CO2_p1_number_density':lambda x: 0.5*x/(15.9994*2+12.0107)}
-#                   'magnetic_field_x':lambda x: -1*x}
-#data_conversion = {'H_p1_number_density':lambda x: 0.5*x, 
-#                   'O2_p1_number_density':lambda x: 0.5*x, 
-#                   'O_p1_number_density':lambda x: 0.5*x, 
-#                   'CO2_p1_number_density':lambda x: 0.5*x}
+#data_conversion = {'H_p1_number_density':lambda x: 0.5*x/1.00794, 
+#                   'O2_p1_number_density':lambda x: 0.5*x/(2*15.9994), 
+#                   'O_p1_number_density':lambda x: 0.5*x/15.9994, 
+#                   'CO2_p1_number_density':lambda x: 0.5*x/(15.9994*2+12.0107),
+#                   }
+data_conversion = {'H_p1_number_density':lambda x: 0.5*x, 
+                   'O2_p1_number_density':lambda x: 0.5*x, 
+                   'O_p1_number_density':lambda x: 0.5*x, 
+                   'CO2_p1_number_density':lambda x: 0.5*x}
 f_var_rename = 'Misc/name_conversion.txt'
 
 
@@ -62,14 +62,16 @@ def convert_file(fname, h5_name):
         # Iterate through the data
         for i, line in enumerate(dat_file):
             line_dat = line.split(' ')
+            line_dat = filter(None, line_dat)
             for j, key in enumerate(dat_vars):
-                data[key][i] = float(line_dat[j+1])
+                data[key][i] = float(line_dat[j])
 
             # There are bonus garbage lines at the end so we have to
             # manually exit the loop
             if i == N-1: break
 
                 
+    print data.keys()
 
     # Going to make the lat/lon/alt fields
     lat, lon, alt = convert_coords_cart_sphere(
