@@ -70,24 +70,23 @@ def get_datasets(load_key=None, maven=True):
     """
     ds_names = {}
     if load_key == 'R2349': 
-        ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
+        #ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
         ds_names['batsrus_mf_lr'] =  model_dir+'R2349/batsrus_3d_multi_fluid_lowres.h5'
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
         #ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
-        #ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
+        ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
         #ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
                     'batsrus3':[key for key in ds_names.keys() if 'electron_pressure' in key],
                     'batsrus4':[key for key in ds_names.keys() if 'mf_lr' in key],
-                    }#'heliosares':[key for key in ds_names.keys() if 'helio' in key],
-                    #'rhybrid_helio':['rhybrid']}
+                    'heliosares':[key for key in ds_names.keys() if 'helio' in key],
+                    'rhybrid_helio':[key for key in ds_names.keys() if 'rhybrid' in key ]}
         if maven:
-            pass
-            #ds_names['maven']=orbit_dir+'orbit_2349.csv'
-            #ds_types['maven']=['maven']
+            ds_names['maven']=orbit_dir+'orbit_2349.csv'
+            ds_types['maven']=['maven']
 
     elif load_key ==  'helio_multi':
         ds_names['t00550'] = model_dir+'R2349/Heliosares_Multi/t00550.h5'
@@ -271,6 +270,8 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
                       for vec in ['x','y','z']])
         B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
+        ion = '_'.join(field.split('_')[:2])
+        n = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven) 
 
         if field[-1] == 'x': v = J[1]*B[2]-J[2]*B[1]
         if field[-1] == 'y': v = J[2]*B[0]-J[0]*B[2]
@@ -281,27 +282,40 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
             v2 = J[0]*B[1]-J[1]*B[0]
             v = np.sqrt(v0**2+v1**2+v2**2)
 
-        return v/1e2
+        return v*6.2#/n
     elif  'v_cross_B' in field:
-        ion = field[:-10]
+        ion = '_'.join(field.split('_')[:2])
 
-        v = np.array([get_ds_data(ds, ion+'_velocity_'+vec, indx, grid=grid, maven=maven) \
+        v_ion = np.array([get_ds_data(ds, ion+'_velocity_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
+        v_fluid = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+        v = v_ion - v_fluid
+
         B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
 
-        if field[-1] == 'x': x = v[1]*B[2]-v[2]*B[1]
-        if field[-1] == 'y': x = v[2]*B[0]-v[0]*B[2]
-        if field[-1] == 'z': x = v[0]*B[1]-v[1]*B[0]
+        if field[-1] == 'x': x = (v[1]*B[2]-v[2]*B[1])
+        if field[-1] == 'y': x = (v[2]*B[0]-v[0]*B[2])
+        if field[-1] == 'z': x = (v[0]*B[1]-v[1]*B[0])
         if 'total' in field: 
             x0 = v[1]*B[2]-v[2]*B[1]
             x1 = v[2]*B[0]-v[0]*B[2]
             x2 = v[0]*B[1]-v[1]*B[0]
             x = np.sqrt(x0**2+x1**2+x2**2)
 
-        return -1*x/(1.6E-5)
+        return x*1e-6
 
 
+    elif field == 'v_sub_total':
+        ion = 'O2_p1'
+        v_ion = np.array([get_ds_data(ds, ion+'_velocity_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+        v_fluid = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+        v = v_ion - v_fluid
+        return np.sqrt(np.sum(v**2,axis=0))
+        
     elif 'electron_velocity' in field and 'current_x' in ds.keys():
         print 'evel'
         vec = field[-1]
@@ -316,6 +330,15 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         J = get_ds_data(ds, 'current_'+vec, indx, grid=grid, maven=maven)
         n = get_ds_data(ds, 'number_density', indx, grid=grid, maven=maven)
         return (J/n)/6.24e6
+    
+    elif 'velocity_frac' in field:
+        vec = field[-1]
+        vfield = field[:-7]
+        ion = field[:-16]
+        vtot = get_ds_data(ds, vfield+"_total", indx, grid=grid, maven=maven)
+        vvec = get_ds_data(ds, vfield+'_'+vec, indx, grid=grid, maven=maven)
+        dens = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven)
+        return np.abs(vvec/vtot)*dens
 
     elif 'density' in field and field != 'density':
         return get_ds_data(ds, 'density', indx, grid=grid, maven=maven)

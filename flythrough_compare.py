@@ -56,8 +56,8 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single
               'bats_min_LS270_SSL270':'LightSkyBlue',
               'batsrus_multi_species':'MediumBlue',
               'batsrus_multi_fluid':'DodgerBlue',
-              'batsrus_mf_lr':'red',
-              'batsrus_electron_pressure':'LightSeaGreen',
+              'batsrus_mf_lr':'DodgerBlue',
+              'batsrus_electron_pressure':'DarkCyan',
               'heliosares': 'MediumVioletRed',
               'rhybrid':'orchid',
               'rhybrid240':'orchid',
@@ -75,6 +75,10 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single
     if single_out is not None:
         for ds in plot['kwargs'].keys():
             if ds != single_out: plot['kwargs'][ds]['alpha']=0.2
+    else:
+        for ds in plot['kwargs'].keys():
+            if ds != 'maven': plot['kwargs'][ds]['alpha']=0.6
+
 
     #for ds in ds_names:
     #    if ds != 'rhybrid' and ds != 'batsrus_multi_fluid':
@@ -266,8 +270,10 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
 
     if field == 'all_ion':
         fields =[
+                'H_p1_number_density',
                 'O2_p1_number_density',
                 'O_p1_number_density',
+                'CO2_p1_number_density'
                 ] 
     elif field == 'O2':
         fields =['O2_p1_number_density',
