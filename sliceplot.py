@@ -30,20 +30,18 @@ def setup_sliceplot():
 
 
 def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=None,
-                       show_intersect=False, fname='Output/test.pdf', show=False):
+                       show_intersect=False, fname='Output/test.pdf', show=False,
+                       boundaries=False):
     plot['figure'].set_size_inches(5,10)
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
     ax_title_lab = ["X", "Y", "Z"]
+    if center is None: center = np.array([0.0,0.0,0.0])
     
     for ax_i, ax in enumerate(plot['axes']):
         ax.set_aspect('equal')
         
-        if center is None: 
-            mars_frac = 1
-            ax.set_title('$\mathrm{'+ax_title_lab[ax_i]+'= 0}\;(R_M)$')
-        else: 
-            mars_frac = np.real(np.sqrt(1-center[ax_i]**2))
-            ax.set_title('$\mathrm{'+ax_title_lab[ax_i]+'= '+"{0:0.02}".format(center[ax_i])+'}\;(R_M)$')
+        mars_frac = np.real(np.sqrt(1-center[ax_i]**2))
+        ax.set_title('$\mathrm{'+ax_title_lab[ax_i]+'= '+"{0:0.02}".format(center[ax_i])+'}\;(R_M)$')
 
         alpha = np.nanmax([mars_frac, 0.1])
 
@@ -55,6 +53,7 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=N
         #ax.add_artist(circle)
         
         if orbit is not None: add_orbit(ax,ax_i, orbit, center, show_center=show_center, show_intersect=False, tlimit=tlimit)
+        if boundaries: add_boundaries(ax, ax_i, center)
             
         ax.set_xlabel('$\mathrm{'+ax_labels[ax_i][0]+'} \;(R_M)$')
         ax.set_ylabel('$\mathrm{'+ax_labels[ax_i][1]+'} \;(R_M)$')
@@ -63,10 +62,10 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=N
         if show_center:
             ax.scatter([center[off_ax[ax_i][0]]],
                        [center[off_ax[ax_i][1]]],
-                       marker='.', color='grey', zorder=20, s=3)
+                       marker='x', color='white', zorder=20, s=3)
         
-        ax.set_xlim(-2.5,2.5)
-        ax.set_ylim(-2.5,2.5)
+        ax.set_xlim(-4,4)#ax.set_xlim(-2.5,2.5)
+        ax.set_xlim(-4,4)#ax.set_ylim(-2.5,2.5)
     plt.tight_layout()
     if show:
         plt.show()
@@ -290,8 +289,10 @@ def plot_data(plot, slc, ax_i, vec_field, field,**kwargs):
     else: plot_data_scalar(plot, slc, ax_i, field, **kwargs)
     
 
-def make_sliceplot(ds_name=None, field=None, center=None, orbit=None, regrid_data=False,
-              vec_field=False, fname=None, test=False, mark=False, tlimit=None, show=False):
+def make_sliceplot(ds_name=None, field=None, center=None, orbit=None, 
+                   regrid_data=False, vec_field=False, fname=None, 
+                   test=False, mark=False, tlimit=None, show=False,
+                   boundaries=False):
     """
     ds_name: path for file you want to plot
     field: name of field you want to plot as a scalar slice, leave empty or set to none
@@ -307,7 +308,8 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None, regrid_dat
     """
     if field is None and vec_field is None:
         plot = setup_sliceplot()
-        finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark, tlimit=tlimit)
+        finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,
+                show_center=mark, tlimit=tlimit, boundaries=boundaries)
         return
 
 
@@ -323,19 +325,20 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None, regrid_dat
             slc = slice_data(ds, ax, vec_field, regrid_data=regrid_data, vec_field=True, test=test, center=center)
             plot_data(plot, slc, ax, True, vec_field)
 
-    finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,show_center=mark, tlimit=tlimit, show=show)
+    finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,
+            show_center=mark, tlimit=tlimit, show=show, boundaries=boundaries)
 
 
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field="])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:b",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field=", "boundaries"])
     except getopt.GetoptError:
         print getopt.GetoptError()
         print 'error'
         return
     
-    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field = None, None, None, None, False, None, False,'', None, None, None
+    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field, boundaries = None, None, None, None, False, None, False,'', None, None, None, False
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
@@ -359,6 +362,8 @@ def main(argv):
             ds_type = arg
         elif opt in ("--tlimit"):
             tlim = ast.literal_eval(arg)
+        elif opt in ("-b", "--boundaries"):
+            boundaries=True
     
     if infile is None and fdir is None and ds_type is None: 
         print 'must supply file'
@@ -377,6 +382,8 @@ def main(argv):
 
     if center == 'plume': center = [0.22996261,0.27413697,1.51051213]
     elif center == 'shemi': center = [-0.25569435,-0.05906954,-1.58311669]
+    elif center == 'crossing1' : center = [-0.0472382 ,  2.5494445 ,  0.74438326]
+    elif center == 'crossing2': center = [-0.35067615,  2.42116763, -1.19950583]
     elif center is None: pass
     else: center = np.array(ast.literal_eval(center))
 
@@ -393,7 +400,7 @@ def main(argv):
             print infile, field
             make_sliceplot(infile, field, orbit=orbit, test=test,
                       regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark, tlimit=tlim, 
-                      fname='Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle))
+                      fname='Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle), boundaries=boundaries)
     
 if __name__ == '__main__':
     main(sys.argv[1:])

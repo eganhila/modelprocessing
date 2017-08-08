@@ -85,7 +85,7 @@ log_fields2 = ['H_p1_number_density',
                'current_total',
                'J_cross_B_total'
                ]
-diverging_field_keys = ['flux']
+diverging_field_keys = ['flux', 'J_cross_B_y',]
 symlog_field_keys = ['flux', 'velocity_normal','J_cross_B_x','J_cross_B_y','J_cross_B_z','v_cross_B_x']
 log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressure','current_total', 'J_cross_B_total',
                    'magnetic_field_total', 'v_cross_B_total']

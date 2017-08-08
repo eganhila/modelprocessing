@@ -119,5 +119,53 @@ def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
                    marker='x', color='grey', zorder=20)
 
 
+def add_boundaries(ax, ax_i, center):
+
+    lkwargs = {'color':'white', 'lw':1}
+    #Conics via Trotignon 2006
+
+    #shock
+    conic_args = {'x':0.600, 'ecc':1.026, 'L':2.081}
+    add_conic(ax, ax_i, center, conic_args, lkwargs)
+
+    #MPB x>0
+    conic_args = {'x':0.64, 'ecc':0.770, 'L':1.080}
+    add_conic(ax, ax_i, center, conic_args, lkwargs, lim_x='pos')
+
+    #MPB x<0
+    conic_args = {'x':1.600, 'ecc':1.009, 'L':0.528}
+    add_conic(ax, ax_i, center, conic_args, lkwargs, lim_x='neg')
+
+
+
+def add_conic(ax, ax_i, center, conic_args, lkwargs, lim_x=None):
+    x0, ecc, L = conic_args['x'], conic_args['ecc'], conic_args['L']
+
+    if ax_i == 0:
+        x = center[0]
+        r = np.sqrt((ecc**2 - 1)*(x - x0)**2 - 2*ecc*L*(x-x0)+L**2)
+
+        phi = np.linspace(0,2*np.pi,100)
+        y = r*np.sin(phi)
+        z = r*np.cos(phi)
+        ax.plot(y,z, **lkwargs)
+
+    else:
+        if lim_x == 'pos': x = np.linspace(0, 5, 250)
+        elif lim_x == 'neg': x = np.linspace(-5,0,250)
+        else: x = np.linspace(-5,5,500)
+        
+        r2 = (ecc**2 - 1)*(x - x0)**2 - 2*ecc*L*(x-x0)+L**2
+        if ax_i == 2: z = center[2]
+        else: z = center[1]
+
+        y = np.sqrt(r2-z**2)
+
+        ax.plot(x, y,  **lkwargs)
+        ax.plot(x,-1*y, **lkwargs)
+
+
+
+
 
 
