@@ -18,16 +18,19 @@ import sys
 import getopt
 from general_functions import *
 
-
+#Multi-fluid/chuanfei things
 data_conversion = {'H_p1_number_density':lambda x: 0.5*x/1.00794, 
                    'O2_p1_number_density':lambda x: 0.5*x/(2*15.9994), 
                    'O_p1_number_density':lambda x: 0.5*x/15.9994, 
                    'CO2_p1_number_density':lambda x: 0.5*x/(15.9994*2+12.0107),
                    }
-#data_conversion = {'H_p1_number_density':lambda x: 0.5*x, 
-#                   'O2_p1_number_density':lambda x: 0.5*x, 
-#                   'O_p1_number_density':lambda x: 0.5*x, 
-#                   'CO2_p1_number_density':lambda x: 0.5*x}
+
+#Multi-species/yingjuan things
+data_conversion = {'H_p1_number_density':lambda x: 0.5*x/1.00794, 
+                   'O2_p1_number_density':lambda x: 0.5*x/(2*15.9994), 
+                   'O_p1_number_density':lambda x: 0.5*x/15.9994, 
+                   'CO2_p1_number_density':lambda x: 0.5*x/(15.9994*2+12.0107),
+                   }
 f_var_rename = 'Misc/name_conversion.txt'
 
 

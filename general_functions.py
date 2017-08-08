@@ -133,6 +133,10 @@ def get_datasets(load_key=None, maven=True):
         ds_names = {'rhybrid240':'/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5',
                     'rhybrid120':'/Volumes/triton/Data/ModelChallenge/R2349/HYB/state00030000.h5'}
         ds_types = {'rhybrid1':['rhybrid240'], 'rhybrid2':['rhybrid120']}
+    elif load_key == 'batsrus_tseries':
+        ds_names = {'batsrus_mf':'/Volumes/triton/Data/ModelChallenge/R2349/BATSRUS/10km_mf/3d__ful_4_n00040000.h5',
+                    'batsrus_ms':'/Volumes/triton/Data/ModelChallenge/R2349/BATSRUS/10km_ms/3d__mhd_6_n0050000.h5'}
+        ds_types = {'batsrus_mf':['batsrus_mf'], 'batsrus_ms':['batsrus_ms']}
 
     else:
         print 'No datasets selected'

@@ -69,8 +69,13 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single
 
     plot = {}
     plot['axes'] = {field:ax for field, ax in zip(fields, axes)}
-    plot['kwargs'] = {ds:{ 'label':label_lookup[ds], 'color':colors[ds], 'lw':1.5}
+    plot['kwargs'] = {ds:{ 'lw':1.5}
             for ds in ds_names }
+
+    for ds in ds_names: 
+        if ds in colors: plot['kwargs'][ds]['color']=colors[ds]
+        if ds in label_lookup: plot['kwargs'][ds]['label'] = label_lookup[ds]
+        else: plot['kwargs'][ds]['label'] = ds
 
     if single_out is not None:
         for ds in plot['kwargs'].keys():
