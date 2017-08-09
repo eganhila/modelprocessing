@@ -76,7 +76,7 @@ def get_datasets(load_key=None, maven=True):
         #ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
-        #ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
+        ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
@@ -138,6 +138,10 @@ def get_datasets(load_key=None, maven=True):
                     'batsrus_ms':'/Volumes/triton/Data/ModelChallenge/R2349/BATSRUS/10km_ms/3d__mhd_6_n0050000.h5'}
         ds_types = {'batsrus_mf':['batsrus_mf'], 'batsrus_ms':['batsrus_ms']}
 
+    elif load_key == 'maven':
+        ds_names, ds_types = {},{}
+        ds_names['maven'] = orbit_dir+'orbit_2349.csv'
+        ds_types['maven']=['maven']
     else:
         print 'No datasets selected'
     
@@ -295,6 +299,9 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         v_fluid = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
         v = v_ion - v_fluid
+        #v_fluid = np.array([-351.1,0,0])
+        #v = v_ion - v_fluid[:, np.newaxis]
+        #v = v_ion - v_fluid[:, np.newaxis, np.newaxis, np.newaxis]
 
         B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])

@@ -269,6 +269,10 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
         tlimit = (0.43, 0.57)
     elif region == 'shemi':
         tlimit = (0.55, 0.7) 
+    elif region == 'inbound':
+        tlimit = (0.0,0.4)
+    elif region == 'outbound':
+        tlimit = (0.7, 1.0)
     else:
         tlimit = (0,1)
         region = 'all'
@@ -307,6 +311,8 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     elif field == 'plume1': fields  = ['O2_p1_number_density', 'O2_p1_velocity_total', 'O_p1_number_density', "O_p1_velocity_total"]
     elif field == 'plume2': fields  = ['O2_p1_number_density','O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'plume': fields = ['O_p1_number_density', 'O_p1_velocity_total', 'O2_p1_number_density', 'O2_p1_velocity_total', 'O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
+    elif field == 'boundaries':
+        fields = ['H_p1_number_density','electron_number_density', 'magnetic_field_total', ]
     elif field == 'pressure':
         fields = ['magnetic_pressure', 'pressure', 'electron_pressure', 'total_pressure']
     elif field == 'current':

@@ -64,9 +64,11 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=N
                        [center[off_ax[ax_i][1]]],
                        marker='x', color='white', zorder=20, s=3)
         
-        ax.set_xlim(-4,4)#ax.set_xlim(-2.5,2.5)
-        ax.set_xlim(-4,4)#ax.set_ylim(-2.5,2.5)
-    plt.tight_layout()
+        ax.set_xlim(-4,4)
+        ax.set_xlim(-4,4)
+        #ax.set_xlim(-2.5,2.5)
+        #ax.set_ylim(-2.5,2.5)
+        plt.tight_layout()
     if show:
         plt.show()
     else:
