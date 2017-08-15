@@ -131,22 +131,35 @@ def change_xticks(plot):
     ax = plot['ax_arr'][-1]
     tick_locs = ax.get_xticks().tolist()
     t = plot['time']
+    tadj = plot['time_adj']
     alt = plot['altitude']
     
-    alt_vals = [alt[np.argmin(np.abs(t-tick))] for tick in tick_locs]
-    time_vals = [datetime.datetime.fromtimestamp(t*4.5*60*60+1450110477).strftime("%H:%M") for t in tick_locs]
+    alt_vals = [alt[np.argmin(np.abs(tadj-tick))] for tick in tick_locs]
+    #time_vals = [datetime.datetime.fromtimestamp(t).strftime("%H:%M") for t in tick_locs]
+    t_idxs = [np.argmin(np.abs(ti-tadj)) for ti in tick_locs]
+    time_vals = [sp.et2utc(t[ti], 'C', 0)[-8:-3] for ti in t_idxs]
     ax.set_xticklabels(['{1:02d}'.format(tv, int(av)) for tv, av in zip(time_vals, alt_vals)])
     ax.set_xticks(tick_locs)
 
     ax = plot['ax_arr'][0]
     ax2 = ax.twiny()
     ax2.set_xlim(ax.get_xlim())
-    ax2.set_xticklabels(time_vals[::2])
-    ax2.set_xticks(tick_locs[::2])
+    ax2.set_xticklabels(time_vals)#[::2])
+    ax2.set_xticks(tick_locs)#[::2])
+
+def add_boundaries(plot):
+    for f, ax in plot['axes'].items():
+        flim = ax.get_ylim()
+        ax.plot([ 0.285, 0.285], flim, ls=':', lw=1, color='k', alpha=0.3)
+        ax.plot([ 0.961, 0.961], flim, ls=':',lw=1, color='k', alpha=0.3)
+        ax.plot([ 0.74, 0.74], flim, ls=':',lw=1, color='k', alpha=0.3)
+        ax.plot([ 0.171, 0.171], flim, ls=':',lw=1, color='k', alpha=0.3)
+
+    
 
     
 def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False, 
-                    reset_timebar=False):
+                    reset_timebar=False, add_plasma_boundaries=False):
     """
     Make final plotting adjustments and save/show image
     """
@@ -177,6 +190,7 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False,
 
     add_tbars(plot, reset_timebar)
     change_xticks(plot)
+    if add_plasma_boundaries or True: add_boundaries(plot)
 
 
     plot['figure'].set_size_inches(8,10)
@@ -229,6 +243,7 @@ def make_flythrough_plot(fields, data, ds_names, title='flythrough',
     plot = setup_plot(fields, ds_names.keys(), coords,
                       tlimit=tlimit, add_altitude=True, single_out=single_out)
     plot['time'] = data['time']['time']
+    plot['time_adj'] = data['time'][ds_names.keys()[0]]
 
     for field in fields:
         for dsk, ds_dat in data[field].items():
@@ -248,7 +263,8 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     """
     #coords, times = get_path_pts(trange, Npts=150)
     if orbits[0].isdigit():
-        coords, time = get_orbit_coords(int(orbits[0]), Npts=250, return_time=True)
+        coords, time_true, time = get_orbit_coords(int(orbits[0]), Npts=250, return_time=True)
+        print time
     elif orbits[0] == 'z':
         z = np.linspace(1, 2, 250)
         coords = np.array([np.zeros_like(z), np.zeros_like(z), z])
@@ -270,16 +286,16 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     elif region == 'shemi':
         tlimit = (0.55, 0.7) 
     elif region == 'inbound':
-        tlimit = (0.0,0.4)
+        tlimit = (0.0,0.45)
     elif region == 'outbound':
-        tlimit = (0.7, 1.0)
+        tlimit = (0.6, 1.0)
     else:
         tlimit = (0,1)
         region = 'all'
 
     if field == 'all_ion':
         fields =[
-                'H_p1_number_density',
+              #  'H_p1_number_density',
                 'O2_p1_number_density',
                 'O_p1_number_density',
                 'CO2_p1_number_density'
@@ -312,7 +328,7 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     elif field == 'plume2': fields  = ['O2_p1_number_density','O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'plume': fields = ['O_p1_number_density', 'O_p1_velocity_total', 'O2_p1_number_density', 'O2_p1_velocity_total', 'O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'boundaries':
-        fields = ['H_p1_number_density','electron_number_density', 'magnetic_field_total', ]
+        fields = ['H_p1_number_density', 'magnetic_field_total', ]
     elif field == 'pressure':
         fields = ['magnetic_pressure', 'pressure', 'electron_pressure', 'total_pressure']
     elif field == 'current':
@@ -322,7 +338,7 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
 
     data = get_all_data(ds_names, ds_types, indxs, fields)
     data['time'] = {dsk:time for dsk in ds_names.keys()}
-    data['time']['time'] = time
+    data['time']['time'] = time_true
     make_flythrough_plot(fields, data, ds_names, coords=coords,  
                          subtitle='{0}_{1}_{2}'.format(region, field,orbits[0]),  tlimit=tlimit, **kwargs)
 

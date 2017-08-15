@@ -73,7 +73,6 @@ def get_datasets(load_key=None, maven=True):
         #ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
         ds_names['batsrus_mf_lr'] =  model_dir+'R2349/batsrus_3d_multi_fluid_lowres.h5'
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
-        #ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
         ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
@@ -188,7 +187,7 @@ def apply_grid_indx(ds, field, indx):
 
 def apply_maven_indx(ds, field, indx):
 #    return ds.loc[indx, field].values
-    return ds.loc[:,field].values
+    return ds.loc[:,field].values[::2]
 
 
 def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
@@ -379,7 +378,7 @@ def adjust_spherical_positions(pos, alt, Rm0):
 
         
 
-def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0,
+def get_orbit_coords(orbit, geo=False, Npts=250, units_rm=True, sim_mars_r=3396.0,
                  adjust_spherical=True, return_time=False):
     """
     A function that returns coordinates of the spacecraft for
@@ -397,11 +396,11 @@ def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0
     adjust_spherical (bool, default=True): Adjust the coordinates to
         account for a non-spherical mars
     """
-    Nskip = 10000/Npts
-    data = pd.read_csv(orbit_dir+'orbit_{0:04d}.csv'.format(orbit))#[::Nskip]
+    Nskip = 2 #10000/Npts
+    data = pd.read_csv(orbit_dir+'orbit_{0:04d}.csv'.format(orbit))[::Nskip]
     pos = np.array([data['x'], data['y'], data['z']])
     time = data['time'].values
-    time = (time-time[0])/(time[-1]-time[0])
+    time_adj = (time-time[0])/(time[-1]-time[0])
     alt = data['altitude']
      
     if adjust_spherical:
@@ -410,7 +409,7 @@ def get_orbit_coords(orbit, geo=False, Npts=50, units_rm=True, sim_mars_r=3396.0
     if units_rm:
         pos = pos/sim_mars_r
 
-    if return_time: return (pos,time)
+    if return_time: return (pos,time, time_adj)
     else: return pos
 
 
