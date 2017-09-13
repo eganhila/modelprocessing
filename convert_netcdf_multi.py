@@ -106,17 +106,18 @@ def convert_dataset(fdir, h5_name, flip=False):
                         with h5py.File(fdir+h5_name, 'r+') as f:
                             f.create_dataset(key, data=v[:].T)
 
-
     # Combine sw and pl H+
-    data['H_p1_number_density'] = data['Hpl_number_density'] + data['Hsw_number_density']
-    weights = [data['Hpl_number_density'], data['Hsw_number_density']]
+    data['H_p1_number_density'] = np.nan_to_num(data['Hpl_number_density']) +\
+                                  np.nan_to_num(data['Hsw_number_density'])
+    weights = [np.nan_to_num(data['Hpl_number_density']), np.nan_to_num(data['Hsw_number_density'])]
     zeros = np.sum(weights,axis=0)==0 
     weights[0][zeros]=1
     weights[1][zeros]=1
 
     for f in ['temperature', 'velocity_x', 'velocity_y', 'velocity_z']:
         dd = [data['Hpl_{0}'.format(f)], data['Hsw_{0}'.format(f)]]
-        data['H_p1_{0}'.format(f)] = np.average(dd, weights=weights, axis=0) 
+        data['H_p1_{0}'.format(f)] = np.average(np.nan_to_num(dd), weights=weights, axis=0) 
+
 
     # Save H+
     with h5py.File(fdir+h5_name, 'r+') as f:

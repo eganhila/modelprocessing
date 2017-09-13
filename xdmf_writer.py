@@ -47,7 +47,7 @@ def write_xmf(infile, outname):
     fout = file(outname, 'w')
     ds = h5py.File(infile)
 
-    dims_arr = ds['O2_p1_number_density'].shape
+    dims_arr = ds['O_p1_number_density'].shape
     dims = '{0} {1} {2}'.format(dims_arr[0], dims_arr[1], dims_arr[2])
 
     write_header(fout)

@@ -228,6 +228,18 @@ def plot_data_vec(plot, slc, ax_i, field):
                               field_dat[1].T[::Ns[0], ::Ns[1]],
                               width=0.008, minshaft=2, scale=scale, pivot='mid')
 
+
+def plot_data_stream(plot, slc, ax_i, field):
+    slc_0, slc_1, field_dat = slc
+
+    try:
+        plot['axes'][ax_i].streamplot(slc_0.T, slc_1.T, field_dat[0].T, field_dat[1].T,
+                        color='k', linewidth=1, density=2)
+    except ValueError:
+        plot['axes'][ax_i].streamplot(slc_0, slc_1, field_dat[0], field_dat[1],
+                            color='k', linewidth=1,density=2)
+    
+
 def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
     slc_0, slc_1, field_dat = slc
     #diverge_cmap, logscale, zlim = True, False, (-30,30)
@@ -286,15 +298,16 @@ def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True
     plot['axes'][ax_i].set_xlim(slc_0.min(), slc_0.max())
     plot['axes'][ax_i].set_ylim(slc_1.min(), slc_1.max())
     
-def plot_data(plot, slc, ax_i, vec_field, field,**kwargs):
+def plot_data(plot, slc, ax_i, field, vec_field=False, stream_field=False, **kwargs):
     if vec_field: plot_data_vec(plot, slc, ax_i, field,  **kwargs)
+    elif stream_field: plot_data_stream(plot, slc, ax_i, field, **kwargs)
     else: plot_data_scalar(plot, slc, ax_i, field, **kwargs)
     
 
 def make_sliceplot(ds_name=None, field=None, center=None, orbit=None, 
                    regrid_data=False, vec_field=False, fname=None, 
                    test=False, mark=False, tlimit=None, show=False,
-                   boundaries=False):
+                   boundaries=False, stream_field=False):
     """
     ds_name: path for file you want to plot
     field: name of field you want to plot as a scalar slice, leave empty or set to none
@@ -308,24 +321,31 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None,
     tlimit: set to a tuple with orbit fraction if you just want to overplot part of an orbit
     show: set to True if you want to make a plot in an ipython notebook
     """
-    if field is None and vec_field is None:
+    if field is None and vec_field is None and stream_field is None:
         plot = setup_sliceplot()
         finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,
                 show_center=mark, tlimit=tlimit, boundaries=boundaries)
         return
 
+    v_field = vec_field
+    if stream_field is not None: v_field = stream_field
 
-    ds = load_data(ds_name,field=field, vec_field=vec_field)
+    ds = load_data(ds_name,field=field, vec_field=v_field)
     plot = setup_sliceplot()
     
     for ax in [0,1,2]:
         if field is not None:
             slc = slice_data(ds, ax, field, regrid_data=regrid_data,test=test, center=center)
-            plot_data(plot, slc, ax, False, field)
+            plot_data(plot, slc, ax, field  )
 
         if vec_field is not None:
             slc = slice_data(ds, ax, vec_field, regrid_data=regrid_data, vec_field=True, test=test, center=center)
-            plot_data(plot, slc, ax, True, vec_field)
+            plot_data(plot, slc, ax, vec_field, vec_field=True)
+
+        if stream_field is not None:
+            slc = slice_data(ds, ax, stream_field, regrid_data=regrid_data, vec_field=True, test=test, center=center)
+            plot_data(plot, slc, ax, stream_field, stream_field=True)
+
 
     finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,
             show_center=mark, tlimit=tlimit, show=show, boundaries=boundaries)
@@ -334,13 +354,13 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None,
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:b",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field=", "boundaries"])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:bs:",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field=", "boundaries", "stream_field="])
     except getopt.GetoptError:
         print getopt.GetoptError()
         print 'error'
         return
     
-    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field, boundaries = None, None, None, None, False, None, False,'', None, None, None, False
+    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field, stream_field, boundaries = None, None, None, None, False, None, False,'', None, None, None,None, False
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
@@ -366,6 +386,8 @@ def main(argv):
             tlim = ast.literal_eval(arg)
         elif opt in ("-b", "--boundaries"):
             boundaries=True
+        elif opt in ("-s", "--stream_field"):
+            stream_field = arg
     
     if infile is None and fdir is None and ds_type is None: 
         print 'must supply file'
@@ -401,7 +423,7 @@ def main(argv):
         for field in fields:
             print infile, field
             make_sliceplot(infile, field, orbit=orbit, test=test,
-                      regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark, tlimit=tlim, 
+                      regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark, tlimit=tlim, stream_field=stream_field, 
                       fname='Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle), boundaries=boundaries)
     
 if __name__ == '__main__':

@@ -75,6 +75,7 @@ def get_datasets(load_key=None, maven=True):
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
+        #ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/Heliosares_Multi/t00650.h5'
         ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
@@ -83,9 +84,14 @@ def get_datasets(load_key=None, maven=True):
                     'batsrus4':[key for key in ds_names.keys() if 'mf_lr' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key],
                     'rhybrid_helio':[key for key in ds_names.keys() if 'rhybrid' in key ]}
-        if maven:
+        if maven and False:
             ds_names['maven']=orbit_dir+'orbit_2349.csv'
+            #ds_names['maven'] = orbit_dir+'orbit_plume_2349.csv'
             ds_types['maven']=['maven']
+    elif load_key == 'batsrus_mf_lowres':
+        ds_names['batsrus_mf_lr'] =  model_dir+'R2349/batsrus_3d_multi_fluid_lowres.h5'
+        ds_types = {'batsrus_mf_lr' : ['batsrus_mf_lr']}
+
 
     elif load_key ==  'helio_multi':
         ds_names['t00550'] = model_dir+'R2349/Heliosares_Multi/t00550.h5'
@@ -102,7 +108,7 @@ def get_datasets(load_key=None, maven=True):
 
         ds_types = {'heliosares':[key for key in ds_names.keys()]}
         if maven:
-            ds_names['maven'] = orbit_dir+'orbit_2349.csv'
+            #ds_names['maven'] = orbit_dir+'orbit_2349.csv'
             ds_types['maven']=['maven']
     elif load_key == 'SDC_G1':
         #BATSRUS
@@ -220,6 +226,8 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         velocity_field = 'velocity'
 
     if field in ds.keys():
+        if field == 'H_p1_number_density' and grid==False and maven==False:
+            return 2*  apply_indx(ds, field, indx)
         return apply_indx(ds, field, indx)
     elif field == 'electron_pressure':
         return get_ds_data(ds, ' electron_pressure', indx, grid=grid, maven=maven)
@@ -229,7 +237,6 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         z = apply_indx(ds, field.replace('_total', '_z'), indx)**2
         return np.sqrt(x+y+z)
     elif '_normal' in field: # field.replace('_normal', '_x') in ds.keys():
-        print 'normal'
         vx = apply_indx(ds, field.replace('_normal', '_x'), indx)
         vy = apply_indx(ds, field.replace('_normal', '_y'), indx)
         vz = apply_indx(ds, field.replace('_normal', '_z'), indx)
@@ -256,6 +263,25 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         y = get_ds_data(ds, prefix+'_y', indx, grid=grid, maven=maven)
         return np.sqrt(x**2+y**2)
 
+    elif field == 'ram_pressure':
+        #ions = ['O2_p1', 'O_p1', 'H_p1', 'CO2_p1']
+        ions = ['H_p1']
+
+        pr = np.zeros_like(get_ds_data(ds, 'magnetic_field_x', indx, grid=grid, maven=maven))
+        for ion in ions:
+            rho_i = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven)
+            v_i = get_ds_data(ds, ion+'_velocity_total', indx, grid=grid, maven=maven)
+
+            if rho_i.shape != v_i.shape:
+                continue
+
+            if rho_i.shape == pr.shape:
+                pr += rho_i*v_i**2
+
+
+        return pr/1e6
+
+
     elif '_'.join(field.split('_')[2:]) in ds.keys() and '_'.join(field.split('_')[2:]) not in ['x','y','z']:
         return apply_indx(ds, '_'.join(field.split('_')[2:]), indx)
     elif field == 'magnetic_pressure':
@@ -265,11 +291,27 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         pe = get_ds_data(ds, 'electron_pressure', indx, grid=grid, maven=maven)
         pt = get_ds_data(ds, 'thermal_pressure', indx, grid=grid, maven=maven)
         pb = get_ds_data(ds, 'magnetic_pressure', indx, grid=grid, maven=maven)
+        pr = get_ds_data(ds, 'ram_pressure', indx, grid=grid, maven=maven)
         p = pb
         if pe.shape == p.shape: p += pe
         if pt.shape == p.shape: p += pt
+        if pr.shape == p.shape: p += pr
 
         return p
+
+    elif field == 'thermal_pressure':
+        if 'pressure' in ds.keys(): 
+            return get_ds_data(ds, 'pressure', indx, grid=grid, maven=maven)
+        elif 'H_p1_temperature' in ds.keys():
+            ions = ['H_p1', 'O_p1', 'O2_p1']
+            n_i = np.nan_to_num(np.array([get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven) for ion in ions]))
+            T_i = np.nan_to_num(np.array([get_ds_data(ds, ion+'_temperature', indx, grid=grid, maven=maven) for ion in ions]))
+            k = 1.38*1e-4
+            p = np.sum(n_i*k*T_i, axis=0)
+            print p
+            return p
+        else:
+            return np.array([])
 
     elif  'J_cross_B' in field:
 
@@ -290,13 +332,36 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
             v = np.sqrt(v0**2+v1**2+v2**2)
 
         return v*6.2#/n
-    elif  'v_cross_B' in field:
+    elif 'v_-_fluid_v' in field:
         ion = '_'.join(field.split('_')[:2])
 
         v_ion = np.array([get_ds_data(ds, ion+'_velocity_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
         v_fluid = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
+        if v_fluid.size == 0:
+            return np.array([])
+       # v_fluid = np.array([get_ds_data(ds, 'H_p1_velocity_'+vec, indx, grid=grid, maven=maven) \
+       #               for vec in ['x','y','z']])
+
+        v = v_ion - v_fluid
+
+        if field[-1] == 'x': return v[0] 
+        if field[-1] == 'y': return v[1] 
+        if field[-1] == 'z': return v[2] 
+        if 'total' in field: return np.sqrt(np.sum(v**2, axis=0))
+
+    elif  'v_cross_B' in field:
+        ion = '_'.join(field.split('_')[:2])
+
+        v_ion = np.array([get_ds_data(ds, ion+'_velocity_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+     #   v_fluid = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
+    #                  for vec in ['x','y','z']])
+        #if v_fluid.size == 0:
+        v_fluid = np.array([get_ds_data(ds, 'H_p1_velocity_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+
         v = v_ion - v_fluid
         #v_fluid = np.array([-351.1,0,0])
         #v = v_ion - v_fluid[:, np.newaxis]
@@ -327,7 +392,6 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         return np.sqrt(np.sum(v**2,axis=0))
         
     elif 'electron_velocity' in field and 'current_x' in ds.keys():
-        print 'evel'
         vec = field[-1]
         u = get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven)
         J = get_ds_data(ds, 'current_'+vec, indx, grid=grid, maven=maven)
@@ -335,7 +399,6 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         return u-(J/n)/6.24e6
 
     elif 'hall_velocity' in field and 'current_x' in ds.keys():
-        print 'hvel'
         vec = field[-1]
         J = get_ds_data(ds, 'current_'+vec, indx, grid=grid, maven=maven)
         n = get_ds_data(ds, 'number_density', indx, grid=grid, maven=maven)
@@ -426,7 +489,13 @@ def bin_coords(coords, dsf, grid=True):
 
     """
     if grid: return bin_coords_grid(coords, dsf)
-    else: return bin_coords_nogrid(coords, dsf)
+    else: 
+        with h5py.File(dsf, 'r') as dataset:
+            x = dataset['x'][:].flatten()
+            y = dataset['y'][:].flatten()
+            z = dataset['z'][:].flatten()
+
+        return bin_coords_nogrid(coords,np.array([x,y,z]))
     
 def bin_coords_grid(coords, dsf):
     with h5py.File(dsf, 'r') as dataset:
@@ -446,12 +515,9 @@ def bin_coords_grid(coords, dsf):
             
     return idx.astype(int)
         
-def bin_coords_nogrid(coords, dsf):
-    with h5py.File(dsf, 'r') as dataset:
-        x = dataset['x'][:].flatten()
-        y = dataset['y'][:].flatten()
-        z = dataset['z'][:].flatten()
+def bin_coords_nogrid(coords, incoords):
 
+    x,y,z = incoords
     idx = np.zeros(coords.shape[-1])
 
     for i in range(coords.shape[-1]):
@@ -501,6 +567,7 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
 
     for ds_type, keys in ds_types.items():
         for dsk in keys:
+            print 'Getting data for: ',dsk
 
             dsf = ds_names[dsk]
 

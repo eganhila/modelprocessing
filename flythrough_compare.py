@@ -26,6 +26,24 @@ import pandas as pd
 import datetime
 plt.style.use('seaborn-poster')
 
+colors = {'maven':'k',
+          'maven_low_alt':'k',
+          'maven_plume':'k',
+          'rhcsv':'red',
+          'bats_min_LS270_SSL0':'CornflowerBlue',
+          'bats_min_LS270_SSL180':'DodgerBlue',
+          'bats_min_LS270_SSL270':'LightSkyBlue',
+          'batsrus_multi_species':'MediumBlue',
+          'batsrus_multi_fluid':'DodgerBlue',
+          'batsrus_mf_lr':'DodgerBlue',
+          'batsrus_electron_pressure':'DarkCyan',
+          'heliosares': 'MediumVioletRed',
+          'rhybrid':'orchid',
+          'rhybrid240':'orchid',
+          'rhybrid120':'MediumVioletRed',
+          'helio_1':'LimeGreen',
+          'helio_2':'ForestGreen'}
+
 def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single_out=None):
     """
     Setup plotting environment and corresponding data structures
@@ -47,23 +65,6 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single
     f = plt.gcf()
 
     #f, axes = plt.subplots(len(fields), 1)
-    colors = {'maven':'k',
-              'maven_low_alt':'k',
-              'maven_plume':'k',
-              'rhcsv':'red',
-              'bats_min_LS270_SSL0':'CornflowerBlue',
-              'bats_min_LS270_SSL180':'DodgerBlue',
-              'bats_min_LS270_SSL270':'LightSkyBlue',
-              'batsrus_multi_species':'MediumBlue',
-              'batsrus_multi_fluid':'DodgerBlue',
-              'batsrus_mf_lr':'DodgerBlue',
-              'batsrus_electron_pressure':'DarkCyan',
-              'heliosares': 'MediumVioletRed',
-              'rhybrid':'orchid',
-              'rhybrid240':'orchid',
-              'rhybrid120':'MediumVioletRed',
-              'helio_1':'LimeGreen',
-              'helio_2':'ForestGreen'}
 
     for i in range(550,660,10): colors['t00{0}'.format(i)] = cm.rainbow((i-550)/10.0)
 
@@ -156,13 +157,7 @@ def add_boundaries(plot):
         ax.plot([ 0.171, 0.171], flim, ls=':',lw=1, color='k', alpha=0.3)
 
     
-
-    
-def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False, 
-                    reset_timebar=False, add_plasma_boundaries=False):
-    """
-    Make final plotting adjustments and save/show image
-    """
+def adjust_field_axes(plot, zeroline):
     for f, ax in plot['axes'].items():
         if f in label_lookup:
             ax.set_ylabel(label_lookup[f])
@@ -172,6 +167,14 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False,
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
         if f in field_lims: ax.set_ylim(field_lims[f])
         if f in log_fields2: ax.set_yscale('log')
+    
+def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False, 
+                    reset_timebar=False, add_plasma_boundaries=False):
+    """
+    Make final plotting adjustments and save/show image
+    """
+    
+    adjust_field_axes(plot, zeroline)
 
     for i in range(plot['N_axes']):
         ax = plot['ax_arr'][i]
@@ -264,10 +267,17 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     #coords, times = get_path_pts(trange, Npts=150)
     if orbits[0].isdigit():
         coords, time_true, time = get_orbit_coords(int(orbits[0]), Npts=250, return_time=True)
-        print time
     elif orbits[0] == 'z':
-        z = np.linspace(1, 2, 250)
+        z = np.linspace(1, 4, 150)
         coords = np.array([np.zeros_like(z), np.zeros_like(z), z])
+        time = np.linspace(0,1,150)
+        time_true = time
+        idx = []
+    elif orbits[0] == 'subsolar':
+        x = np.linspace(1, 2, 150)
+        coords = np.array([x, np.zeros_like(x), np.zeros_like(x)])
+        time = np.linspace(0,1,150)
+        time_true = time
         idx = []
     else:
         print 'Orbit not supported'
@@ -328,9 +338,9 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     elif field == 'plume2': fields  = ['O2_p1_number_density','O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'plume': fields = ['O_p1_number_density', 'O_p1_velocity_total', 'O2_p1_number_density', 'O2_p1_velocity_total', 'O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'boundaries':
-        fields = ['H_p1_number_density', 'magnetic_field_total', ]
+        fields = ['H_p1_number_density','O_p1_number_density', 'magnetic_field_total', 'ram_pressure']
     elif field == 'pressure':
-        fields = ['magnetic_pressure', 'pressure', 'electron_pressure', 'total_pressure']
+        fields = ['magnetic_pressure', 'pressure', 'electron_pressure', 'ram_pressure', 'total_pressure' ]
     elif field == 'current':
         fields = ['current_y', 'electron_pressure','pressure', 'hall_velocity_y', 'electron_velocity_y',  'velocity_y']
     else:

@@ -29,6 +29,16 @@ Thew_Temperature,electron_temperature
 Thew_Ux,electron_velocity_x
 Thew_Uy,electron_velocity_y
 Thew_Uz,electron_velocity_z
+Hsw_Density,Hsw_number_density
+Hsw_Temperature,Hsw_temperature
+Hsw_Ux,Hsw_velocity_x
+Hsw_Uy,Hsw_velocity_y
+Hsw_Uz,Hsw_velocity_z
+Hpl_Density,Hpl_number_density
+Hpl_Temperature,Hpl_temperature
+Hpl_Ux,Hpl_velocity_x
+Hpl_Uy,Hpl_velocity_y
+Hpl_Uz,Hpl_velocity_z
 X [R],x
 Y [R],y
 Z [R],z
