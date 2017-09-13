@@ -53,8 +53,10 @@ def create_sphere_mesh(r):
     lon_f = theta_f*180/np.pi
 
     x = (r*np.cos(theta_f)*np.sin(phi_f)).flatten()
-    y = (r*np.sin(theta_f)*np.sin(phi_f)).flatten()
-    z = (r*np.cos(phi_f)).flatten()
+    #y = (r*np.sin(theta_f)*np.sin(phi_f)).flatten()
+    #z = (r*np.cos(phi_f)).flatten()
+    z = (r*np.sin(theta_f)*np.sin(phi_f)).flatten()
+    y = (r*np.cos(phi_f)).flatten()
 
     coords_f = np.array([x,y,z])
     
