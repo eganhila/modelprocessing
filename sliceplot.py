@@ -253,7 +253,7 @@ def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True
 
     diverging, logscale, symlogscale=False, False, False
     if sum([1 for dfk in diverging_field_keys if dfk in field])>0: diverging=True
-    if '_x' == field[-2] or '_y' == field[-2] or '_z' == field[-2]: diverging=True
+    if '_x' == field[-2:] or '_y' == field[-2:] or '_z' == field[-2:]: diverging=True
     if sum([1 for lfk in log_field_keys if lfk in field])>0: logscale=True
     if sum([1 for sfk in symlog_field_keys if sfk in field])>0: symlogscale=True
 

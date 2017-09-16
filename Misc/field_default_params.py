@@ -45,9 +45,9 @@ field_lims_slices = {'O_p1_number_density': (1e-2, 5e4),
                      'O_p1_velocity_y':(-200,200),
                      'O_p1_velocity_z':(-200,200),
                      'O_p1_velocity_total':(1e-2,1e3),
-                     'O2_p1_velocity_x':(-200,200),
-                     'O2_p1_velocity_y':(-200,200),
-                     'O2_p1_velocity_z':(-500,500),
+                     'O2_p1_velocity_x':(-300,300),
+                     'O2_p1_velocity_y':(-300,300),
+                     'O2_p1_velocity_z':(-300,300),
                      'O2_p1_velocity_total':(0,500),
                      'magnetic_field_x':(-30,30),
                      'magnetic_field_y':(-30,30),
@@ -61,11 +61,16 @@ field_lims_slices = {'O_p1_number_density': (1e-2, 5e4),
                      'O2_p1_v_cross_B_total':(1e-8, 1e-1),
                      'O_p1_v_cross_B_total':(1e-4, 1e-1),
                      'O2_p1_v_cross_B_z':(-2e-3, 2e-3),
+                     'O2_p1_v_cross_B_y':(-2e-3, 2e-3),
+                     'O2_p1_v_cross_B_x':(-2e-3, 2e-3),
                      'O_p1_v_cross_B_z':(-1e-1, 1e-1),
                      'v_cross_B_x':(-5000,5000),
                      'v_cross_B_y':(-5000,5000),
                      'v_cross_B_z':(-5000,5000),
                      'O2_p1_v_-_fluid_v_total':(1e-1,1e3),
+                     'O2_p1_number_density_weighted_O2_p1_v_cross_B_z':\
+                            (-4e-11,4e-11),
+
                      }
 linthresh_slices = { 'v_cross_B_x':1,
                      'v_cross_B_y':1,
@@ -74,8 +79,11 @@ linthresh_slices = { 'v_cross_B_x':1,
                      'J_cross_B_y':1e-2,
                      'J_cross_B_z':1e-2,
                      'O2_p1_v_cross_B_z':1e-4,
+                     'O2_p1_v_cross_B_x':1e-4,
                      'O_p1_v_cross_B_z':1e-4,
-                     'O2_p1_velocity_z':1e-2
+                     'O2_p1_velocity_z':1e-2,
+                     'O2_p1_number_density_weighted_O2_p1_v_cross_B_z':\
+                            1e-16,
                      }
 
 

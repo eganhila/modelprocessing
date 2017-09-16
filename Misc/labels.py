@@ -74,7 +74,13 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'O2_p1_velocity_frac_z': '$v_z(O_2+)/|v(O_2+)|$',
           'ram_pressure':r'$\rho u^2$',
           'O2_p1_v_cross_B_z':r'$(v(O_2+)\times B)_z$',
+          'O2_p1_v_cross_B_x':r'$(v(O_2+)\times B)_x$',
+          'O2_p1_v_cross_B_y':r'$(v(O_2+)\times B)_y$',
           'O_p1_v_cross_B_z':r'$(v(O+)\times B)_z$',
+          'O2_p1_number_density_weighted_O2_p1_v_cross_B_total':\
+                  r'$|(v(O_2+)\times B)|*w(n(O_2+))$',
+          'O2_p1_number_density_weighted_O2_p1_v_cross_B_z':\
+                  r'$(v(O_2+)\times B)_z*w(n(O_2+))$',
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}}$'

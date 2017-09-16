@@ -229,6 +229,12 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         if field == 'H_p1_number_density' and grid==False and maven==False:
             return 2*  apply_indx(ds, field, indx)
         return apply_indx(ds, field, indx)
+    elif 'weighted' in field:
+        a_field, b_field = field.split('_weighted_')
+        a = get_ds_data(ds, a_field,  indx, grid, maven=maven)
+        b = get_ds_data(ds, b_field,  indx, grid, maven=maven)
+        
+        return a*b/a.sum()
     elif field == 'electron_pressure':
         return get_ds_data(ds, ' electron_pressure', indx, grid=grid, maven=maven)
     elif '_total' in field and field.replace('_total', '_x') in ds.keys():
@@ -262,6 +268,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         x = get_ds_data(ds, prefix+'_x', indx, grid=grid, maven=maven)
         y = get_ds_data(ds, prefix+'_y', indx, grid=grid, maven=maven)
         return np.sqrt(x**2+y**2)
+
 
     elif field == 'ram_pressure':
         #ions = ['O2_p1', 'O_p1', 'H_p1', 'CO2_p1']
