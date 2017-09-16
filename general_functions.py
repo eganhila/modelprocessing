@@ -344,12 +344,12 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
 
         v_ion = np.array([get_ds_data(ds, ion+'_velocity_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
-        v_fluid = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
+        #v_fluid = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
+        #              for vec in ['x','y','z']])
+        #if v_fluid.size == 0:
+        #    return np.array([])
+        v_fluid = np.array([get_ds_data(ds, 'H_p1_velocity_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
-        if v_fluid.size == 0:
-            return np.array([])
-       # v_fluid = np.array([get_ds_data(ds, 'H_p1_velocity_'+vec, indx, grid=grid, maven=maven) \
-       #               for vec in ['x','y','z']])
 
         v = v_ion - v_fluid
 

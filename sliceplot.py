@@ -223,24 +223,24 @@ def plot_data_vec(plot, slc, ax_i, field):
     else: scale = None
     scale=None
 
-    plot['axes'][ax_i].quiver(slc_0.T[::Ns[0], ::Ns[1]], slc_1.T[::Ns[0], ::Ns[1]],
+    plot_ax.quiver(slc_0.T[::Ns[0], ::Ns[1]], slc_1.T[::Ns[0], ::Ns[1]],
                               field_dat[0].T[::Ns[0], ::Ns[1]],
                               field_dat[1].T[::Ns[0], ::Ns[1]],
                               width=0.008, minshaft=2, scale=scale, pivot='mid')
 
 
-def plot_data_stream(plot, slc, ax_i, field):
+def plot_data_stream(plot_ax, slc, ax_i, field):
     slc_0, slc_1, field_dat = slc
 
     try:
-        plot['axes'][ax_i].streamplot(slc_0.T, slc_1.T, field_dat[0].T, field_dat[1].T,
+        plot_ax.streamplot(slc_0.T, slc_1.T, field_dat[0].T, field_dat[1].T,
                         color='k', linewidth=1, density=2)
     except ValueError:
-        plot['axes'][ax_i].streamplot(slc_0, slc_1, field_dat[0], field_dat[1],
+        plot_ax.streamplot(slc_0, slc_1, field_dat[0], field_dat[1],
                             color='k', linewidth=1,density=2)
     
 
-def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
+def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
     slc_0, slc_1, field_dat = slc
     #diverge_cmap, logscale, zlim = True, False, (-30,30)
     #zlim = (-180,180)
@@ -284,24 +284,24 @@ def plot_data_scalar(plot, slc, ax_i, field, logscale=True, zlim=None, cbar=True
 
     if field_dat.max() != field_dat.min(): 
     
-        im = plot['axes'][ax_i].pcolormesh(slc_0.T, slc_1.T, field_dat.T,
+        im = plot_ax.pcolormesh(slc_0.T, slc_1.T, field_dat.T,
                                            norm=norm, cmap=cmap, rasterized=True)
         if cbar:
             if symlogscale:
-                plt.colorbar(im, ax=plot['axes'][ax_i], label=label,
+                plt.colorbar(im, ax=plot_ax, label=label,
                              ticks=tick_locations,
                              format=ticker.LogFormatterMathtext())
             else:
-                plt.colorbar(im, ax=plot['axes'][ax_i],label=label)
+                plt.colorbar(im, ax=plot_ax,label=label)
 
     
-    plot['axes'][ax_i].set_xlim(slc_0.min(), slc_0.max())
-    plot['axes'][ax_i].set_ylim(slc_1.min(), slc_1.max())
+    plot_ax.set_xlim(slc_0.min(), slc_0.max())
+    plot_ax.set_ylim(slc_1.min(), slc_1.max())
     
-def plot_data(plot, slc, ax_i, field, vec_field=False, stream_field=False, **kwargs):
-    if vec_field: plot_data_vec(plot, slc, ax_i, field,  **kwargs)
-    elif stream_field: plot_data_stream(plot, slc, ax_i, field, **kwargs)
-    else: plot_data_scalar(plot, slc, ax_i, field, **kwargs)
+def plot_data(plot_ax, slc, ax_i, field, vec_field=False, stream_field=False, **kwargs):
+    if vec_field: plot_data_vec(plot_ax, slc, ax_i, field,  **kwargs)
+    elif stream_field: plot_data_stream(plot_ax, slc, ax_i, field, **kwargs)
+    else: plot_data_scalar(plot_ax, slc, ax_i, field, **kwargs)
     
 
 def make_sliceplot(ds_name=None, field=None, center=None, orbit=None, 
@@ -336,15 +336,15 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None,
     for ax in [0,1,2]:
         if field is not None:
             slc = slice_data(ds, ax, field, regrid_data=regrid_data,test=test, center=center)
-            plot_data(plot, slc, ax, field  )
+            plot_data(plot['axes'][ax], slc, ax, field  )
 
         if vec_field is not None:
             slc = slice_data(ds, ax, vec_field, regrid_data=regrid_data, vec_field=True, test=test, center=center)
-            plot_data(plot, slc, ax, vec_field, vec_field=True)
+            plot_data(plot['axes'][ax], slc, ax, vec_field, vec_field=True)
 
         if stream_field is not None:
             slc = slice_data(ds, ax, stream_field, regrid_data=regrid_data, vec_field=True, test=test, center=center)
-            plot_data(plot, slc, ax, stream_field, stream_field=True)
+            plot_data(plot['axes'][ax], slc, ax, stream_field, stream_field=True)
 
 
     finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,
