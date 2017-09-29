@@ -337,11 +337,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
 
         v_ion = np.array([get_ds_data(ds, ion+'_velocity_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
-        #v_fluid = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
-        #              for vec in ['x','y','z']])
-        #if v_fluid.size == 0:
-        #    return np.array([])
-        v_fluid = np.array([get_ds_data(ds, 'H_p1_velocity_'+vec, indx, grid=grid, maven=maven) \
+        v_fluid = np.array([get_ds_data(ds, 'fluid_velocity_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
 
         v = v_ion - v_fluid
@@ -351,21 +347,46 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         if field[-1] == 'z': return v[2] 
         if 'total' in field: return np.sqrt(np.sum(v**2, axis=0))
 
+    elif 'fluid_velocity' in field:
+        ue = get_ds_data(ds, field.replace('fluid', 'electron'), indx, grid=grid, maven=maven)
+        ubar_i = get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
+
+        return 0.5*(ue+ubar_i)
+
+    elif 'electron_velocity' in field:
+       ax = field[-1:]
+
+       J = get_ds_data(ds, 'current_'+ax, indx, grid=grid, maven=maven)
+       ubar_i = get_ds_data(ds, 'avg_ion_velocity_'+ax, indx, grid=grid, maven=maven)
+
+       return 2*J+ubar_i
+
+    elif 'avg_ion_velocity' in field:
+        if 'velocity_x' in ds.keys():
+            return get_ds_data(ds, field.replace('avg_ion_velocity', 'velocity'), indx, grid=grid, maven=maven)
+
+        ions = ['H_p1', 'O2_p1', 'O_p1']
+        if 'CO2_p1_number_density' in ds.keys(): ions.append('CO2_p1')
+
+        ax = field[-1:]
+
+        data = np.zeros_like(get_ds_data(ds, 'H_p1_number_density', indx, grid=grid, maven=maven))
+        nsum = np.zeros_like(data)
+
+        for ion in ions:
+            v = get_ds_data(ds, ion+'_velocity_'+ax, indx, grid=grid, maven=maven)
+            n = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven)
+
+            data += v*n
+            nsum += n
+
+        return data/nsum
+        
+
     elif  'v_cross_B' in field:
         ion = '_'.join(field.split('_')[:2])
 
-        v_ion = np.array([get_ds_data(ds, ion+'_velocity_'+vec, indx, grid=grid, maven=maven) \
-                      for vec in ['x','y','z']])
-     #   v_fluid = np.array([get_ds_data(ds, 'velocity_'+vec, indx, grid=grid, maven=maven) \
-    #                  for vec in ['x','y','z']])
-        #if v_fluid.size == 0:
-        v_fluid = np.array([get_ds_data(ds, 'H_p1_velocity_'+vec, indx, grid=grid, maven=maven) \
-                      for vec in ['x','y','z']])
-
-        v = v_ion - v_fluid
-        #v_fluid = np.array([-351.1,0,0])
-        #v = v_ion - v_fluid[:, np.newaxis]
-        #v = v_ion - v_fluid[:, np.newaxis, np.newaxis, np.newaxis]
+        v = np.array([get_ds_data(ds, ion+'_v_-_fluid_v_'+vec, indx, grid=grid, maven=maven) for vec in ['x','y','z']]) 
 
         B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
@@ -459,7 +480,7 @@ def get_orbit_coords(orbit, geo=False, Npts=250, units_rm=True, sim_mars_r=3396.
     adjust_spherical (bool, default=True): Adjust the coordinates to
         account for a non-spherical mars
     """
-    Nskip = 2 #10000/Npts
+    Nskip = 10 #10000/Npts
     data = pd.read_csv(orbit_dir+'orbit_{0:04d}.csv'.format(orbit))[::Nskip]
     pos = np.array([data['x'], data['y'], data['z']])
     time = data['time'].values

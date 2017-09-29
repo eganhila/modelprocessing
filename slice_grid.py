@@ -14,7 +14,7 @@ from sliceplot_helper import *
 import matplotlib.gridspec as gridspec
 
 
-axes = {'x':2,'y':1,'z':0}
+axes = {'x':0,'y':1,'z':2}
 ds_names, ds_types = get_datasets('R2349', False)
 regrid_data = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'batsrus_multi_species'] 
 
@@ -47,7 +47,7 @@ def setup_slicegrid_plot(ds_keys, fields):
     return plot
 
 
-def finalize_slicegrid_plot(plot, ax_plt, center):
+def finalize_slicegrid_plot(plot, ax_plt, center, fname):
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
 
     for ax_i in range(plot['Nds']):
@@ -61,9 +61,8 @@ def finalize_slicegrid_plot(plot, ax_plt, center):
 
            
             if ax_i == plot['Nds'] -1:
-                ax2 = ax.twinx()
-                ax2.set_yticks([])
-                ax2.set_ylabel(label_lookup[plot['fields'][ax_j]])
+                ax.set_ylabel(label_lookup[plot['fields'][ax_j]])
+                ax.yaxis.set_label_position("right")
             if ax_j == 0:
                 ax.set_title(label_lookup[plot['ds_keys'][ax_i]])
 
@@ -77,10 +76,16 @@ def finalize_slicegrid_plot(plot, ax_plt, center):
             else:
                 ax.set_ylabel('$\mathrm{'+ax_labels[ax_plt][1]+'} \;(R_M)$')
 
-    plt.savefig('Output/test.pdf')
+
+    h = 15.0
+    w = plot['Nds']*h/plot['Nfields'] 
+
+    plot['figure'].set_size_inches(w,h)
+    print 'Saving: '+fname
+    plt.savefig(fname)
 
 
-def make_slicegrid_plot(fields, ds_keys, ax, center):
+def make_slicegrid_plot(fields, ds_keys, ax, center, fname='Output/test.pdf'):
 
     plot = setup_slicegrid_plot(ds_keys, fields)
 
@@ -88,23 +93,25 @@ def make_slicegrid_plot(fields, ds_keys, ax, center):
         ds_name = ds_names[dsk]
 
         for field in fields:
+            print dsk, field
             ds = load_data(ds_name,field=field)
             slc = slice_data(ds, ax, field, regrid_data=dsk in regrid_data, center=center)
             plot_data(plot['axes'][(dsk, field)], slc, ax, field, cbar=False)
 
-    finalize_slicegrid_plot(plot, ax, center)
+    finalize_slicegrid_plot(plot, ax, center, fname)
 
 
 def main():
 
-    fields = ['O2_p1_number_density', 'O2_p1_v_cross_B_z']
-    ds_keys = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid']
+    fields = ['O2_p1_v_cross_B_total', 'O2_p1_v_cross_B_z', 'O2_p1_v_cross_B_x', 'O2_p1_v_-_fluid_v_x', 'O2_p1_v_-_fluid_v_z']
+    ds_keys = [ 'batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid']
     ax = 'x'
     center = [0.0,0.0,0.0]
+    for i, x in enumerate([1,0.5,-0.5,-1.25,-2]):
+        print i
+        center = [x,0,0]
 
-
-
-    make_slicegrid_plot(fields, ds_keys, axes[ax], center)
+        make_slicegrid_plot(fields, ds_keys, axes[ax], center, fname='Output/slicegrid_{0:02d}.pdf'.format(i))
 
 if __name__ == '__main__':
     main()
