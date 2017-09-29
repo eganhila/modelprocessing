@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 from matplotlib.patches import Wedge
+from general_functions import *
 
 def add_mars(ax_i, **kwargs):
     """
@@ -88,7 +89,7 @@ def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
     Overplot an orbit on top of a sliceplot
     """
     off_ax = [[1,2],[0,2],[0,1]]
-    coords, time = get_orbit_coords(orbit, Npts=250, return_time=True)
+    coords, time, time_adj = get_orbit_coords(orbit, Npts=250, return_time=True)
 
     if tlimit is not None:
         i0 = next(x[0] for x in enumerate(time) if x[1] > tlimit[0])
@@ -121,7 +122,7 @@ def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
 
 def add_boundaries(ax, ax_i, center):
 
-    lkwargs = {'color':'whitesmoke', 'lw':1}
+    lkwargs = {'color':'k', 'lw':1, 'alpha':0.8, 'ls':'--'}
     #Conics via Trotignon 2006
 
     #shock

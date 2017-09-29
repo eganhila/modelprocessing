@@ -60,10 +60,10 @@ def create_profile():
     R = np.logspace(np.log10((100+3390)/3390.0), np.log10(5), 100)
 
     #theta = np.linspace(-np.pi/6, np.pi/6, 15)
-    theta = np.linspace(np.pi/6, 0, 8)
+    theta = np.array([np.pi/4])
 
    # fields = ['O_p1_number_density', 'O_p1_velocity_z','O_p1_v_cross_B_z']
-    fields = ['magnetic_field_x', 'magnetic_field_y', 'magnetic_field_z']
+    fields = ['O_p1_v_-_fluid_v_x', 'O_p1_v_-_fluid_v_y', 'O_p1_v_-_fluid_v_z', 'O_p1_number_density']
 #    fields = ['O2_p1_v_-_fluid_v_x', 'O2_p1_v_-_fluid_v_y', 'O2_p1_v_-_fluid_v_z', 'O2_p1_v_-_fluid_v_total']
     data = {f:{dsk:np.zeros((theta.shape[0], R.shape[0])) for dsk in ds_names.keys()} for f in fields}
 

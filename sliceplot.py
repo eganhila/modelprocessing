@@ -64,10 +64,10 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=N
                        [center[off_ax[ax_i][1]]],
                        marker='x', color='white', zorder=20, s=3)
         
-        ax.set_xlim(-4,4)
-        ax.set_xlim(-4,4)
-        #ax.set_xlim(-2.5,2.5)
-        #ax.set_ylim(-2.5,2.5)
+        #ax.set_xlim(-4,4)
+        #ax.set_xlim(-4,4)
+        ax.set_xlim(-2.5,2.5)
+        ax.set_ylim(-2.5,2.5)
         plt.tight_layout()
     if show:
         plt.show()
@@ -202,7 +202,7 @@ def slice_data(ds, ax_i, field, regrid_data, **kwargs):
     if regrid_data: return slice_regrid(ds, ax_i, field, **kwargs)
     else: return slice_onax(ds, ax_i, field, **kwargs)
 
-def plot_data_vec(plot, slc, ax_i, field):
+def plot_data_vec(plot_ax, slc, ax_i, field):
     slc_0, slc_1, field_dat = slc
     Ns = np.array(slc_0.shape, dtype=int)/20
 

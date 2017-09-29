@@ -15,7 +15,7 @@ plt.style.use('seaborn-poster')
 
 
 field = 'O2_p1_number_density'
-cmap = 'viridis'
+cmap = 'inferno'
 orientation = 'horizontal'
 log = 'log'
 
