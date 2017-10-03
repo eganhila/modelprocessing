@@ -4,13 +4,14 @@ from slice_grid import setup_slicegrid_plot as setup_spslc_plot
 import numpy as np
 import matplotlib.pyplot as plt
 
-ds_names, ds_types = get_datasets('temp', False)
+ds_names_all, ds_types_all = get_datasets('R2349', False)
 
 
-def finalize_spslc_plot():
+def finalize_spslc_plot(plot, fname='Output/test.pdf'):
     for ax_i in range(plot['Nds']):
         for ax_j in range(plot['Nfields']):
             ax = plot['axes_grid'][ax_j,ax_i]
+            ax.set_yscale('log')
 
             if ax_i == plot['Nds'] -1:
                 ax.set_ylabel(label_lookup[plot['fields'][ax_j]])
@@ -40,6 +41,7 @@ def create_spslc_grid():
     
     lat = np.linspace(90,0,25)
     alt = (np.logspace(np.log10((100+3390)/3390.0), np.log10(5), 60)-1)*3390
+    print alt
 
     lat_grid, alt_grid = np.meshgrid(lat, alt)
 
@@ -62,8 +64,11 @@ def create_spslc_grid():
 
 def main():
 
-    fields ['O2_p1_v_cross_B_z']
-    ds_keys = ['batsrus_mf_lr']
+    fields =['fluid_velocity_x', 'fluid_velocity_y', 'fluid_velocity_z']
+    ds_keys = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid']
+
+    ds_names = {dsk:dsn for dsk, dsn in ds_names_all.items() if dsk in ds_keys}
+    ds_types = {dsk:[dsk] for dsk in ds_keys}
 
     plot = setup_spslc_plot(fields, ds_keys)
 
@@ -73,8 +78,10 @@ def main():
 
     for dsk in ds_keys:
         for f in fields:
-            plot_ax = plot['axes'][(dsk, f)]
-            slc = (bins[0], bins[1], data[dsk][f])
+            if data[f][dsk] is None: continue
+
+            plot_ax = plot['axes'][(f, dsk)]
+            slc = (bins[0].reshape(shape), bins[1].reshape(shape), data[f][dsk].reshape(shape))
 
             plot_data_scalar(plot_ax, slc, None, f, cbar=False)  
 

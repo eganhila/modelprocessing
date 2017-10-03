@@ -208,17 +208,6 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False,
         plt.savefig(fname)
 
 
-def get_path_idxs(coords, ds_names, ds_types):
-    indxs = {}
-    for ds_type, keys in ds_types.items():
-        if ds_type == 'maven': continue
-        if len(keys) == 0: continue
-        print 'getting indxs: '+ds_type
-        indxs[ds_type] = bin_coords(coords, ds_names[keys[0]], 
-                                    grid='helio' in ds_type or 'rhybrid' in ds_type)
-                                    #grid=ds_type=='heliosares')
-    indxs['maven'] = 'all'
-    return indxs
 
 def plot_field_ds(x, data, ax, kwargs):
     if data.ndim<2:

@@ -38,6 +38,7 @@ def finalize_profile_plot(plot):
     for ax in plot['ax_arr']:
         ax.set_xscale('log')
 
+
     plot['ax_arr'][-1].set_xlabel('Altitude (km)')
     plt.savefig('Output/test.pdf')
 
@@ -55,16 +56,21 @@ def plot_profile(xvals, data, fields, ds_names):
     finalize_profile_plot(plot)
 
 def create_profile():
-    ds_names, ds_types = get_datasets(load_key='R2349') 
+    ds_names_all, ds_types_all = get_datasets(load_key='R2349') 
+    ds_keys = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid']
+
+    ds_names = {dsk:dsn for dsk, dsn in ds_names_all.items() if dsk in ds_keys}
+    ds_types = {dsk:[dsk] for dsk in ds_keys}
 
     R = np.logspace(np.log10((100+3390)/3390.0), np.log10(5), 100)
 
     #theta = np.linspace(-np.pi/6, np.pi/6, 15)
-    theta = np.array([np.pi/4])
+    theta = np.array([55*np.pi/180]) 
 
-   # fields = ['O_p1_number_density', 'O_p1_velocity_z','O_p1_v_cross_B_z']
-    fields = ['O_p1_v_-_fluid_v_x', 'O_p1_v_-_fluid_v_y', 'O_p1_v_-_fluid_v_z', 'O_p1_number_density']
-#    fields = ['O2_p1_v_-_fluid_v_x', 'O2_p1_v_-_fluid_v_y', 'O2_p1_v_-_fluid_v_z', 'O2_p1_v_-_fluid_v_total']
+    fields = ['O2_p1_velocity_z', 'O2_p1_velocity_x', 'O2_p1_v_cross_B_z', 'O2_p1_v_cross_B_x']
+
+
+
     data = {f:{dsk:np.zeros((theta.shape[0], R.shape[0])) for dsk in ds_names.keys()} for f in fields}
 
     for i, theta_i in enumerate(theta):

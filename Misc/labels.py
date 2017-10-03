@@ -89,6 +89,12 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'current_x':r'$J_x$',
           'current_y':r'$J_y$',
           'current_z':r'$J_z$',
+          'fluid_velocity_x':r'$(u_e+\bar{u_i})_x/2$',
+          'fluid_velocity_y':r'$(u_e+\bar{u_i})_y/2$',
+          'fluid_velocity_z':r'$(u_e+\bar{u_i})_z/2$',
+          'magnetic_field_1_x':r'$B1_X$',
+          'magnetic_field_1_y':r'$B1_Y$',
+          'magnetic_field_1_z':r'$B1_Z$',
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}}$'

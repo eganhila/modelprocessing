@@ -195,6 +195,18 @@ def apply_maven_indx(ds, field, indx):
 #    return ds.loc[indx, field].values
     return ds.loc[:,field].values[::2]
 
+def get_path_idxs(coords, ds_names, ds_types):
+    indxs = {}
+    for ds_type, keys in ds_types.items():
+        if ds_type == 'maven': continue
+        if len(keys) == 0: continue
+        print 'getting indxs: '+ds_type
+        indxs[ds_type] = bin_coords(coords, ds_names[keys[0]], 
+                                    grid='helio' in ds_type or 'rhybrid' in ds_type)
+                                    #grid=ds_type=='heliosares')
+    indxs['maven'] = 'all'
+    return indxs
+
 
 def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
                 area=None, maven=False):
@@ -357,6 +369,8 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
     elif 'fluid_velocity' in field:
         ue = get_ds_data(ds, field.replace('fluid', 'electron'), indx, grid=grid, maven=maven)
         ubar_i = get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
+
+        #return ubar_i
 
         return 0.5*(ue+ubar_i)
 

@@ -103,8 +103,8 @@ def make_slicegrid_plot(fields, ds_keys, ax, center, fname='Output/test.pdf'):
 
 def main():
 
-    fields = ['O2_p1_v_cross_B_total', 'O2_p1_v_cross_B_z', 'O2_p1_v_cross_B_x', 'O2_p1_v_-_fluid_v_x', 'O2_p1_v_-_fluid_v_z']
-    ds_keys = [ 'batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid']
+    fields = ['CO2_p1_number_density']
+    ds_keys = [ 'batsrus_mf_lr']
     ax = 'x'
     center = [0.0,0.0,0.0]
     for i, x in enumerate([1,0.5,-0.5,-1.25,-2]):
