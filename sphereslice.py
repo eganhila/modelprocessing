@@ -64,7 +64,7 @@ def create_spslc_grid():
 
 def main():
 
-    fields =['fluid_velocity_x', 'fluid_velocity_y', 'fluid_velocity_z']
+    fields =['fluid_velocity_x', 'fluid_velocity_z']
     ds_keys = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid']
 
     ds_names = {dsk:dsn for dsk, dsn in ds_names_all.items() if dsk in ds_keys}
