@@ -66,17 +66,14 @@ def create_profile():
     R = np.logspace(np.log10((100+3390)/3390.0), np.log10(5), 100)
 
     #theta = np.linspace(-np.pi/6, np.pi/6, 15)
-    theta = np.array([40*np.pi/180]) 
+    theta = np.array([60*np.pi/180]) 
 
-    #fields = ['O2_p1_velocity_z', 'O2_p1_velocity_x', 'O2_p1_v_cross_B_z', 'O2_p1_v_cross_B_x']
-    fields = ['O2_p1_number_density', 'O2_p1_velocity_x', 'fluid_velocity_x', 'O2_p1_v_-_fluid_v_x', 'magnetic_field_y', 'O2_p1_v_cross_B_z']
-
-
+    fields = ['O2_p1_velocity_z', 'O2_p1_velocity_x','fluid_velocity_z', 'O2_p1_v_-_fluid_v_z', 'magnetic_field_y', 'O2_p1_v_cross_B_x']
 
     data = {f:{dsk:np.zeros((theta.shape[0], R.shape[0])) for dsk in ds_names.keys()} for f in fields}
 
     for i, theta_i in enumerate(theta):
-        coords = np.array([ np.cos(theta_i)*R, 0.5+np.zeros_like(R),  np.sin(theta_i)*R])
+        coords = np.array([ np.cos(theta_i)*R, np.zeros_like(R),  np.sin(theta_i)*R])
         indxs = get_path_idxs(coords, ds_names, ds_types)
 
         data_i = get_all_data(ds_names, ds_types, indxs, fields)
