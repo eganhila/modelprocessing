@@ -34,7 +34,7 @@ field_lims = {#'magnetic_field_x':(-50,50),
               'J_cross_B_total':(1e-6,5/1e2),
               'O2_p1_v_cross_B_x':(-0.002, 0),
               'O2_p1_v_cross_B_y':(-0.002, 0.002),
-              'O2_p1_v_cross_B_z':(-0.00, 0.002),
+              'O2_p1_v_cross_B_z':(-0.002, 0.002),
               'ram_pressure':(0,1),
               }
 
@@ -85,6 +85,7 @@ field_lims_slices = {'O_p1_number_density': (1e-2, 5e4),
                      'fluid_velocity_x':(-200,200),
                      'fluid_velocity_y':(-200,200),
                      'fluid_velocity_z':(-200,200),
+                     'O2_p1_flux':(-1e8,1e8)
                      }
 linthresh_slices = { 'v_cross_B_x':1,
                      'v_cross_B_y':1,

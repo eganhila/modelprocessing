@@ -9,6 +9,25 @@ from matplotlib.collections import LineCollection
 from matplotlib.patches import Wedge
 from general_functions import *
 
+def add_cycloidpickup(ax):
+    R = 20000
+    t = np.linspace(0,2*np.pi,100)
+    theta = np.linspace(0,np.pi/2,2)
+    R_0 = 1000+3390
+
+    x = np.zeros((theta.shape[0], t.shape[0]))
+    z = np.zeros((theta.shape[0], t.shape[0]))
+
+    for i in range(theta.shape[0]):
+        x0 = R_0*np.cos(theta[i])
+        z0 = R_0*np.sin(theta[i])
+                    
+        x[i] = -1*R*(t-np.sin(t)) + x0
+        z[i] = R*(1-np.cos(t)) + z0
+
+    ax.plot(x.T/3390, z.T/3390, color='white', lw=1, alpha=0.8)
+    
+
 def add_mars(ax_i, **kwargs):
     """
     Function to overplot mars over a given axis,

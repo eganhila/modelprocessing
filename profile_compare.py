@@ -56,25 +56,27 @@ def plot_profile(xvals, data, fields, ds_names):
     finalize_profile_plot(plot)
 
 def create_profile():
-    ds_names_all, ds_types_all = get_datasets(load_key='R2349') 
-    ds_keys = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid']
+    ds_names, ds_types = get_datasets(load_key='SDC_G1')
+    #ds_names_all, ds_types_all = get_datasets(load_key='R2349') 
+    #ds_keys = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid']
 
-    ds_names = {dsk:dsn for dsk, dsn in ds_names_all.items() if dsk in ds_keys}
-    ds_types = {dsk:[dsk] for dsk in ds_keys}
+    #ds_names = {dsk:dsn for dsk, dsn in ds_names_all.items() if dsk in ds_keys}
+    #ds_types = {dsk:[dsk] for dsk in ds_keys}
 
     R = np.logspace(np.log10((100+3390)/3390.0), np.log10(5), 100)
 
     #theta = np.linspace(-np.pi/6, np.pi/6, 15)
-    theta = np.array([55*np.pi/180]) 
+    theta = np.array([40*np.pi/180]) 
 
-    fields = ['O2_p1_velocity_z', 'O2_p1_velocity_x', 'O2_p1_v_cross_B_z', 'O2_p1_v_cross_B_x']
+    #fields = ['O2_p1_velocity_z', 'O2_p1_velocity_x', 'O2_p1_v_cross_B_z', 'O2_p1_v_cross_B_x']
+    fields = ['O2_p1_number_density', 'O2_p1_velocity_x', 'fluid_velocity_x', 'O2_p1_v_-_fluid_v_x', 'magnetic_field_y', 'O2_p1_v_cross_B_z']
 
 
 
     data = {f:{dsk:np.zeros((theta.shape[0], R.shape[0])) for dsk in ds_names.keys()} for f in fields}
 
     for i, theta_i in enumerate(theta):
-        coords = np.array([ np.sin(theta_i)*R, np.zeros_like(R),  np.cos(theta_i)*R])
+        coords = np.array([ np.cos(theta_i)*R, 0.5+np.zeros_like(R),  np.sin(theta_i)*R])
         indxs = get_path_idxs(coords, ds_names, ds_types)
 
         data_i = get_all_data(ds_names, ds_types, indxs, fields)

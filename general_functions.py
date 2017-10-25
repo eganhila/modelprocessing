@@ -110,6 +110,28 @@ def get_datasets(load_key=None, maven=True):
         if maven:
             #ds_names['maven'] = orbit_dir+'orbit_2349.csv'
             ds_types['maven']=['maven']
+    elif load_key == 'SDC_BATS':
+        ds_names['LS180_SSL000_max'] = model_dir+'SDC_Archive/BATSRUS/LS180_SSL000_max.h5'
+        ds_names['LS270_SSL000_max'] = model_dir+'SDC_Archive/BATSRUS/LS270_SSL000_max.h5'
+        ds_names['LS090_SSL000_max'] = model_dir+'SDC_Archive/BATSRUS/LS090_SSL000_max.h5'
+        ds_names['LS180_SSL270_max'] = model_dir+'SDC_Archive/BATSRUS/LS180_SSL270_max.h5'
+        ds_names['LS270_SSL270_max'] = model_dir+'SDC_Archive/BATSRUS/LS270_SSL270_max.h5'
+        ds_names['LS090_SSL270_max'] = model_dir+'SDC_Archive/BATSRUS/LS090_SSL270_max.h5'
+        ds_names['LS180_SSL180_max'] = model_dir+'SDC_Archive/BATSRUS/LS180_SSL180_max.h5'
+        ds_names['LS270_SSL180_max'] = model_dir+'SDC_Archive/BATSRUS/LS270_SSL180_max.h5'
+        ds_names['LS090_SSL180_max'] = model_dir+'SDC_Archive/BATSRUS/LS090_SSL180_max.h5'
+        ds_names['LS180_SSL000_min'] = model_dir+'SDC_Archive/BATSRUS/LS180_SSL000_min.h5'
+        ds_names['LS270_SSL000_min'] = model_dir+'SDC_Archive/BATSRUS/LS270_SSL000_min.h5'
+        ds_names['LS090_SSL000_min'] = model_dir+'SDC_Archive/BATSRUS/LS090_SSL000_min.h5'
+        ds_names['LS180_SSL270_min'] = model_dir+'SDC_Archive/BATSRUS/LS180_SSL270_min.h5'
+        ds_names['LS270_SSL270_min'] = model_dir+'SDC_Archive/BATSRUS/LS270_SSL270_min.h5'
+        ds_names['LS090_SSL270_min'] = model_dir+'SDC_Archive/BATSRUS/LS090_SSL270_min.h5'
+        ds_names['LS180_SSL180_min'] = model_dir+'SDC_Archive/BATSRUS/LS180_SSL180_min.h5'
+        ds_names['LS270_SSL180_min'] = model_dir+'SDC_Archive/BATSRUS/LS270_SSL180_min.h5'
+        ds_names['LS090_SSL180_min'] = model_dir+'SDC_Archive/BATSRUS/LS090_SSL180_min.h5'
+
+        ds_types = {'batsrus':[key for key in ds_names.keys()]}
+
     elif load_key == 'SDC_G1':
         #BATSRUS
         ds_names['bats_min_LS270_SSL0'] = \
@@ -120,11 +142,11 @@ def get_datasets(load_key=None, maven=True):
                 model_dir+'SDC_Archive/BATSRUS/'+'3d__ful_4_n00060000_PERmin-SSLONG270.h5'        
         
         #HELIOSARES
-        ds_names['helio_1'] = \
-                model_dir+'SDC_Archive/HELIOSARES/Hybrid/'+'helio_1.h5'
+        #ds_names['helio_1'] = \
+        #        model_dir+'SDC_Archive/HELIOSARES/Hybrid/'+'helio_1.h5'
         
-        ds_names['helio_2'] = \
-                model_dir+'SDC_Archive/HELIOSARES/Hybrid/'+'helio_2.h5'
+        #ds_names['helio_2'] = \
+        #        model_dir+'SDC_Archive/HELIOSARES/Hybrid/'+'helio_2.h5'
             
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'bats' in key],
@@ -367,14 +389,22 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         if 'total' in field: return np.sqrt(np.sum(v**2, axis=0))
 
     elif 'fluid_velocity' in field:
-        ue = get_ds_data(ds, field.replace('fluid', 'electron'), indx, grid=grid, maven=maven)
-        ubar_i = get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
+        if grid == True: return get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
+        if 'total' in field:
+            ue = [get_ds_data(ds, field.replace('fluid', 'electron').replace('total', ax), indx, grid=grid, maven=maven) for ax in ['x','y','z']]
+            ubar_i = [get_ds_data(ds, field.replace('fluid', 'avg_ion').replace('total', ax), indx, grid=grid, maven=maven) for ax in ['x','y','z']]
+
+            return 0.5*np.sqrt(np.sum((np.array(ue)+np.array(ubar_i))**2, axis=0))
+        else:
+            ue = get_ds_data(ds, field.replace('fluid', 'electron'), indx, grid=grid, maven=maven)
+            ubar_i = get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
+            return 0.5*(ue+ubar_i)
 
         #return ubar_i
 
-        return 0.5*(ue+ubar_i)
 
     elif 'electron_velocity' in field:
+
        ax = field[-1:]
 
        J = get_ds_data(ds, 'current_'+ax, indx, grid=grid, maven=maven)
@@ -383,6 +413,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
        return 2*J+ubar_i
 
     elif 'avg_ion_velocity' in field:
+
         if 'velocity_x' in ds.keys():
             return get_ds_data(ds, field.replace('avg_ion_velocity', 'velocity'), indx, grid=grid, maven=maven)
 

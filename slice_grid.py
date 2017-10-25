@@ -18,6 +18,9 @@ axes = {'x':0,'y':1,'z':2}
 ds_names, ds_types = get_datasets('R2349', False)
 regrid_data = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'batsrus_multi_species'] 
 
+ds_names, ds_types = get_datasets('SDC_BATS', False)
+regrid_data =ds_names.keys()
+
 def setup_slicegrid_plot(ds_keys, fields):
     plot = {}
 
@@ -103,15 +106,16 @@ def make_slicegrid_plot(fields, ds_keys, ax, center, fname='Output/test.pdf'):
 
 def main():
 
-    fields = ['CO2_p1_number_density']
-    ds_keys = [ 'batsrus_mf_lr']
+    fields = ['O2_p1_number_density']
+#    ds_keys = [ 'batsrus_multi_species', 'batsrus_mf_lr', 'batsrus_electron_pressure','rhybrid', 'heliosares']
+    ds_keys = ds_names.keys()
     ax = 'x'
     center = [0.0,0.0,0.0]
-    for i, x in enumerate([1,0.5,-0.5,-1.25,-2]):
-        print i
-        center = [x,0,0]
+#    for i, x in enumerate([1,0.5,-0.5,-1.25,-2]):
+#        print i
+#        center = [x,0,0]
 
-        make_slicegrid_plot(fields, ds_keys, axes[ax], center, fname='Output/slicegrid_{0:02d}.pdf'.format(i))
+    make_slicegrid_plot(fields, ds_keys, axes[ax], center, fname='Output/slicegrid.pdf')#_{0:02d}.pdf'.format(i))
 
 if __name__ == '__main__':
     main()

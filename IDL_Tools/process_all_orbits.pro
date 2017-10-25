@@ -2,7 +2,7 @@ pro process_all_orbits
 
 struc = READ_CSV("/Volumes/triton/Data/maven/orbit_plots/final_orbits/orbitN.dat")
 orbits = struc.field1[5]
-orbits = 808
+orbits = 2349 
 foreach orbit, [orbits] do begin ;,  2344] do begin
 ;for orbit= 0,2925 do begin
   
@@ -31,7 +31,7 @@ foreach orbit, [orbits] do begin ;,  2344] do begin
    
     tlimit, trange
     trange = trange
-    tplot_options,'charsize',1.5
+    ;tplot_options,'charsize',1.5
     tplot_options,'xmargin',[20,20]
     tplot_options,'ymargin',[10,3]
     ;options, 'mvn_B_1sec_MAVEN_MSO','labflag',-1

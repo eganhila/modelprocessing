@@ -31,7 +31,7 @@ def setup_sliceplot():
 
 def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=None,
                        show_intersect=False, fname='Output/test.pdf', show=False,
-                       boundaries=False):
+                       boundaries=False, cycloidpickup=False):
     plot['figure'].set_size_inches(5,10)
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
     ax_title_lab = ["X", "Y", "Z"]
@@ -54,6 +54,7 @@ def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=N
         
         if orbit is not None: add_orbit(ax,ax_i, orbit, center, show_center=show_center, show_intersect=False, tlimit=tlimit)
         if boundaries: add_boundaries(ax, ax_i, center)
+        if cycloidpickup and ax_i == 1: add_cycloidpickup(ax)
             
         ax.set_xlabel('$\mathrm{'+ax_labels[ax_i][0]+'} \;(R_M)$')
         ax.set_ylabel('$\mathrm{'+ax_labels[ax_i][1]+'} \;(R_M)$')
@@ -234,10 +235,10 @@ def plot_data_stream(plot_ax, slc, ax_i, field):
 
     try:
         plot_ax.streamplot(slc_0.T, slc_1.T, field_dat[0].T, field_dat[1].T,
-                        color='k', linewidth=1, density=2)
+                        color='white',  linewidth=0.7, density=2)
     except ValueError:
         plot_ax.streamplot(slc_0, slc_1, field_dat[0], field_dat[1],
-                            color='k', linewidth=1,density=2)
+                            color='white', linewidth=0.7,density=2)
     
 
 def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
@@ -307,7 +308,8 @@ def plot_data(plot_ax, slc, ax_i, field, vec_field=False, stream_field=False, **
 def make_sliceplot(ds_name=None, field=None, center=None, orbit=None, 
                    regrid_data=False, vec_field=False, fname=None, 
                    test=False, mark=False, tlimit=None, show=False,
-                   boundaries=False, stream_field=False):
+                   boundaries=False, stream_field=False,
+                   cycloidpickup=False):
     """
     ds_name: path for file you want to plot
     field: name of field you want to plot as a scalar slice, leave empty or set to none
@@ -348,19 +350,20 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None,
 
 
     finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,
-            show_center=mark, tlimit=tlimit, show=show, boundaries=boundaries)
+            show_center=mark, tlimit=tlimit, show=show, boundaries=boundaries,
+            cycloidpickup=cycloidpickup)
 
 
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:bs:",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field=", "boundaries", "stream_field="])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:bs:",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field=", "boundaries", "stream_field=", "cycloidpickup"])
     except getopt.GetoptError:
         print getopt.GetoptError()
         print 'error'
         return
     
-    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field, stream_field, boundaries = None, None, None, None, False, None, False,'', None, None, None,None, False
+    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field, stream_field, boundaries, cycloidpickup = None, None, None, None, False, None, False,'', None, None, None,None, False, False
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
@@ -386,6 +389,8 @@ def main(argv):
             tlim = ast.literal_eval(arg)
         elif opt in ("-b", "--boundaries"):
             boundaries=True
+        elif opt in ( "--cycloidpickup"):
+            cycloidpickup=True
         elif opt in ("-s", "--stream_field"):
             stream_field = arg
     
@@ -424,7 +429,7 @@ def main(argv):
             print infile, field
             make_sliceplot(infile, field, orbit=orbit, test=test,
                       regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark, tlimit=tlim, stream_field=stream_field, 
-                      fname='Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle), boundaries=boundaries)
+                      fname='Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle), boundaries=boundaries, cycloidpickup=cycloidpickup)
     
 if __name__ == '__main__':
     main(sys.argv[1:])

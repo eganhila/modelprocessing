@@ -83,6 +83,7 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'O2_p1_v_-_fluid_v_x':r'$v(O_2+)_x - v(H+)_x$',
           'O2_p1_v_-_fluid_v_y':r'$v(O_2+)_y - v(H+)_y$',
           'O2_p1_v_-_fluid_v_z':r'$v(O_2+)_z - v(H+)_z$',
+          'O2_p1_v_-_fluid_v_total':r'$|v(O_2+)- u_{fluid}|$',
           'O_p1_v_-_fluid_v_x':r'$v(O+)_x - v(H+)_x$',
           'O_p1_v_-_fluid_v_y':r'$v(O+)_y - v(H+)_y$',
           'O_p1_v_-_fluid_v_z':r'$v(O+)_z - v(H+)_z$',
@@ -92,9 +93,11 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'fluid_velocity_x':r'$(u_e+\bar{u_i})_x/2$',
           'fluid_velocity_y':r'$(u_e+\bar{u_i})_y/2$',
           'fluid_velocity_z':r'$(u_e+\bar{u_i})_z/2$',
+          'fluid_velocity_total':r'$|(u_e+\bar{u_i})|/2$',
           'magnetic_field_1_x':r'$B1_X$',
           'magnetic_field_1_y':r'$B1_Y$',
           'magnetic_field_1_z':r'$B1_Z$',
+
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}}$'
