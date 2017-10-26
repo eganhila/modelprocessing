@@ -116,7 +116,7 @@ def main(argv):
         return
 
     test = False
-    outname = "heliosares.h5"
+    outname = "rhybrid.h5"
     fdir = ""
 
     for opt, arg in opts:
