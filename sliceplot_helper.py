@@ -141,7 +141,7 @@ def add_orbit(ax, ax_i, orbit, center=None, show_intersect=False,
 
 def add_boundaries(ax, ax_i, center):
 
-    lkwargs = {'color':'k', 'lw':1, 'alpha':0.8, 'ls':'--'}
+    lkwargs = {'color':'whitesmoke', 'lw':3, 'alpha':0.8, 'ls':'--'}
     #Conics via Trotignon 2006
 
     #shock

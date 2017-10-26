@@ -38,9 +38,9 @@ field_lims = {#'magnetic_field_x':(-50,50),
               'ram_pressure':(0,1),
               }
 
-field_lims_slices = {'O_p1_number_density': (1e-2, 5e4),
+field_lims_slices = {'O_p1_number_density': (1e-2, 5e2),
                      'O2_p1_number_density': (1e-2, 5e4),
-                     'H_p1_number_density':(1e-2, 1e2),
+                     'H_p1_number_density':(5e-2, 1e2),
                      'O_p1_temperature':(1e-3,1e2),
                      'pressure':(5e-3,4),
                      'magnetic_pressure':(5e-3, 30),

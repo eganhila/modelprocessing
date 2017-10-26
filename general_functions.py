@@ -70,13 +70,11 @@ def get_datasets(load_key=None, maven=True):
     """
     ds_names = {}
     if load_key == 'R2349': 
-        #ds_names['batsrus_multi_fluid'] =  model_dir+'R2349/batsrus_3d_multi_fluid.h5'
         ds_names['batsrus_mf_lr'] =  model_dir+'R2349/batsrus_3d_multi_fluid_lowres.h5'
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'#  model_dir+'R2349/heliosares.h5'
-        #ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/Heliosares_Multi/t00650.h5'
-        ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
+        ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid_r04.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],

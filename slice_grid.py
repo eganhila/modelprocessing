@@ -12,14 +12,18 @@ import glob
 import ast
 from sliceplot_helper import *
 import matplotlib.gridspec as gridspec
+import matplotlib as mpl
+plt.style.use('seaborn-poster')
+mpl.rcParams['text.usetex'] = False
+mpl.rcParams['axes.labelsize'] = 36 
+mpl.rcParams['xtick.labelsize'] = 36
+mpl.rcParams['ytick.labelsize'] = 36
+
 
 
 axes = {'x':0,'y':1,'z':2}
 ds_names, ds_types = get_datasets('R2349', False)
 regrid_data = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'batsrus_multi_species'] 
-
-ds_names, ds_types = get_datasets('SDC_BATS', False)
-regrid_data =ds_names.keys()
 
 def setup_slicegrid_plot(ds_keys, fields):
     plot = {}
@@ -50,17 +54,20 @@ def setup_slicegrid_plot(ds_keys, fields):
     return plot
 
 
-def finalize_slicegrid_plot(plot, ax_plt, center, fname):
+def finalize_slicegrid_plot(plot, ax_plt, center, fname, boundaries=False):
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
 
     for ax_i in range(plot['Nds']):
         for ax_j in range(plot['Nfields']):
             ax = plot['axes_grid'][ax_j,ax_i]
             ax.set_aspect('equal')
+            ax.set_xlim(-4,4)
+            ax.set_ylim(-4,4)
 
             mars_frac = np.real(np.sqrt(1-center[ax_plt]**2))
             alpha = np.nanmax([mars_frac, 0.1])
             add_mars(ax_plt, ax=ax, alpha=alpha)
+            if boundaries: add_boundaries(ax, ax_plt, center)
 
            
             if ax_i == plot['Nds'] -1:
@@ -101,14 +108,13 @@ def make_slicegrid_plot(fields, ds_keys, ax, center, fname='Output/test.pdf'):
             slc = slice_data(ds, ax, field, regrid_data=dsk in regrid_data, center=center)
             plot_data(plot['axes'][(dsk, field)], slc, ax, field, cbar=False)
 
-    finalize_slicegrid_plot(plot, ax, center, fname)
+    finalize_slicegrid_plot(plot, ax, center, fname)#, boundaries=True)
 
 
 def main():
 
-    fields = ['O2_p1_number_density']
-#    ds_keys = [ 'batsrus_multi_species', 'batsrus_mf_lr', 'batsrus_electron_pressure','rhybrid', 'heliosares']
-    ds_keys = ds_names.keys()
+    fields = ['H_p1_number_density', "O_p1_number_density", "magnetic_field_total"]
+    ds_keys = [ 'batsrus_multi_species', 'batsrus_mf_lr', 'batsrus_electron_pressure','rhybrid', 'heliosares']
     ax = 'x'
     center = [0.0,0.0,0.0]
 #    for i, x in enumerate([1,0.5,-0.5,-1.25,-2]):
