@@ -53,10 +53,10 @@ def create_sphere_mesh(r):
     lon_f = theta_f*180/np.pi
 
     x = (r*np.cos(theta_f)*np.sin(phi_f)).flatten()
-    #y = (r*np.sin(theta_f)*np.sin(phi_f)).flatten()
-    #z = (r*np.cos(phi_f)).flatten()
-    z = (r*np.sin(theta_f)*np.sin(phi_f)).flatten()
-    y = (r*np.cos(phi_f)).flatten()
+    y = (r*np.sin(theta_f)*np.sin(phi_f)).flatten()
+    z = (r*np.cos(phi_f)).flatten()
+    #z = (r*np.sin(theta_f)*np.sin(phi_f)).flatten()
+    #y = (r*np.cos(phi_f)).flatten()
 
     coords_f = np.array([x,y,z])
     
@@ -174,7 +174,7 @@ def main(argv):
                 fields_suffix = [arg]
         elif opt in ("-s", "--species"):
             if arg == 'all': ions = ['O2_p1_',  'O_p1_']#'CO2_p1',
-            if arg == 'None': ions = ['']
+            elif arg == 'None': ions = ['']
             else: ions = [arg+"_"]
         elif opt in ("-i", "--infile"):
             dsk = arg.split('/')[-1].split('.')[0]
@@ -193,6 +193,7 @@ def main(argv):
             ion_velocity = True
 
     fields = [ion+suff for ion, suff in iproduct(ions, fields_suffix)]
+    print ions, fields_suffix
     if total: fields.append('total_flux')
 
     if out_csv: df = pd.DataFrame(columns=ions, index=radii)
@@ -206,7 +207,7 @@ def main(argv):
             if out_csv:
                 for ion in ions:
                     total_ions = np.sum(np.nan_to_num(field_dat['area']*\
-                                field_dat[ion+'_flux'][ds_type]))
+                                field_dat[ion+'flux'][ds_type]))
                     df.loc[r,ion] = total_ions
 
         if out_csv: df.to_csv('Output/sphere_flux_{0}.csv'.format(ds_type))

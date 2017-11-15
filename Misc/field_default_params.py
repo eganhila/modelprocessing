@@ -39,7 +39,7 @@ field_lims = {#'magnetic_field_x':(-50,50),
               }
 
 field_lims_slices = {'O_p1_number_density': (1e-2, 5e2),
-                     'O2_p1_number_density': (1e-2, 5e4),
+                     'O2_p1_number_density': (1e-2, 5e2),
                      'H_p1_number_density':(5e-2, 1e2),
                      'O_p1_temperature':(1e-3,1e2),
                      'pressure':(5e-3,4),
@@ -130,6 +130,6 @@ log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressur
                    ]
 
 
-vec_field_scale = {'magnetic_field':20,
+vec_field_scale = {'magnetic_field':15,
                    'J_cross_B':100,
                    'v_cross_B':80}

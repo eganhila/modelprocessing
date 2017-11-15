@@ -220,14 +220,16 @@ def plot_data_vec(plot_ax, slc, ax_i, field):
     field_dat[0] = log_mag*frac_x
     field_dat[1] = log_mag*frac_y
     
+    print field, field in vec_field_scale
     if field in vec_field_scale: scale = vec_field_scale[field]
     else: scale = None
-    scale=None
+    #scale=None
 
     plot_ax.quiver(slc_0.T[::Ns[0], ::Ns[1]], slc_1.T[::Ns[0], ::Ns[1]],
                               field_dat[0].T[::Ns[0], ::Ns[1]],
                               field_dat[1].T[::Ns[0], ::Ns[1]],
-                              width=0.008, minshaft=2, scale=scale, pivot='mid')
+                              width=0.008, minshaft=2, scale=scale, pivot='mid',
+                              color='Gainsboro')
 
 
 def plot_data_stream(plot_ax, slc, ax_i, field):

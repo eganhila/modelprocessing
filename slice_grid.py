@@ -115,7 +115,7 @@ def main():
 
     fields = ['H_p1_number_density', "O_p1_number_density", "magnetic_field_total"]
     ds_keys = [ 'batsrus_multi_species', 'batsrus_mf_lr', 'batsrus_electron_pressure','rhybrid', 'heliosares']
-    ax = 'x'
+    ax = 'y'
     center = [0.0,0.0,0.0]
 #    for i, x in enumerate([1,0.5,-0.5,-1.25,-2]):
 #        print i
