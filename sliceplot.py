@@ -28,47 +28,47 @@ def setup_sliceplot():
     
     return plot
 
+def finalize_sliceax(ax, ax_i, orbit=None, center=None, show_center=False, tlimit=None,
+    show_intersect=False, boundaries=False, cycloidpickup=False, lim=None):
 
-def finalize_sliceplot(plot, orbit=None, center=None, show_center=False,tlimit=None,
-                       show_intersect=False, fname='Output/test.pdf', show=False,
-                       boundaries=False, cycloidpickup=False):
-    plot['figure'].set_size_inches(5,10)
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
     ax_title_lab = ["X", "Y", "Z"]
     if center is None: center = np.array([0.0,0.0,0.0])
+
+    ax.set_aspect('equal')
+    
+    mars_frac = np.real(np.sqrt(1-center[ax_i]**2))
+    ax.set_title('$\mathrm{'+ax_title_lab[ax_i]+'= '+"{0:0.02}".format(center[ax_i])+'}\;(R_M)$')
+
+    alpha = np.nanmax([mars_frac, 0.1])
+    add_mars(ax_i,ax=ax, alpha = alpha)
+
+    if orbit is not None: 
+        add_orbit(ax,ax_i, orbit, center, show_center=show_center, 
+                  show_intersect=False, tlimit=tlimit)
+    if boundaries: add_boundaries(ax, ax_i, center)
+    if cycloidpickup and ax_i == 1: add_cycloidpickup(ax)
+        
+    ax.set_xlabel('$\mathrm{'+ax_labels[ax_i][0]+'} \;(R_M)$')
+    ax.set_ylabel('$\mathrm{'+ax_labels[ax_i][1]+'} \;(R_M)$')
+
+    off_ax = [[1,2],[0,2],[0,1]]
+    if show_center:
+        ax.scatter([center[off_ax[ax_i][0]]],
+                   [center[off_ax[ax_i][1]]],
+                   marker='x', color='white', zorder=20, s=3)
+    
+    if lim is None: lim=(-2.5,2.5)
+    ax.set_xlim(lim)
+    ax.set_ylim(lim)
+
+
+def finalize_sliceplot(plot, fname='Output/test.pdf', show=False, **kwargs):
+    plot['figure'].set_size_inches(5,10)
     
     for ax_i, ax in enumerate(plot['axes']):
-        ax.set_aspect('equal')
-        
-        mars_frac = np.real(np.sqrt(1-center[ax_i]**2))
-        ax.set_title('$\mathrm{'+ax_title_lab[ax_i]+'= '+"{0:0.02}".format(center[ax_i])+'}\;(R_M)$')
+        finalize_sliceax(ax, ax_i, **kwargs) 
 
-        alpha = np.nanmax([mars_frac, 0.1])
-
-	add_mars(ax_i,ax=ax, alpha = alpha)
-        
-        #circle = plt.Circle((0, 0), mars_frac, color='k')
-        #ax.add_artist(circle)
-        #circle = plt.Circle((0, 0), 1, color='k', alpha=0.1, zorder=0)
-        #ax.add_artist(circle)
-        
-        if orbit is not None: add_orbit(ax,ax_i, orbit, center, show_center=show_center, show_intersect=False, tlimit=tlimit)
-        if boundaries: add_boundaries(ax, ax_i, center)
-        if cycloidpickup and ax_i == 1: add_cycloidpickup(ax)
-            
-        ax.set_xlabel('$\mathrm{'+ax_labels[ax_i][0]+'} \;(R_M)$')
-        ax.set_ylabel('$\mathrm{'+ax_labels[ax_i][1]+'} \;(R_M)$')
-
-        off_ax = [[1,2],[0,2],[0,1]]
-        if show_center:
-            ax.scatter([center[off_ax[ax_i][0]]],
-                       [center[off_ax[ax_i][1]]],
-                       marker='x', color='white', zorder=20, s=3)
-        
-        #ax.set_xlim(-4,4)
-        #ax.set_xlim(-4,4)
-        ax.set_xlim(-2.5,2.5)
-        ax.set_ylim(-2.5,2.5)
         plt.tight_layout()
     if show:
         plt.show()
@@ -220,14 +220,16 @@ def plot_data_vec(plot_ax, slc, ax_i, field):
     field_dat[0] = log_mag*frac_x
     field_dat[1] = log_mag*frac_y
     
+    print field, field in vec_field_scale
     if field in vec_field_scale: scale = vec_field_scale[field]
     else: scale = None
-    scale=None
+    #scale=None
 
     plot_ax.quiver(slc_0.T[::Ns[0], ::Ns[1]], slc_1.T[::Ns[0], ::Ns[1]],
                               field_dat[0].T[::Ns[0], ::Ns[1]],
                               field_dat[1].T[::Ns[0], ::Ns[1]],
-                              width=0.008, minshaft=2, scale=scale, pivot='mid')
+                              width=0.008, minshaft=2, scale=scale, pivot='mid',
+                              color='Gainsboro')
 
 
 def plot_data_stream(plot_ax, slc, ax_i, field):
@@ -309,7 +311,7 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None,
                    regrid_data=False, vec_field=False, fname=None, 
                    test=False, mark=False, tlimit=None, show=False,
                    boundaries=False, stream_field=False,
-                   cycloidpickup=False):
+                   cycloidpickup=False, lim=None):
     """
     ds_name: path for file you want to plot
     field: name of field you want to plot as a scalar slice, leave empty or set to none
@@ -351,7 +353,7 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None,
 
     finalize_sliceplot(plot, orbit=orbit, center=center, fname=fname,
             show_center=mark, tlimit=tlimit, show=show, boundaries=boundaries,
-            cycloidpickup=cycloidpickup)
+            cycloidpickup=cycloidpickup, lim=lim)
 
 
 
