@@ -132,4 +132,5 @@ log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressur
 
 vec_field_scale = {'magnetic_field':15,
                    'J_cross_B':100,
-                   'v_cross_B':80}
+                   'v_cross_B':80,
+                   'O2_p1_velocity':35}

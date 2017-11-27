@@ -168,7 +168,7 @@ def main(argv):
         if opt in ("-f", "--field"):
             if arg == "all": 
                 fields_suffix = ['flux', 'number_density']
-            if arg == 'mag':
+            elif arg == 'mag':
                 fields_suffix = ['magnetic_field_normal', 'magnetic_field_total', 'magnetic_field_x', 'magnetic_field_y', 'magnetic_field_z']
             else:
                 fields_suffix = [arg]
