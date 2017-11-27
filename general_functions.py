@@ -74,7 +74,7 @@ def get_datasets(load_key=None, maven=True):
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'
-        ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid_r04.h5'
+        #ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid_r04.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
@@ -82,7 +82,7 @@ def get_datasets(load_key=None, maven=True):
                     'batsrus4':[key for key in ds_names.keys() if 'mf_lr' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key],
                     'rhybrid_helio':[key for key in ds_names.keys() if 'rhybrid' in key ]}
-        if maven and False:
+        if maven:
             ds_names['maven']=orbit_dir+'orbit_2349.csv'
             #ds_names['maven'] = orbit_dir+'orbit_plume_2349.csv'
             ds_types['maven']=['maven']
@@ -396,13 +396,6 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         if 'total' in field: return np.sqrt(np.sum(v**2, axis=0))
 
     elif 'fluid_velocity' in field:
-<<<<<<< working copy
-        ue = get_ds_data(ds, field.replace('fluid', 'electron'), indx, grid=grid, maven=maven)
-        ubar_i = get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
-        if grid == True:
-            ue = get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
-
-=======
         if grid == True: return get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
         if 'total' in field:
             ue = [get_ds_data(ds, field.replace('fluid', 'electron').replace('total', ax), indx, grid=grid, maven=maven) for ax in ['x','y','z']]
@@ -413,7 +406,6 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
             ue = get_ds_data(ds, field.replace('fluid', 'electron'), indx, grid=grid, maven=maven)
             ubar_i = get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
             return 0.5*(ue+ubar_i)
->>>>>>> destination
 
         #return ubar_i
 

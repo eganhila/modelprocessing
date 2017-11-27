@@ -14,10 +14,10 @@ from sliceplot_helper import *
 import matplotlib.gridspec as gridspec
 import matplotlib as mpl
 plt.style.use('seaborn-poster')
-mpl.rcParams['text.usetex'] = False
-mpl.rcParams['axes.labelsize'] = 36 
-mpl.rcParams['xtick.labelsize'] = 36
-mpl.rcParams['ytick.labelsize'] = 36
+#mpl.rcParams['text.usetex'] = False
+#mpl.rcParams['axes.labelsize'] = 36 
+#mpl.rcParams['xtick.labelsize'] = 36
+#mpl.rcParams['ytick.labelsize'] = 36
 
 
 

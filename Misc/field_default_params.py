@@ -7,11 +7,11 @@ field_lims = {#'magnetic_field_x':(-50,50),
               'magnetic_field_total':(0,40),
 
               'H_p1_number_density': (1e-0, 20),#(4e0, 2e4),
-              'O_p1_number_density': (2e-4, 2e2),
+              #'O_p1_number_density': (2e-4, 2e2),
               #'O2_p1_number_density':(1e-4, 30), 
               #'CO2_p1_number_density':(1e-4,1),
               'O2_p1_number_density':(1e-2,6e4),
-              #'O_p1_number_density': (4e0, 7e3),#(4e0, 2e4),
+              'O_p1_number_density': (4e0, 7e3),#(4e0, 2e4),
               'CO2_p1_number_density':(1e-2,6e3),
               #'H_p1_number_density':(7e-1,7e4),
 

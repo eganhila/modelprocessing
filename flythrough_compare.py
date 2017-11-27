@@ -183,7 +183,7 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False,
 
         if i % 2 == 0:
             ylab = ax.get_ylabel()
-            ax.set_ylabel(ylab, labelpad=40)
+        #    ax.set_ylabel(ylab, labelpad=40)
         else:
             ylab = ax.get_ylabel()
             ax.set_ylabel(ylab, labelpad=10)

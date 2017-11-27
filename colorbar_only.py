@@ -14,8 +14,8 @@ from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 plt.style.use('seaborn-poster')
 
 
-field = 'O2_p1_number_density'
-cmap = 'inferno'
+field = 'O_p1_number_density'
+cmap = 'viridis'
 orientation = 'horizontal'
 log = 'log'
 
