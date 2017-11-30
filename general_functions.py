@@ -704,3 +704,37 @@ def rotate_coords_simmso(coords):
    Rxy = np.array([[np.cos(xy_theta), -1*np.sin(xy_theta),0],[np.sin(xy_theta), np.cos(xy_theta),0],[0,0,1]])
    return np.matmul(Rxz, np.matmul(Rxy, coords))
 
+def get_cycloid_positions(R, theta, alt, N=100, zlim=None, tlim=None):
+    R_0 = alt+3390.0
+    x0 = R_0*np.cos(theta)
+    z0 = R_0*np.sin(theta)
+    
+    if tlim is None and zlim is None: tlim = np.pi/2
+    elif zlim is not None: 
+        print 1-(zlim*3390.0-z0)/R
+        tlim = np.arccos(1-(zlim*3390.0-z0)/R)
+    
+    t = np.linspace(0, tlim, N)
+
+    
+    x = (-1*R*(t-np.sin(t)) + x0)/3390.0
+    z = (R*(1-np.cos(t)) + z0)/3390.0
+
+    return (x, z)
+
+def get_cycloid_velocity(R,theta,alt,v0,N=100, zlim=None, tlim=None):
+    R_0 = alt+3390.0
+    x0 = R_0*np.cos(theta)
+    z0 = R_0*np.sin(theta)
+    
+    if tlim is None and zlim is None: tlim = np.pi/2
+    elif zlim is not None: 
+        tlim = np.arccos(1-(zlim*3390.0-z0)/R)
+    
+    t = np.linspace(0, tlim, N)
+
+    vx = -1*v0*(1-np.cos(t))
+    vz = v0*(np.sin(t))
+    
+    return (vx,vz)
+
