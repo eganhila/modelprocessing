@@ -491,7 +491,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         vtot = get_ds_data(ds, vfield+"_total", indx, grid=grid, maven=maven)
         vvec = get_ds_data(ds, vfield+'_'+vec, indx, grid=grid, maven=maven)
         dens = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven)
-        return np.abs(vvec/vtot)*dens
+        return np.abs(vvec/vtot)
 
     elif 'density' in field and field != 'density':
         return get_ds_data(ds, 'density', indx, grid=grid, maven=maven)
