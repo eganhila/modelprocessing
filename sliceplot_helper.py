@@ -28,6 +28,14 @@ def add_cycloidpickup(ax):
     ax.plot(x.T/3390, z.T/3390, color='white', lw=1, alpha=0.8)
     
 
+def setup_single_sliceplot():
+    plot = {}
+
+    plot['figure'] = plt.gcf()
+    plot['ax'] = plt.gca()
+
+    return plot
+
 def add_mars(ax_i, **kwargs):
     """
     Function to overplot mars over a given axis,
