@@ -326,6 +326,10 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
     #    return apply_indx(ds, '_'.join(field.split('_')[2:]), indx)
     elif field == 'magnetic_pressure':
         return get_ds_data(ds, 'magnetic_field_total', indx, grid=grid, maven=maven)**2/(2*1.26E-6*1e9)
+    elif field == 'electron_pressure_frac':
+        pe = get_ds_data(ds, 'electron_pressure', indx, grid=grid, maven=maven)
+        pt = get_ds_data(ds, 'thermal_pressure', indx, grid=grid, maven=maven)
+        return pe/pt
     elif field == 'total_pressure':
         if maven: return np.array([])
         pe = get_ds_data(ds, 'electron_pressure', indx, grid=grid, maven=maven)
@@ -369,7 +373,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
                       for vec in ['x','y','z']])
         ion = '_'.join(field.split('_')[:2])
-        n = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven) 
+        #n = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven) 
 
         if field[-1] == 'x': v = J[1]*B[2]-J[2]*B[1]
         if field[-1] == 'y': v = J[2]*B[0]-J[0]*B[2]
@@ -397,6 +401,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         if 'total' in field: return np.sqrt(np.sum(v**2, axis=0))
 
     elif 'fluid_velocity' in field:
+        return get_ds_data(ds, field.replace('fluid', 'H_p1'), indx, grid=grid, maven=maven)
         if grid == True: 
             return get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
         if 'total' in field:
@@ -422,7 +427,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         if 'velocity_x' in ds.keys() and False:
             return get_ds_data(ds, field.replace('avg_ion_velocity', 'velocity'), indx, grid=grid, maven=maven)
         if 'xmesh' in ds.keys() and 'electron_velocity_z' in ds.keys():
-            return get_ds_data(ds, field.replace('avg_ion_velocity', 'electron_velocity'), indx, grid=grid, maven=maven)
+            return get_ds_data(ds, field.replace('avg_ion_velocity', 'H_p1_velocity'), indx, grid=grid, maven=maven)
 
         ions = ['H_p1', 'O2_p1', 'O_p1']
         if 'CO2_p1_number_density' in ds.keys(): ions.append('CO2_p1')
