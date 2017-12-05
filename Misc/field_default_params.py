@@ -112,6 +112,7 @@ field_lims_shells = {'O2_p1_flux':(-1e8, 1e8),
                      'magnetic_field_z':(-150,150),
                      'magnetic_field_normal':(-150,150),
                      'magnetic_field_total':(1e-1,300), 
+                     'O_p1_v_cross_B_z':(-0.001,0.001),
                      }
 
 log_fields2 = [#'H_p1_number_density',

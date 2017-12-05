@@ -54,7 +54,7 @@ def load_data(ds_name, field=None, fields=None, vec_field=None):
             
     return ds
 
-def get_datasets(load_key=None, maven=True):
+def get_datasets(load_key=None, maven=False):
     """
     Get datasets and related information (which datasets are the same type, etc)
 
@@ -74,7 +74,7 @@ def get_datasets(load_key=None, maven=True):
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'
-        ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid_r04.h5'
+        ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
@@ -321,8 +321,9 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         return pr/1e6
 
 
-    elif '_'.join(field.split('_')[2:]) in ds.keys() and '_'.join(field.split('_')[2:]) not in ['x','y','z']:
-        return apply_indx(ds, '_'.join(field.split('_')[2:]), indx)
+    #elif '_'.join(field.split('_')[2:]) in ds.keys() and '_'.join(field.split('_')[2:]) not in ['x','y','z']:
+    #    print 'what'+'_'.join(field.split('_')[2:])
+    #    return apply_indx(ds, '_'.join(field.split('_')[2:]), indx)
     elif field == 'magnetic_pressure':
         return get_ds_data(ds, 'magnetic_field_total', indx, grid=grid, maven=maven)**2/(2*1.26E-6*1e9)
     elif field == 'total_pressure':
@@ -396,7 +397,8 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         if 'total' in field: return np.sqrt(np.sum(v**2, axis=0))
 
     elif 'fluid_velocity' in field:
-        if grid == True: return get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
+        if grid == True: 
+            return get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
         if 'total' in field:
             ue = [get_ds_data(ds, field.replace('fluid', 'electron').replace('total', ax), indx, grid=grid, maven=maven) for ax in ['x','y','z']]
             ubar_i = [get_ds_data(ds, field.replace('fluid', 'avg_ion').replace('total', ax), indx, grid=grid, maven=maven) for ax in ['x','y','z']]
@@ -406,9 +408,6 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
             ue = get_ds_data(ds, field.replace('fluid', 'electron'), indx, grid=grid, maven=maven)
             ubar_i = get_ds_data(ds, field.replace('fluid', 'avg_ion'), indx, grid=grid, maven=maven)
             return 0.5*(ue+ubar_i)
-
-        #return ubar_i
-
 
     elif 'electron_velocity' in field:
 
@@ -420,9 +419,10 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
        return 2*J+ubar_i
 
     elif 'avg_ion_velocity' in field:
-
-        if 'velocity_x' in ds.keys():
+        if 'velocity_x' in ds.keys() and False:
             return get_ds_data(ds, field.replace('avg_ion_velocity', 'velocity'), indx, grid=grid, maven=maven)
+        if 'xmesh' in ds.keys() and 'electron_velocity_z' in ds.keys():
+            return get_ds_data(ds, field.replace('avg_ion_velocity', 'electron_velocity'), indx, grid=grid, maven=maven)
 
         ions = ['H_p1', 'O2_p1', 'O_p1']
         if 'CO2_p1_number_density' in ds.keys(): ions.append('CO2_p1')
@@ -669,13 +669,16 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
             else:
                 for field in fields:
                     with h5py.File(dsf, 'r') as ds:
+                        
                         if '_x' in field or '_y' in field or '_z' in field:
-                            ds_dat = get_rotated_data(ds, field, indxs[ds_type],
-                                             grid=('helio' in ds_type) or ('rhybrid' in ds_type), **kwargs)
-                        else:
-                            ds_dat = get_ds_data(ds, field, indxs[ds_type],
+                            get_data_func = get_rotated_data
+                        else: get_data_func = get_ds_data
+                        try:
+                            ds_dat = get_data_func(ds, field, indxs[ds_type],
                                                  grid=('helio' in ds_type) or ('rhybrid' in ds_type), **kwargs)
                                              #grid=ds_type=='heliosares', **kwargs)
+                        except ValueError:
+                            ds_dat = []
                         data[field][dsk] = ds_dat
 
                 data['time'][dsk] = np.linspace(0, 1, np.max(indxs[ds_type].shape))

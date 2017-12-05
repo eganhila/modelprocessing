@@ -97,7 +97,9 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'magnetic_field_1_x':r'$B1_X$',
           'magnetic_field_1_y':r'$B1_Y$',
           'magnetic_field_1_z':r'$B1_Z$',
-
+          'electron_velocity_z':r'$v(e-)_x$',
+          'electron_velocity_z':r'$v(e-)_y$',
+          'electron_velocity_z':r'$v(e-)_z$',
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}}$'
