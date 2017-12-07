@@ -100,6 +100,7 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'electron_velocity_z':r'$v(e-)_x$',
           'electron_velocity_z':r'$v(e-)_y$',
           'electron_velocity_z':r'$v(e-)_z$',
+          'thermal_pressure':'Thermal Pressure'
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}}$'

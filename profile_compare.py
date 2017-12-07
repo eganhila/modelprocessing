@@ -60,22 +60,22 @@ def create_profile():
     ds_names, ds_types = get_datasets(load_key='R2349') 
     #ds_names_all, ds_types_all = get_datasets(load_key='R2349') 
     
-    #ds_keys = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid']
+    #ds_keys = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid', 'heliosares']
 
     #ds_names = {dsk:dsn for dsk, dsn in ds_names_all.items() if dsk in ds_keys}
     #ds_types = {dsk:[dsk] for dsk in ds_keys}
 
     R = np.logspace(np.log10((100+3390)/3390.0), np.log10(5), 100)
 
-    #theta = np.linspace(-np.pi/6, np.pi/6, 15)
+    #theta = np.linspace(0,np.pi/2, 15)
     theta = np.array([np.pi/4]) 
 
-    fields = ['O_p1_number_density', 'O2_p1_number_density', 'fluid_velocity_x']
+    fields = ['O_p1_number_density', 'O2_p1_number_density','fluid_velocity_x']
 
     data = {f:{dsk:np.zeros((theta.shape[0], R.shape[0])) for dsk in ds_names.keys()} for f in fields}
 
     for i, theta_i in enumerate(theta):
-        #coords = np.array([ np.cos(theta_i)*R, np.zeros_like(R),  np.sin(theta_i)*R])
+        #coords = np.array([ np.cos(theta_i)*R, np.zeros_like(R)+0.5,  np.sin(theta_i)*R])
         coords = np.array([R-(1-np.cos(theta_i)), np.zeros_like(R), np.ones_like(R)*np.sin(theta_i)])
         indxs = get_path_idxs(coords, ds_names, ds_types)
 

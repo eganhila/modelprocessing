@@ -361,7 +361,6 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
             T_i = np.nan_to_num(np.array([get_ds_data(ds, ion+'_temperature', indx, grid=grid, maven=maven) for ion in ions]))
             k = 1.38*1e-4
             p = np.sum(n_i*k*T_i, axis=0)
-            print p
             return p
         else:
             return np.array([])
@@ -683,7 +682,7 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
                                                  grid=('helio' in ds_type) or ('rhybrid' in ds_type), **kwargs)
                                              #grid=ds_type=='heliosares', **kwargs)
                         except ValueError:
-                            ds_dat = []
+                            ds_dat = np.array([])
                         data[field][dsk] = ds_dat
 
                 data['time'][dsk] = np.linspace(0, 1, np.max(indxs[ds_type].shape))

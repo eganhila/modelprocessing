@@ -288,6 +288,8 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
         tlimit = (0.0,0.45)
     elif region == 'outbound':
         tlimit = (0.6, 1.0)
+    elif region == 'center':
+        tlimit = (0.3,0.7)
     else:
         tlimit = (0,1)
         region = 'all'
