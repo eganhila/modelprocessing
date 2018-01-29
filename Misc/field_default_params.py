@@ -11,7 +11,7 @@ field_lims = {#'magnetic_field_x':(-50,50),
               #'O2_p1_number_density':(1e-4, 30), 
               #'CO2_p1_number_density':(1e-4,1),
               'O2_p1_number_density':(1e-2,6e4),
-              'O_p1_number_density': (4e0, 7e3),#(4e0, 2e4),
+              'O_p1_number_density': (1e-3, 7e3),#(4e0, 2e4),
               'CO2_p1_number_density':(1e-2,6e3),
               #'H_p1_number_density':(7e-1,7e4),
 
@@ -38,7 +38,7 @@ field_lims = {#'magnetic_field_x':(-50,50),
               'ram_pressure':(0,1),
               'J_cross_B_z':(-10,10),
               'H_p1_velocity_x':(-200,10),
-              'fluid_velocity_x':(-200,10),
+              'fluid_velocity_x':(-150,20),
               }
 
 field_lims_slices = {'O_p1_number_density': (1e-2, 5e2),

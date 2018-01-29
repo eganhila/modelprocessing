@@ -38,8 +38,9 @@ def finalize_profile_plot(plot):
     for ax in plot['ax_arr']:
         ax.set_xscale('log')
 
-
     plot['ax_arr'][-1].set_xlabel('Altitude (km)')
+    plot['figure'].set_size_inches(16,4)
+
     plt.savefig('Output/test.pdf')
 
 
@@ -57,20 +58,20 @@ def plot_profile(xvals, data, fields, ds_names):
 
 def create_profile():
     #ds_names, ds_types = get_datasets(load_key='SDC_G1')
-    ds_names, ds_types = get_datasets(load_key='R2349') 
-    #ds_names_all, ds_types_all = get_datasets(load_key='R2349') 
+    #ds_names, ds_types = get_datasets(load_key='R2349') 
+    ds_names_all, ds_types_all = get_datasets(load_key='R2349') 
     
-    #ds_keys = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'rhybrid', 'heliosares']
+    ds_keys = ['batsrus_mf_lr','rhybrid', 'heliosares']
 
-    #ds_names = {dsk:dsn for dsk, dsn in ds_names_all.items() if dsk in ds_keys}
-    #ds_types = {dsk:[dsk] for dsk in ds_keys}
+    ds_names = {dsk:dsn for dsk, dsn in ds_names_all.items() if dsk in ds_keys}
+    ds_types = {dsk:[dsk] for dsk in ds_keys}
 
     R = np.logspace(np.log10((100+3390)/3390.0), np.log10(5), 100)
 
     #theta = np.linspace(0,np.pi/2, 15)
     theta = np.array([np.pi/4]) 
 
-    fields = ['O_p1_number_density', 'O2_p1_number_density','fluid_velocity_x']
+    fields = ['O_p1_number_density', 'fluid_velocity_x']
 
     data = {f:{dsk:np.zeros((theta.shape[0], R.shape[0])) for dsk in ds_names.keys()} for f in fields}
 
