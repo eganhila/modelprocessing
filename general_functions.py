@@ -6,8 +6,8 @@ import pandas as pd
 from misc.labels import *
 from misc.field_default_params import *
 
-#sp.furnsh("/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/misc/maven_spice.txt")
-mars_r = 3390*5
+sp.furnsh("/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/misc/maven_spice.txt")
+mars_r = 3390.0
 orbit_dir = '/Volumes/triton/Data/OrbitDat/Flythroughs/'
 model_dir = '/Volumes/triton/Data/ModelChallenge/'
 
@@ -24,9 +24,9 @@ def load_data(ds_name, field=None, fields=None, vec_field=None):
     ds = {}
     with h5py.File(ds_name, 'r') as f:
         if 'xmesh' in f.keys():
-            ds['x'] = f['xmesh'][:]/3390
-            ds['y'] = f['ymesh'][:]/3390
-            ds['z'] = f['zmesh'][:]/3390
+            ds['x'] = f['xmesh'][:]/mars_r
+            ds['y'] = f['ymesh'][:]/mars_r
+            ds['z'] = f['zmesh'][:]/mars_r
             grid=True
         else:
             ds['x'] = f['x'][:]
@@ -74,7 +74,7 @@ def get_datasets(load_key=None, maven=False):
         ds_names['batsrus_multi_species'] =  model_dir+'R2349/batsrus_3d_multi_species.h5'
         ds_names['batsrus_electron_pressure'] =  model_dir+'R2349/batsrus_3d_pe.h5'
         ds_names['heliosares'] ='/Volumes/triton/Data/ModelChallenge/R2349/heliosares_multi.h5'
-        ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
+        #ds_names['rhybrid'] ='/Volumes/triton/Data/ModelChallenge/R2349/rhybrid.h5'
         
         ds_types = {'batsrus1':[key for key in ds_names.keys() if 'multi_fluid' in key],
                     'batsrus2':[key for key in ds_names.keys() if 'multi_species' in key],
@@ -82,7 +82,7 @@ def get_datasets(load_key=None, maven=False):
                     'batsrus4':[key for key in ds_names.keys() if 'mf_lr' in key],
                     'heliosares':[key for key in ds_names.keys() if 'helio' in key],
                     'rhybrid_helio':[key for key in ds_names.keys() if 'rhybrid' in key ]}
-        if maven:
+        if maven or True:
             ds_names['maven']=orbit_dir+'orbit_2349.csv'
             #ds_names['maven'] = orbit_dir+'orbit_plume_2349.csv'
             ds_types['maven']=['maven']
@@ -183,7 +183,7 @@ def cart_geo_vec_transform(ds, prefix, indx):
     
     lat = -1*(np.arctan2(np.sqrt(x**2+y**2), z))+np.pi/2  #theta
     lon = np.arctan2(y, x)   #phi
-    #alt = (np.sqrt(x**2+y**2+z**2)-1)*3390
+    #alt = (np.sqrt(x**2+y**2+z**2)-1)*mars_r
 
     #lat, lon = ds['latitude'][:].flatten()[indx], ds['longitude'][:].flatten()[indx]
     #lat, lon = lat*np.pi/180.0, lon*np.pi/180.0
@@ -543,7 +543,7 @@ def get_orbit_coords(orbit, geo=False, Npts=250, units_rm=True, sim_mars_r=3396.
     adjust_spherical (bool, default=True): Adjust the coordinates to
         account for a non-spherical mars
     """
-    Nskip = 10 #10000/Npts
+    Nskip = 2 #10000/Npts
     data = pd.read_csv(orbit_dir+'orbit_{0:04d}.csv'.format(orbit))[::Nskip]
     pos = np.array([data['x'], data['y'], data['z']])
     time = data['time'].values
@@ -583,9 +583,9 @@ def bin_coords(coords, dsf, grid=True):
     
 def bin_coords_grid(coords, dsf):
     with h5py.File(dsf, 'r') as dataset:
-        x = dataset['xmesh'][:,0,0]/3390
-        y = dataset['ymesh'][0,:,0]/3390
-        z = dataset['zmesh'][0,0,:]/3390
+        x = dataset['xmesh'][:,0,0]/mars_r
+        y = dataset['ymesh'][0,:,0]/mars_r
+        z = dataset['zmesh'][0,0,:]/mars_r
         mesh_shape = (dataset['xmesh'].shape)
         
     idx = np.zeros((3, coords.shape[-1]))
@@ -721,31 +721,31 @@ def rotate_coords_simmso(coords):
    return np.matmul(Rxz, np.matmul(Rxy, coords))
 
 def get_cycloid_positions(R, theta, alt, N=100, zlim=None, tlim=None):
-    R_0 = alt+3390.0
+    R_0 = float(alt+mars_r)
     x0 = R_0*np.cos(theta)
     z0 = R_0*np.sin(theta)
     
     if tlim is None and zlim is None: tlim = np.pi/2
     elif zlim is not None: 
-        print 1-(zlim*3390.0-z0)/R
-        tlim = np.arccos(1-(zlim*3390.0-z0)/R)
+        print 1-(zlim*mars_r-z0)/R
+        tlim = np.arccos(1-(zlim*mars_r-z0)/R)
     
     t = np.linspace(0, tlim, N)
 
     
-    x = (-1*R*(t-np.sin(t)) + x0)/3390.0
-    z = (R*(1-np.cos(t)) + z0)/3390.0
+    x = (-1*R*(t-np.sin(t)) + x0)/mars_r
+    z = (R*(1-np.cos(t)) + z0)/mars_r
 
     return (x, z)
 
 def get_cycloid_velocity(R,theta,alt,v0,N=100, zlim=None, tlim=None):
-    R_0 = alt+3390.0
+    R_0 = alt+mars_r
     x0 = R_0*np.cos(theta)
     z0 = R_0*np.sin(theta)
     
     if tlim is None and zlim is None: tlim = np.pi/2
     elif zlim is not None: 
-        tlim = np.arccos(1-(zlim*3390.0-z0)/R)
+        tlim = np.arccos(1-(zlim*mars_r-z0)/R)
     
     t = np.linspace(0, tlim, N)
 

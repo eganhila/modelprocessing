@@ -9,6 +9,7 @@ foreach orbit, [orbits] do begin ;,  2344] do begin
     t0_unix = (mvn_orbit_num(orbnum=orbit-1)+mvn_orbit_num(orbnum=orbit))/2
     t1_unix = (mvn_orbit_num(orbnum=orbit+1)+mvn_orbit_num(orbnum=orbit))/2
     trange = [time_string(t0_unix), time_string(t1_unix)]
+    print, trange
 
     mvn_swia_load_l2_data, tplot=1, trange=trange, /loadspec, /eflux, /loadmom
     mvn_swe_load_l2, trange, /spec

@@ -14,10 +14,10 @@ from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 plt.style.use('seaborn-poster')
 
 
-field = 'O_p1_number_density'
-cmap = 'viridis'
-orientation = 'horizontal'
-log = 'log'
+field = 'O_p1_v_cross_B_z'
+cmap = 'RdBu'
+orientation = 'vertical'
+log = 'linear'
 
 vmin, vmax = field_lims_slices[field] 
 linthresh = None
@@ -40,7 +40,7 @@ cb = mpl.colorbar.ColorbarBase(ax, cmap=cmap,
 cb.set_label(label)
 
 f= plt.gcf()
-if orientation == 'vertical': f.set_size_inches(1.25,10)
+if orientation == 'vertical': f.set_size_inches(1.9,6)
 else: f.set_size_inches(10,1.25)
 
 plt.tight_layout()
