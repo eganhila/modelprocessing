@@ -408,7 +408,7 @@ def main(argv):
     if fdir is not None: infiles = glob.glob(fdir+"*.h5")
     else: infiles = [infile]
 
-    if 'Heliosares' in infiles[0] or 'helio' in infiles[0] or 'rhybrid' in infiles[0]: regrid_data = False
+    if 'Heliosares' in infiles[0] or 'helio' in infiles[0] or 'rhybrid' in infiles[0] or 'prelim' in infiles[0]: regrid_data = False
     else: regrid_data = True
 
     if center == 'plume': center = [0.22996261,0.27413697,1.51051213]

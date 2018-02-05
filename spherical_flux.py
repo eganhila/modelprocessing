@@ -74,7 +74,8 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
     # Check to see if the field diverges
     if field in field_lims_shells:
         vmin, vmax = field_lims_shells[field]
-        linthresh = 10**(int(np.ceil(np.log10(vmax)))-4.5)
+        #linthresh = 10**(int(np.ceil(np.log10(vmax)))-4.5)
+        linthresh = 1e4
 
     if sum([1 for k in diverging_field_keys if k in field]):
         cmap = 'RdBu'
@@ -116,9 +117,13 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
                 format=ticker.LogFormatterMathtext())
     else:
         plt.colorbar(label=label_lookup[field])
+
+    plt.gca().set_aspect('equal')
         
     plt.ylim(-90,90)
     plt.xlim(-90,270)
+    plt.xticks([-90,-30,30,90,150,210,270])
+    plt.yticks([-90,-45,0,45,90])
     plt.xlabel('Longitude (0=Dayside, 180=Nightside)')
     plt.ylabel('Latitude')
     plt.title('R = {0} (RM)'.format(r))

@@ -6,8 +6,8 @@ import pandas as pd
 from misc.labels import *
 from misc.field_default_params import *
 
-sp.furnsh("/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/misc/maven_spice.txt")
-mars_r = 3390
+#sp.furnsh("/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/misc/maven_spice.txt")
+mars_r = 3390*5
 orbit_dir = '/Volumes/triton/Data/OrbitDat/Flythroughs/'
 model_dir = '/Volumes/triton/Data/ModelChallenge/'
 
