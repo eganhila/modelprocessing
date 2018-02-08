@@ -24,7 +24,9 @@ import getopt
 from matplotlib import cm
 import pandas as pd
 import datetime
+import matplotlib as mpl
 plt.style.use('seaborn-poster')
+cmap = mpl.cm.get_cmap('plasma')
 
 colors = {'maven':'k',
           'maven_low_alt':'k',
@@ -33,12 +35,13 @@ colors = {'maven':'k',
           'bats_min_LS270_SSL0':'CornflowerBlue',
           'bats_min_LS270_SSL180':'DodgerBlue',
           'bats_min_LS270_SSL270':'LightSkyBlue',
-          'batsrus_multi_species':'MediumBlue',
-          'batsrus_multi_fluid':'DodgerBlue',
-          'batsrus_mf_lr':'DodgerBlue',
-          'batsrus_electron_pressure':'DarkCyan',
-          'heliosares': 'MediumVioletRed',
-          'rhybrid':'orchid',
+
+          'batsrus_multi_species': cmap(0.85),#'MediumBlue',
+          'batsrus_multi_fluid': cmap(0.7), #'DodgerBlue',
+          'batsrus_mf_lr': cmap(0.7), #'DodgerBlue',
+          'batsrus_electron_pressure': cmap(0.5), #'DarkCyan',
+          'heliosares': cmap(0.3),# 'MediumVioletRed',
+          'rhybrid':cmap(0.1), #'orchid',
           'rhybrid240':'orchid',
           'rhybrid120':'MediumVioletRed',
           'helio_1':'LimeGreen',
@@ -83,7 +86,7 @@ def setup_plot(fields, ds_names, coords, tlimit=None, add_altitude=False, single
             if ds != single_out: plot['kwargs'][ds]['alpha']=0.2
     else:
         for ds in plot['kwargs'].keys():
-            if ds != 'maven': plot['kwargs'][ds]['alpha']=0.6
+            if ds != 'maven': plot['kwargs'][ds]['alpha']=0.9
 
 
     #for ds in ds_names:
@@ -210,6 +213,7 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False,
 
 
 def plot_field_ds(x, data, ax, kwargs):
+    print x.shape, data.shape
     if data.ndim<2:
         ax.plot(x, data, **kwargs)
     else:
@@ -329,7 +333,7 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     elif field == 'plume2': fields  = ['O2_p1_number_density','O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'plume': fields = ['O_p1_number_density', 'O_p1_velocity_total', 'O2_p1_number_density', 'O2_p1_velocity_total', 'O2_p1_velocity_x', 'O2_p1_velocity_y', 'magnetic_field_x']
     elif field == 'boundaries':
-        fields = ['H_p1_number_density','O_p1_number_density', 'magnetic_field_total', 'ram_pressure']
+        fields = ['H_p1_number_density', 'magnetic_field_total']
     elif field == 'pressure':
         fields = ['magnetic_pressure', 'pressure', 'electron_pressure', 'ram_pressure', 'total_pressure' ]
     elif field == 'current':

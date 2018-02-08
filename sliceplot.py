@@ -58,7 +58,7 @@ def finalize_sliceax(ax, ax_i, orbit=None, center=None, show_center=False, tlimi
                    [center[off_ax[ax_i][1]]],
                    marker='x', color='white', zorder=20, s=3)
     
-    if lim is None: lim=(-2.5,2.5)
+    if lim is None: lim=(-2,2)#(-2.5,2.5)
     ax.set_xlim(lim)
     ax.set_ylim(lim)
 
@@ -124,7 +124,7 @@ def get_offgrid_slice(ds, ax_i, field, vec_field, center, extra_fields=None):
 
 def slice_regrid(ds, ax_i, field, vec_field=False, test=False, center=None, extra_fields=None):
     if test: lin = np.linspace(-4, 4, 50)
-    else: lin = np.linspace(-4, 4, 250)
+    else: lin = np.linspace(-3, 3, 250)
     grid_0, grid_1 = np.meshgrid(lin, lin)
     g0_flat, g1_flat = grid_0.flatten(), grid_1.flatten()
     

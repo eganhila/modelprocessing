@@ -17,6 +17,7 @@ df_mspecies = df.set_index('Unnamed: 0')
 df = pd.read_csv('Output/sphere_flux_batsrus_3d_pe.csv')
 df = df.sort_values('Unnamed: 0')
 df_pe = df.set_index('Unnamed: 0')
+print df_pe
 
 df = pd.read_csv('Output/sphere_flux_heliosares_multi.csv')
 df = df.sort_values('Unnamed: 0')
@@ -34,8 +35,9 @@ colors = {'fluid':'DodgerBlue', 'species':'LightSkyBlue', 'helio':'MediumVioletR
 f, axes = plt.subplots(1,2)
 for ax, ion in zip(axes, [ 'O2_p1', 'O_p1']):
     for dsk in ['fluid', 'species', 'helio', 'rhybrid', 'pe']:
-        ax.bar(dfs[dsk][ion+'_'].index[1:], dfs[dsk][ion+'_'].values[1:], 'o-',  color=colors[dsk],label=dsk)
+        ax.plot(dfs[dsk][ion+'_'].index, dfs[dsk][ion+'_'].values,   color=colors[dsk],label=dsk)
 
+        print dfs[dsk][ion+'_'].values 
 
     ax.set_yscale('log')
     ax.set_ylim(1e22, 1e25)
@@ -45,7 +47,7 @@ for ax, ion in zip(axes, [ 'O2_p1', 'O_p1']):
 axes[1].set_xlabel('$\mathrm{Radius\;(R_M)}$')
 axes[0].set_xticks([])
 
-plt.legend(loc='upper right')
+#plt.legend(loc='upper right')
 plt.tight_layout()
 f.set_size_inches(10,8)
 
