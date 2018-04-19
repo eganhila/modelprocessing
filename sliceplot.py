@@ -65,6 +65,7 @@ def finalize_sliceax(ax, ax_i, orbit=None, center=None, show_center=False, tlimi
 
 def finalize_sliceplot(plot, fname='Output/test.pdf', show=False, **kwargs):
     plot['figure'].set_size_inches(5,10)
+    fname = fname[:-3] + 'png'
     
     for ax_i, ax in enumerate(plot['axes']):
         finalize_sliceax(ax, ax_i, **kwargs) 
@@ -408,8 +409,8 @@ def main(argv):
     if fdir is not None: infiles = glob.glob(fdir+"*.h5")
     else: infiles = [infile]
 
-    if 'Heliosares' in infiles[0] or 'helio' in infiles[0] or 'rhybrid' in infiles[0] or 'prelim' in infiles[0]: regrid_data = False
-    else: regrid_data = True
+    if 'batsrus' in infile: regrid_data = True
+    else: regrid_data = False
 
     if center == 'plume': center = [0.22996261,0.27413697,1.51051213]
     elif center == 'shemi': center = [-0.25569435,-0.05906954,-1.58311669]
