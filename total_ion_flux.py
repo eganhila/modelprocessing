@@ -44,7 +44,7 @@ for ax, ion in zip(axes, [ 'O2_p1', 'O_p1']):
 
     ax.set_ylabel(label_lookup[ion+'_flux'])
 
-axes[1].set_xlabel('$\mathrm{Radius\;(R_M)}$')
+axes[1].set_xlabel('$\mathrm{Radius\;(R_P)}$')
 axes[0].set_xticks([])
 
 #plt.legend(loc='upper right')

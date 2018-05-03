@@ -94,4 +94,8 @@ v_O2+_ave,O2_p1_velocity
 v_He++sw_ave,He_p2_velocity
 n_H+sw_ave,H_p1_number_density
 v_H+sw_ave,H_p1_velocity
- electron_pressure,electron_pressure
+electron_pressure,electron_pressure
+n_O+,O_p1_number_density
+n_O2+,O2_p1_number_density
+v_O+,O_p1_velocity
+v_O2+,O2_p1_velocity

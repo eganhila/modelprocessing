@@ -39,9 +39,9 @@ plt.style.use(['seaborn-poster', 'poster'])
 
 
 
-def create_sphere_mesh(r):
-    lon = np.arange(-90,271, 5.0)
-    lat = np.arange(-90,91, 5.0)
+def create_sphere_mesh(r,planet_r=3390,d_angle=5.0):
+    lon = np.arange(-90,271, d_angle)
+    lat = np.arange(-90,91, d_angle)
     phi = -1*(lat-90)*np.pi/180.0
     theta = lon*np.pi/180.0
     phi_v, theta_v = np.meshgrid(phi, theta)
@@ -62,7 +62,7 @@ def create_sphere_mesh(r):
     
     dphi = (phi_v[1:,1:]-phi_v[:-1,:-1])
     dtheta = (theta_v[1:,1:]-theta_v[:-1,:-1])
-    area = np.abs((r*3390*1e5)**2*(np.sin(phi_f)*dtheta*dphi).flatten())
+    area = np.abs((r*planet_r*1e5)**2*(np.sin(phi_f)*dtheta*dphi).flatten())
 
     rhat = coords_f/np.sqrt(np.sum(coords_f**2,axis=0))
     

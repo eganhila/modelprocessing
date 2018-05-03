@@ -79,12 +79,12 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname, boundaries=False):
             if ax_j != plot['Nfields']-1:
                 ax.set_xticks([])
             else:
-                ax.set_xlabel('$\mathrm{'+ax_labels[ax_plt][0]+'} \;(R_M)$')
+                ax.set_xlabel('$\mathrm{'+ax_labels[ax_plt][0]+'} \;(R_P)$')
 
             if ax_i != 0:
                 ax.set_yticks([])
             else:
-                ax.set_ylabel('$\mathrm{'+ax_labels[ax_plt][1]+'} \;(R_M)$')
+                ax.set_ylabel('$\mathrm{'+ax_labels[ax_plt][1]+'} \;(R_P)$')
 
 
     h = 15.0

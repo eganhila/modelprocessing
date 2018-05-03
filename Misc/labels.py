@@ -17,6 +17,7 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'bats_min_LS270_SSL270':'BATSRUS: SSL=270',# (Solar min, LS=270)',
           'helio_1':'HELIOSARES: 1',# (Solar mod, LS=270)',
           'helio_2':'HELIOSARES: 2',# (Solar mod, LS=270)',
+          'code_length':r'Distance ($R_p$)',
           'maven': "MAVEN",
           'maven2': "MAVEN-kp",
           'maven1': "MAVEN-sta",
@@ -100,7 +101,10 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'electron_velocity_z':r'$v(e-)_x$',
           'electron_velocity_z':r'$v(e-)_y$',
           'electron_velocity_z':r'$v(e-)_z$',
-          'thermal_pressure':'Thermal Pressure'
+          'thermal_pressure':'Thermal Pressure',
+          'km':'Distance (km)',
+          'H':'Distance (scale heights)',
+          'R_P':r'Distance ($R_P$)',
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}}$'

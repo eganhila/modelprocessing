@@ -6,11 +6,11 @@ import pandas as pd
 from misc.labels import *
 from misc.field_default_params import *
 
-sp.furnsh("/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/misc/maven_spice.txt")
-mars_r = 3390.0
+#sp.furnsh("/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/misc/maven_spice.txt")
+mars_r = None
 orbit_dir = '/Volumes/triton/Data/OrbitDat/Flythroughs/'
 model_dir = '/Volumes/triton/Data/ModelChallenge/'
-
+exo_dir = '/Volumes/triton/Data/Exoplanets/'
 def load_data(ds_name, field=None, fields=None, vec_field=None):
     """
     Load data for a standard hdf5 dataset into a dictionary
@@ -22,7 +22,11 @@ def load_data(ds_name, field=None, fields=None, vec_field=None):
         vec_field + "_x", "_y", and "_z".
     """
     ds = {}
+    ds['attrs'] = {}
     with h5py.File(ds_name, 'r') as f:
+        mars_r = float(f.attrs['radius'])
+        ds['attrs']['radius'] = mars_r
+        ds['attrs']['scale_height'] = 300*3390/mars_r
         if 'xmesh' in f.keys():
             ds['x'] = f['xmesh'][:]/mars_r
             ds['y'] = f['ymesh'][:]/mars_r
@@ -42,6 +46,8 @@ def load_data(ds_name, field=None, fields=None, vec_field=None):
 
         if fields is None:
             fields = []
+        elif fields == 'all':
+            fields = [k for k in f.keys() if 'mesh' not in k]
 
         if vec_field is not None:
             for v in ['_x', '_y', '_z']: fields.append(vec_field+v)
@@ -167,6 +173,20 @@ def get_datasets(load_key=None, maven=False):
         ds_names, ds_types = {},{}
         ds_names['maven'] = orbit_dir+'orbit_2349.csv'
         ds_types['maven']=['maven']
+    elif load_key == 'exo_2349':
+        keys = ['2349_1RM_225km','2349_1RM_450km', '2349_2RM_450km',
+                '2349_2RM_900km','2349_4RM_900km'] 
+        ds_names = {k:exo_dir+'/'+k+'/'+k+'.h5' for k in keys}
+        ds_types = {k:[k] for k in keys}
+    
+    elif load_key == 'exo_t1':
+        keys = ['T1_1RM_112km', 'T1_1RM_225km', #'T1_1RM_450km',
+                'T1_2RM_225km', 'T1_2RM_450km', #'T1_2RM_900km',
+                'T1_4RM_900km']
+
+        ds_names = {k:exo_dir+'/'+k+'/'+k+'.h5' for k in keys}
+        ds_types = {k:[k] for k in keys}
+
     else:
         print 'No datasets selected'
     
@@ -222,7 +242,7 @@ def get_path_idxs(coords, ds_names, ds_types):
         if len(keys) == 0: continue
         print 'getting indxs: '+ds_type
         indxs[ds_type] = bin_coords(coords, ds_names[keys[0]], 
-                                    grid='helio' in ds_type or 'rhybrid' in ds_type)
+                                    grid='batsrus' not in ds_type)
                                     #grid=ds_type=='heliosares')
     indxs['maven'] = 'all'
     return indxs
@@ -285,6 +305,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         vn = 1e5*get_ds_data(ds, velocity_field+'_normal', indx, grid, 
                              normal, ion_velocity, maven=maven)
         dens = get_ds_data(ds, field.replace('flux', "number_density"), indx, grid, maven=maven)
+        
         return vn*dens
     elif 'area' == field:
         return area
@@ -581,8 +602,9 @@ def bin_coords(coords, dsf, grid=True):
 
         return bin_coords_nogrid(coords,np.array([x,y,z]))
     
-def bin_coords_grid(coords, dsf):
+def bin_coords_grid(coords, dsf, method='nearest'):
     with h5py.File(dsf, 'r') as dataset:
+        mars_r = float(dataset.attrs['radius'])
         x = dataset['xmesh'][:,0,0]/mars_r
         y = dataset['ymesh'][0,:,0]/mars_r
         z = dataset['zmesh'][0,0,:]/mars_r
@@ -591,14 +613,56 @@ def bin_coords_grid(coords, dsf):
     idx = np.zeros((3, coords.shape[-1]))
     
     for i in range(coords.shape[-1]):
-        idx_x = np.argmin((coords[0,i]-x)**2)
-        idx_y = np.argmin((coords[1,i]-y)**2)
-        idx_z = np.argmin((coords[2,i]-z)**2)
-        
+        if method=='nearest':
+            idx_x = np.argmin((coords[0,i]-x)**2)
+            idx_y = np.argmin((coords[1,i]-y)**2)
+            idx_z = np.argmin((coords[2,i]-z)**2)
+        elif method == 'left':
+            factors = [(coords[0,i]-x)/np.abs(coords[0,i]-x),
+                       (coords[1,i]-y)/np.abs(coords[1,i]-y),
+                       (coords[2,i]-z)/np.abs(coords[2,i]-z)]
+
+            idx_x = np.argmin((coords[0,i]-x)**2*factors[0])
+            idx_y = np.argmin((coords[1,i]-y)**2*factors[1])
+            idx_z = np.argmin((coords[2,i]-z)**2*factors[2])
+        elif method == 'right':
+            factors = [(x-coords[0,i])/np.abs(coords[0,i]-x),
+                       (y-coords[1,i])/np.abs(coords[1,i]-y),
+                       (z-coords[2,i])/np.abs(coords[2,i]-z)]
+
+            idx_x = np.argmin((coords[0,i]-x)**2*factors[0])
+            idx_y = np.argmin((coords[1,i]-y)**2*factors[1])
+            idx_z = np.argmin((coords[2,i]-z)**2*factors[2])
+
         idx[:, i] = [idx_x, idx_y, idx_z]
             
     return idx.astype(int)
-        
+
+
+"""
+def trilinear_interpolate(coords, dsf, fields):
+    # get nearest points
+    idx_left = bin_coords_grid(coords, dsf, method='left')
+    with h5py.File(dsf, 'r') as dataset:
+        dx = (dataset['xmesh'][1,0,0]-dataset['xmesh'][0,0,0])/mars_r
+
+    x0 = get_ds_data(ds, 'xmesh', idx_left)
+    y0 = get_ds_data(ds, 'ymesh', idx_left)
+    z0 = get_ds_data(ds, 'zmesh', idx_left)
+
+    xd = (coords[0]-x0)/dx
+    yd = (coords[1]-y0)/dx
+    zd = (coords[2]-z0)/dx
+
+    idx_matrix = np.zeros(idx_)
+
+    # get weights
+    weights_left = np.abs()
+
+    # get vals for each grid
+
+    # average using weights
+"""
 def bin_coords_nogrid(coords, incoords):
 
     x,y,z = incoords
@@ -679,7 +743,7 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
                         else: get_data_func = get_ds_data
                         try:
                             ds_dat = get_data_func(ds, field, indxs[ds_type],
-                                                 grid=('helio' in ds_type) or ('rhybrid' in ds_type), **kwargs)
+                                                 grid='batsrus' not in ds_type, **kwargs)
                                              #grid=ds_type=='heliosares', **kwargs)
                         except ValueError:
                             ds_dat = np.array([])

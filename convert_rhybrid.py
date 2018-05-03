@@ -9,8 +9,10 @@ import h5py
 import sys
 import operator as oper
 import getopt
+import os
 
-f_var_rename = 'misc/name_conversion.txt'
+dirname = os.path.dirname(__file__)
+f_var_rename =  os.path.join(dirname,'misc/name_conversion.txt')
 # Set up name conversion dictionary
 name_conversion = {}
 for pair in file(f_var_rename):
@@ -28,7 +30,7 @@ data_conversion = {'O2_p1_number_density': lambda x: x*1e-6,
                    'He_p2_velocity':lambda x: x*1e-3,}
 
 
-def convert_dataset(infile, outname):
+def convert_dataset(infile, outname, radius=3390):
 
     # Read in file using vlsv reader from pytools
     vr = pt.vlsvfile.VlsvReader(infile)
@@ -47,8 +49,8 @@ def convert_dataset(infile, outname):
     locs_sorted_idx = np.array([ii[1] for ii in locs_sorted])
 
 
-    vars_1D_complete = ['n_O+_ave', 'n_O2+_ave', 'n_He++sw_ave']
-    vars_3D_complete = ['v_O+_ave', 'v_O2+_ave', 'v_He++sw_ave', 'cellBAverage', 'cellUe']
+    vars_1D_complete = ['n_O+_ave', 'n_O2+_ave']
+    vars_3D_complete = ['v_O+_ave', 'v_O2+_ave', 'cellBAverage', 'cellUe']
     vars_1D_add = [('n_H+sw_ave','n_H+planet_ave')]
     vars_3D_ave = [('v_H+sw_ave','v_H+planet_ave')]
     vars_spatial = ['x', 'y', 'z']
@@ -75,7 +77,7 @@ def convert_dataset(infile, outname):
         n_dat = np.zeros_like(dat)
         v_dat = [np.zeros_like(dat) for i in range(3)]
 
-        for ptype in ['sw_ave', 'planet_ave']:
+        for ptype in ['sw_ave','planet_ave']:
             temp = vr.read_variable('n_H+'+ptype)
             temp = data_conversion['H_p1_number_density'](temp)
             n_dat += temp[locs_sorted_idx].reshape(nz, ny, nx).T
@@ -106,18 +108,23 @@ def convert_dataset(infile, outname):
                              ['x','y','z','xmesh','ymesh','zmesh']):
             f.create_dataset(name, data=var)
 
+        f.attrs.create('radius', radius)
+        print 'Saving: ' + outname
+        f.close()
+
 
 
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "i:t:o:", ["infile=","test","outname="])
+        opts, args = getopt.getopt(argv, "i:t:o:r:", ["infile=","test","outname=", "radius="])
     except getopt.GetoptError:
         return
 
     test = False
     outname = "rhybrid.h5"
     fdir = ""
+    radius = 3390
 
     for opt, arg in opts:
         if opt in ("-t", "--test"):
@@ -126,8 +133,10 @@ def main(argv):
             infile = arg
         elif opt in ("-o", "--outname"):
             outname = arg
+        elif opt in ("-r", "--radius"):
+            radius = arg
 
-    convert_dataset(infile, outname)
+    convert_dataset(infile, outname, radius)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

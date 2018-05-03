@@ -213,7 +213,6 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False,
 
 
 def plot_field_ds(x, data, ax, kwargs):
-    print x.shape, data.shape
     if data.ndim<2:
         ax.plot(x, data, **kwargs)
     else:

@@ -38,10 +38,10 @@ def finalize_sliceax(ax, ax_i, orbit=None, center=None, show_center=False, tlimi
     ax.set_aspect('equal')
     
     mars_frac = np.real(np.sqrt(1-center[ax_i]**2))
-    ax.set_title('$\mathrm{'+ax_title_lab[ax_i]+'= '+"{0:0.02}".format(center[ax_i])+'}\;(R_M)$')
+    ax.set_title('$\mathrm{'+ax_title_lab[ax_i]+'= '+"{0:0.02}".format(center[ax_i])+'}\;(R_P)$')
 
     alpha = np.nanmax([mars_frac, 0.1])
-    add_mars(ax_i,ax=ax, alpha = alpha)
+    #add_mars(ax_i,ax=ax, alpha = alpha)
 
     if orbit is not None: 
         add_orbit(ax,ax_i, orbit, center, show_center=show_center, 
@@ -49,8 +49,8 @@ def finalize_sliceax(ax, ax_i, orbit=None, center=None, show_center=False, tlimi
     if boundaries: add_boundaries(ax, ax_i, center)
     if cycloidpickup and ax_i == 1: add_cycloidpickup(ax)
         
-    ax.set_xlabel('$\mathrm{'+ax_labels[ax_i][0]+'} \;(R_M)$')
-    ax.set_ylabel('$\mathrm{'+ax_labels[ax_i][1]+'} \;(R_M)$')
+    ax.set_xlabel('$\mathrm{'+ax_labels[ax_i][0]+'} \;(R_P)$')
+    ax.set_ylabel('$\mathrm{'+ax_labels[ax_i][1]+'} \;(R_P)$')
 
     off_ax = [[1,2],[0,2],[0,1]]
     if show_center:
@@ -58,7 +58,7 @@ def finalize_sliceax(ax, ax_i, orbit=None, center=None, show_center=False, tlimi
                    [center[off_ax[ax_i][1]]],
                    marker='x', color='white', zorder=20, s=3)
     
-    if lim is None: lim=(-2,2)#(-2.5,2.5)
+    if lim is None: lim=(-4,4)#(-2.5,2.5)
     ax.set_xlim(lim)
     ax.set_ylim(lim)
 
@@ -87,7 +87,7 @@ def get_offgrid_slice(ds, ax_i, field, vec_field, center, extra_fields=None):
     c_fields = [['y','z'],['x','z'],['x','y']][ax_i]
 
     # Need to divide this into two sections, 
-    # inside and outside 2 R_M
+    # inside and outside 2 R_P
 
     r = np.sqrt(ds['x']**2+ds['y']**2+ds['z']**2)
     outer_pts = r>=1.5
