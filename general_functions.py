@@ -1,4 +1,5 @@
 import numpy as np
+import yt
 import spiceypy as sp
 import h5py
 import matplotlib.pyplot as plt
@@ -11,6 +12,10 @@ mars_r = None
 orbit_dir = '/Volumes/triton/Data/OrbitDat/Flythroughs/'
 model_dir = '/Volumes/triton/Data/ModelChallenge/'
 exo_dir = '/Volumes/triton/Data/Exoplanets/'
+
+mH = 1.66053904e-27
+ion_mass = {'H_p1':mH, 'O_p1':16*mH, 'O2_p1':32*mH}
+
 def load_data(ds_name, field=None, fields=None, vec_field=None):
     """
     Load data for a standard hdf5 dataset into a dictionary
@@ -178,7 +183,16 @@ def get_datasets(load_key=None, maven=False):
                 '2349_2RM_900km','2349_4RM_900km'] 
         ds_names = {k:exo_dir+'/'+k+'/'+k+'.h5' for k in keys}
         ds_types = {k:[k] for k in keys}
-    
+    elif load_key == 'exo_comparisonA':
+        keys = ['2349_1RM_225km', '2349_2RM_450km',
+                '2349_4RM_900km'] 
+        ds_names = {k:exo_dir+'/ComparisonA/'+k+'.h5' for k in keys}
+        ds_types = {k:[k] for k in keys}
+    elif load_key == 'exo_comparisonB':
+        keys = ['2349_1RM_225km', 'T0_1RM_225km', 'T1_1RM_225km'] 
+        ds_names = {k:exo_dir+'/ComparisonB/'+k+'.h5' for k in keys}
+        ds_types = {k:[k] for k in keys}
+
     elif load_key == 'exo_t1':
         keys = ['T1_1RM_112km', 'T1_1RM_225km', #'T1_1RM_450km',
                 'T1_2RM_225km', 'T1_2RM_450km', #'T1_2RM_900km',
@@ -192,6 +206,18 @@ def get_datasets(load_key=None, maven=False):
     
 
     return (ds_names, ds_types)
+
+def yt_load(ds_name, fields):
+
+    with h5py.File(ds_name) as ds:
+        mars_r = ds.attrs['radius']
+    data = load_data(ds_name, fields=fields)
+    bbox = np.array([[-4,4], [-4,4],[-4,4]])
+    shape = data[data.keys()[0]].shape#data['H_p1_number_density'].shape
+    data = {k:v for k,v in data.items() if k in fields}
+    ds = yt.load_uniform_grid(data, shape, mars_r*1e6, 
+                              bbox=bbox)
+    return ds
 
 def cart_geo_vec_transform(ds, prefix, indx):
     if 'xmesh' in ds.keys():
@@ -340,6 +366,13 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
 
 
         return pr/1e6
+    elif 'kinetic_energy_density' in field:
+        ion = field[:-23]
+        vfield = ion+'_velocity'
+        vtot = get_ds_data(ds, vfield+"_total", indx, grid=grid, maven=maven)
+        dens = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven)
+
+        return 0.5*vtot**2*dens*ion_mass[ion]/1e6
 
 
     #elif '_'.join(field.split('_')[2:]) in ds.keys() and '_'.join(field.split('_')[2:]) not in ['x','y','z']:

@@ -244,15 +244,11 @@ def plot_data_stream(plot_ax, slc, ax_i, field):
                             color='white', linewidth=0.7,density=2)
     
 
-def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
-    slc_0, slc_1, field_dat = slc
-    #diverge_cmap, logscale, zlim = True, False, (-30,30)
-    #zlim = (-180,180)
-    #if zlim is None: vmin, vmax = 1e-3, field_lims[field][1] #np.nanmax(field_dat), 1e-3
-    #else: vmin, vmax = zlim
+def apply_scalar_lims(field, override_lims=None):
     field_lims = field_lims_slices
 
-    if field in field_lims.keys(): vmin, vmax = field_lims_slices[field]
+    if override_lims is not None: vmin, vmax = override_lims
+    elif field in field_lims.keys(): vmin, vmax = field_lims_slices[field]
     else: vmin, vmax = np.nanmin(field_dat), np.nanmax(field_dat)
 
     diverging, logscale, symlogscale=False, False, False
@@ -262,6 +258,7 @@ def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, zlim=None, cbar=T
     if sum([1 for sfk in symlog_field_keys if sfk in field])>0: symlogscale=True
 
     
+    tick_locations = None
     if logscale: norm = LogNorm(vmax=vmax, vmin=vmin)
     elif symlogscale: 
         if field in linthresh_slices: linthresh = linthresh_slices[field]
@@ -283,9 +280,19 @@ def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, zlim=None, cbar=T
     if diverging: cmap='RdBu_r' # cmap=cmocean.cm.delta
     else: cmap='viridis'
 
+    return (norm,cmap, tick_locations, symlogscale)
+
+def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
+    slc_0, slc_1, field_dat = slc
+    #diverge_cmap, logscale, zlim = True, False, (-30,30)
+    #zlim = (-180,180)
+    #if zlim is None: vmin, vmax = 1e-3, field_lims[field][1] #np.nanmax(field_dat), 1e-3
+    #else: vmin, vmax = zlim
+
     if field in label_lookup: label=label_lookup[field]
     else: label = field
 
+    norm, cmap, tick_locations, symlogscale = apply_scalar_lims(field) 
     if field_dat.max() != field_dat.min(): 
     
         im = plot_ax.pcolormesh(slc_0.T, slc_1.T, field_dat.T,

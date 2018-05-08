@@ -22,7 +22,7 @@ plt.style.use('seaborn-poster')
 
 
 axes = {'x':0,'y':1,'z':2}
-ds_names, ds_types = get_datasets('R2349', False)
+ds_names, ds_types = get_datasets('exo_comparisonA', False)
 regrid_data = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'batsrus_multi_species'] 
 
 def setup_slicegrid_plot(ds_keys, fields):
@@ -74,8 +74,10 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname, boundaries=False):
                 ax.set_ylabel(label_lookup[plot['fields'][ax_j]])
                 ax.yaxis.set_label_position("right")
             if ax_j == 0:
-                ax.set_title(label_lookup[plot['ds_keys'][ax_i]])
-
+                if plot['ds_keys'][ax_i] in label_lookup.keys():
+                    ax.set_title(label_lookup[plot['ds_keys'][ax_i]])
+                else:
+                    ax.set_title(plot['ds_keys'][ax_i])
             if ax_j != plot['Nfields']-1:
                 ax.set_xticks([])
             else:
@@ -113,10 +115,12 @@ def make_slicegrid_plot(fields, ds_keys, ax, center, fname='Output/test.pdf'):
 
 def main():
 
-    fields = ['H_p1_number_density', "O_p1_number_density", "magnetic_field_total"]
-    ds_keys = [ 'batsrus_multi_species', 'batsrus_mf_lr', 'batsrus_electron_pressure','rhybrid', 'heliosares']
-    ax = 'y'
-    center = [0.0,0.0,0.0]
+    fields = ['H_p1_number_density', "O_p1_number_density","O2_p1_number_density", "magnetic_field_total"]
+    ds_keys = ['2349_1RM_225km', '2349_2RM_450km',
+                '2349_4RM_900km'] 
+    #ds_keys = ds_names.keys()
+    ax = 'z'
+    center = [-2,0.0,0.0]
 #    for i, x in enumerate([1,0.5,-0.5,-1.25,-2]):
 #        print i
 #        center = [x,0,0]

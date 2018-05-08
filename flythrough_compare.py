@@ -160,7 +160,7 @@ def add_boundaries(plot):
         ax.plot([ 0.171, 0.171], flim, ls=':',lw=1, color='k', alpha=0.3)
 
     
-def adjust_field_axes(plot, zeroline):
+def adjust_field_axes(plot, zeroline, override_lim_name=None):
     for f, ax in plot['axes'].items():
         if f in label_lookup:
             ax.set_ylabel(label_lookup[f])
@@ -168,8 +168,12 @@ def adjust_field_axes(plot, zeroline):
             ax.set_ylabel(f)
         if zeroline:
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
+        if override_lim_name is not None: f = override_lim_name[f]
         if f in field_lims: ax.set_ylim(field_lims[f])
         if f in log_fields2: ax.set_yscale('log')
+        if f in linthresh_slices: 
+            ax.set_yscale('symlog', linthreshy=linthresh_slices[f])
+            print f,linthresh_slices[f]
     
 def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False, 
                     reset_timebar=False, add_plasma_boundaries=False):
