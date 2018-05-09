@@ -244,7 +244,7 @@ def plot_data_stream(plot_ax, slc, ax_i, field):
                             color='white', linewidth=0.7,density=2)
     
 
-def apply_scalar_lims(field, override_lims=None):
+def apply_scalar_lims(field, field_dat, override_lims=None):
     field_lims = field_lims_slices
 
     if override_lims is not None: vmin, vmax = override_lims
@@ -292,10 +292,10 @@ def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, zlim=None, cbar=T
     if field in label_lookup: label=label_lookup[field]
     else: label = field
 
-    norm, cmap, tick_locations, symlogscale = apply_scalar_lims(field) 
+    norm, cmap, tick_locations, symlogscale = apply_scalar_lims(field, field_dat) 
     if field_dat.max() != field_dat.min(): 
     
-        im = plot_ax.pcolormesh(slc_0.T, slc_1.T, field_dat.T,
+        im = plot_ax.pcolormesh(slc_0.T, slc_1.T, np.ma.masked_array(field_dat.T),
                                            norm=norm, cmap=cmap, rasterized=True)
         if cbar:
             if symlogscale:

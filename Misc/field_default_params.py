@@ -99,6 +99,8 @@ field_lims_slices = {'O_p1_number_density': (1e-1, 1e2),
                      'fluid_velocity_z':(-200,200),
                      'O2_p1_flux':(-1e8,1e8),
                      'O_p1_flux':(-1e9,1e9),
+                     'O_p1_gyroradius':(0,20),
+                     'O2_p1_gyroradius':(0,50),
                      }
 linthresh_slices = { 'v_cross_B_x':1,
                      'v_cross_B_y':1,

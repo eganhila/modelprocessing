@@ -13,7 +13,10 @@ def setup_rayplot(fields, ds_names, title=None):
               'bats_min_LS270_SSL270':'LightSkyBlue',
               'batsrus_3dmhd':'CornflowerBlue',
               'helio_1':'LimeGreen',
-              'helio_2':'ForestGreen'}
+              'helio_2':'ForestGreen',
+              '2349_1RM_225km':'Black',
+              'T0_1RM_225km':'DarkBlue',
+              'T1_1RM_225km':'DodgerBlue'}
     
     plot = {}
     plot['axes'] = {field:ax for field, ax in zip(fields, axes)}
@@ -28,14 +31,16 @@ def setup_rayplot(fields, ds_names, title=None):
 
 def finalize_rayplot(plot, fname=None, show=False, zeroline=False):
     for f, ax in plot['axes'].items():
-        ax.set_ylabel(label_lookup[f])
+        if f in label_lookup: label = label_lookup[f]
+        else: label = f
+        ax.set_ylabel(label)
         if zeroline:
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
     for i in range(plot['N_axes']):
         ax = plot['ax_arr'][i]
 
         ax.set_xlim(50, 5e3)
-        ax.set_yscale('symlog')
+        ax.set_yscale('log')
         ax.set_xscale('log')
 
 
@@ -71,7 +76,7 @@ def get_rayresults(ds_names, ds_types, fields, ax_i):
         ds = load_data(dsn, fields=fields)
         data = {}
 
-        if dsk in ds_types['heliosares']:
+        if 'batsrus' not in dsk: 
 	    shape = ds['x'].shape
             idx1 = shape[off_ax_i[ax_i][0]]/2
             idx2 = shape[off_ax_i[ax_i][1]]/2
@@ -86,17 +91,13 @@ def get_rayresults(ds_names, ds_types, fields, ax_i):
                 for field in fields: data[field] = ds[field][idx1, idx2, :]
                 rval = ds['z'][idx1, idx2,:]
 
-        elif dsk in ds_types['batsrus']:
+        else:
             idx1 = np.abs(ds[off_ax[ax_i][0]]) == np.min(np.abs(ds[off_ax[ax_i][0]]))
             idx2 = np.abs(ds[off_ax[ax_i][1]]) == np.min(np.abs(ds[off_ax[ax_i][1]]))
             idx = np.logical_and(idx1, idx2)
             
             rval = ds[ax][idx]
             for field in fields: data[field] = ds[field][idx]
-        else:
-            print 'Unknown dataset type'
-            raise(RuntimeError)
-
 
         results[dsk] = (rval, data)
 
@@ -121,18 +122,26 @@ def plot_rayresults(rval, data, ax, normal, **kwargs):
 
 
 
-def make_rayplot(fields, ax_i, normal):
+def make_rayplot(fields, ax_i, normal, save=False):
 
-    ds_names, ds_types = get_datasets(new_models=False, maven=False)
+    ds_names, ds_types = get_datasets(load_key='exo_comparisonB', maven=False)
     plot = setup_rayplot(fields, ds_names,  title=['x','y','z'][ax_i]+normal)
 
     results = get_rayresults(ds_names, ds_types, fields, ax_i)
+
+
 
     for dsk, result in results.items():
         for field in fields:
             rval, data = result 
             plot_rayresults(rval,data[field],  plot['axes'][field], 
                             normal, **plot['kwargs'][dsk])
+        if save:
+            import pandas as pd
+            df = pd.DataFrame.from_dict(result[1])
+            df['radius'] = result[0]
+            df.set_index('radius')
+            df.to_csv('Output/{0}/{1}.csv'.format(dsk, save))
 
     finalize_rayplot(plot, fname='Output/ray_{0}{1}.pdf'.format(normal, ['x','y','z'][ax_i]))
 
@@ -140,13 +149,18 @@ def make_rayplot(fields, ax_i, normal):
 
 def main():
     fields =['H_p1_number_density',
-          'O2_p1_number_density',
-          'O_p1_number_density',
-          'CO2_p1_number_density']  
+          'H_p1_flux',
+          'H_p1_velocity_x',
+          'H_p1_velocity_total',
+          'H_p1_kinetic_energy_density'
+          ]  
 
-    for ax_i in range(3):
-        for norm in ['-', '+']:
-            make_rayplot(fields, ax_i, norm)
+    ax_i = 0
+
+    #for ax_i in range(3):
+    #    for norm in ['-', '+']:
+    make_rayplot(fields, ax_i, normal='+',
+                 save='subsolar_ray')
 
 if __name__ == '__main__':
     main()

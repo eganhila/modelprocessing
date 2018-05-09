@@ -71,7 +71,10 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname, boundaries=False):
 
            
             if ax_i == plot['Nds'] -1:
-                ax.set_ylabel(label_lookup[plot['fields'][ax_j]])
+                if plot['fields'][ax_j] in label_lookup.keys():
+                    ax.set_ylabel(label_lookup[plot['fields'][ax_j]])
+                else:
+                    ax.set_ylabel(plot['fields'][ax_j])
                 ax.yaxis.set_label_position("right")
             if ax_j == 0:
                 if plot['ds_keys'][ax_i] in label_lookup.keys():

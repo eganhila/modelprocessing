@@ -213,7 +213,7 @@ def yt_load(ds_name, fields):
         mars_r = ds.attrs['radius']
     data = load_data(ds_name, fields=fields)
     bbox = np.array([[-4,4], [-4,4],[-4,4]])
-    shape = data[data.keys()[0]].shape#data['H_p1_number_density'].shape
+    shape = data[fields[0]].shape#data['H_p1_number_density'].shape
     data = {k:v for k,v in data.items() if k in fields}
     ds = yt.load_uniform_grid(data, shape, mars_r*1e6, 
                               bbox=bbox)
@@ -274,7 +274,7 @@ def get_path_idxs(coords, ds_names, ds_types):
     return indxs
 
 
-def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
+def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
                 area=None, maven=False):
     """
     Get data from a dataset for a particular field and set of points
@@ -313,6 +313,14 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         b = get_ds_data(ds, b_field,  indx, grid, maven=maven)
         
         return a*b/a.sum()
+    elif '_normalized' == field[-11:]:
+        base_fname = field[:-11]
+        base_f = get_ds_data(ds, base_fname, indx, grid, 
+                area=area, normal=normal,
+                ion_velocity=ion_velocity, maven=maven)
+        norm = ds.attrs[base_fname+'_norm']
+        return base_f/norm
+
     elif field == 'electron_pressure':
         return get_ds_data(ds, ' electron_pressure', indx, grid=grid, maven=maven)
     elif '_total' in field and field.replace('_total', '_x') in ds.keys():
@@ -373,6 +381,23 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=False,
         dens = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven)
 
         return 0.5*vtot**2*dens*ion_mass[ion]/1e6
+
+    elif 'gyroradius' in field:
+        ion = field[:-11]
+        v = np.array([get_ds_data(ds, ion+'_v_-_fluid_v_'+vec, indx, grid=grid, maven=maven) for vec in ['x','y','z']]) 
+        n = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven) 
+        mask = n==0
+
+        B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+
+        v_dot_B = v[0]*B[0]+v[1]*B[1]+v[2]*B[2]
+        Btot = np.sqrt(B[0]**2+B[1]**2+B[2]**2)
+
+        vperp = np.sqrt(np.sum(np.array([v[i] - v_dot_B[i]/Btot for i in range(3)])**2, axis=0))
+        r = ion_mass[ion]*vperp/(1.6e-19*Btot)
+        r[mask] = np.nan
+        return r*1e6
 
 
     #elif '_'.join(field.split('_')[2:]) in ds.keys() and '_'.join(field.split('_')[2:]) not in ['x','y','z']:
