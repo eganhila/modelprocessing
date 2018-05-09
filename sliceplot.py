@@ -244,7 +244,7 @@ def plot_data_stream(plot_ax, slc, ax_i, field):
                             color='white', linewidth=0.7,density=2)
     
 
-def apply_scalar_lims(field, field_dat, override_lims=None):
+def apply_scalar_lims(field, field_dat,  override_lims=None):
     field_lims = field_lims_slices
 
     if override_lims is not None: vmin, vmax = override_lims

@@ -30,8 +30,9 @@ def load_data(ds_name, field=None, fields=None, vec_field=None):
     ds['attrs'] = {}
     with h5py.File(ds_name, 'r') as f:
         mars_r = float(f.attrs['radius'])
-        ds['attrs']['radius'] = mars_r
-        ds['attrs']['scale_height'] = 300*3390/mars_r
+        for k,v in f.attrs.items():
+            ds['attrs'][k]=v
+        #ds['attrs']['scale_height'] = 300*3390/mars_r
         if 'xmesh' in f.keys():
             ds['x'] = f['xmesh'][:]/mars_r
             ds['y'] = f['ymesh'][:]/mars_r
@@ -335,6 +336,23 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         v = np.array([vx,vy,vz])
         vn = np.sum(normal*v, axis=0)
         return vn
+    elif '_Bperp' == field[-6:]:
+        Bperp_hat = ds.attrs['Bperp_hat']
+        base_field = field[:-5]
+        bf_y = get_ds_data(ds, base_field+'y', indx, grid=grid, maven=maven)
+        bf_z = get_ds_data(ds, base_field+'z', indx, grid=grid, maven=maven)
+
+        return Bperp_hat[1]*bf_y+Bperp_hat[2]*bf_z
+
+    elif '_Esw' == field[-4:]:
+        Esw_hat = ds.attrs['Esw_hat']
+        base_field = field[:-4]
+        bf_y = get_ds_data(ds, base_field+'_y', indx, grid=grid, maven=maven)
+        bf_z = get_ds_data(ds, base_field+'_z', indx, grid=grid, maven=maven)
+
+        return Esw_hat[1]*bf_y+Esw_hat[2]*bf_z
+
+
     elif '_flux' in field:
         vn = 1e5*get_ds_data(ds, velocity_field+'_normal', indx, grid, 
                              normal, ion_velocity, maven=maven)
@@ -575,6 +593,8 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         vvec = get_ds_data(ds, vfield+'_'+vec, indx, grid=grid, maven=maven)
         dens = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven)
         return np.abs(vvec/vtot)
+
+        
 
     elif 'density' in field and field != 'density':
         return get_ds_data(ds, 'density', indx, grid=grid, maven=maven)

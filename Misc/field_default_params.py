@@ -76,7 +76,7 @@ field_lims_slices = {'O_p1_number_density': (1e-1, 1e2),
                      'J_cross_B_y':(-4,4),
                      'J_cross_B_z':(-4,4),
                      'v_cross_B_total':(1e5, 1e9),
-                     'O2_p1_v_cross_B_total':(0,4e-3),#(1e-8, 1e-1),
+                     #'O2_p1_v_cross_B_total':(0,4e-3),#(1e-8, 1e-1),
                      'O2_p1_v_cross_B_z':(-3e-3, 3e-3),
                      'O2_p1_v_cross_B_x':(-3e-3, 3e-3),
                      'O_p1_v_cross_B_total':(0,4e-3),#(1e-8, 1e-1),
@@ -144,7 +144,7 @@ log_fields2 = [#'H_p1_number_density',
                'current_total',
                'J_cross_B_total'
                ]
-diverging_field_keys = ['flux', 'J_cross_B_y','magnetic_field_x', 'magnetic_field_y', 'magnetic_field_z', 'magnetic_field_normal', 'O_p1_v_cross_B_z', 'O2_p1_v_cross_B_z', 'O2_p1_velocity_z', 'O2_p1_velocity_z', 'O_p1_velocity_normal', 'O2_p1_velocity_normal']
+diverging_field_keys = ['flux', 'J_cross_B_y','magnetic_field_x', 'magnetic_field_y', 'magnetic_field_z', 'magnetic_field_normal', 'O_p1_v_cross_B_z', 'O2_p1_v_cross_B_z', 'O2_p1_velocity_z', 'O2_p1_velocity_z', 'O_p1_velocity_normal', 'O2_p1_velocity_normal', 'magnetic_field_Bperp', 'magnetic_field_Esw', 'O2_p1_v_cross_B_Bperp', 'O2_p1_v_cross_B_Esw', "O2_p1_velocity_Bperp", "O2_p1_velocity_Esw", "H_p1_velocity_Bperp", "H_p1_velocity_Esw", "H_p1_velocity_x"]
 symlog_field_keys = ['flux']#, 'velocity_normal' ]
 log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressure','current_total', 'J_cross_B_total',
                                          ]
