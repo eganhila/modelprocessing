@@ -325,14 +325,16 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
     elif field == 'electron_pressure':
         return get_ds_data(ds, ' electron_pressure', indx, grid=grid, maven=maven)
     elif '_total' in field and field.replace('_total', '_x') in ds.keys():
-        x = apply_indx(ds, field.replace('_total', '_x'), indx)**2
-        y = apply_indx(ds, field.replace('_total', '_y'), indx)**2
-        z = apply_indx(ds, field.replace('_total', '_z'), indx)**2
-        return np.sqrt(x+y+z)
+        vx = get_ds_data(ds, field.replace('_total', '_x'), indx, grid=grid, maven=maven)
+        vx = get_ds_data(ds, field.replace('_total', '_y'), indx, grid=grid, maven=maven)
+        vx = get_ds_data(ds, field.replace('_total', '_z'), indx, grid=grid, maven=maven)
+        return np.sqrt(vx**2+vy**2+vz**2)
     elif '_normal' in field: # field.replace('_normal', '_x') in ds.keys():
-        vx = apply_indx(ds, field.replace('_normal', '_x'), indx)
-        vy = apply_indx(ds, field.replace('_normal', '_y'), indx)
-        vz = apply_indx(ds, field.replace('_normal', '_z'), indx)
+
+        vx = get_ds_data(ds, field.replace('_normal', '_x'), indx, grid=grid, maven=maven)
+        vx = get_ds_data(ds, field.replace('_normal', '_y'), indx, grid=grid, maven=maven)
+        vx = get_ds_data(ds, field.replace('_normal', '_z'), indx, grid=grid, maven=maven)
+
         v = np.array([vx,vy,vz])
         vn = np.sum(normal*v, axis=0)
         return vn

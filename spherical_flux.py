@@ -46,6 +46,9 @@ def create_sphere_mesh(r,planet_r=3390,d_angle=5.0,hemi=None):
     elif hemi == '-x':
         lon = np.arange(90,270,d_angle)
         lat = np.arange(-90,91, d_angle)
+    elif hemi == 'tail':
+        lon = np.arange(180-30, 180+30, d_angle)
+        lat = np.arange(-45,45, d_angle)
     else:
         lon = np.arange(-90,271, d_angle)
         lat = np.arange(-90,91, d_angle)
@@ -123,7 +126,10 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
         plt.colorbar(label=label_lookup[field],ticks=tick_locations,
                 format=ticker.LogFormatterMathtext())
     else:
-        plt.colorbar(label=label_lookup[field])
+        if field in label_lookup:
+            plt.colorbar(label=label_lookup[field])
+        else:
+            plt.colorbar(label=field)
 
     plt.gca().set_aspect('equal')
         
