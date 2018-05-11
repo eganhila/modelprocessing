@@ -117,6 +117,7 @@ def plot_rayresults(rval, data, ax, normal, **kwargs):
         x = (np.abs(rval[rval<-1])-1)*3390
         y = data[rval<-1]
         
+    if np.sum(y<=0)==len(y): y=-1*y
     ax.plot(x, y, **kwargs)
     
 
@@ -148,11 +149,14 @@ def make_rayplot(fields, ax_i, normal, save=False):
 
 
 def main():
-    fields =['H_p1_number_density',
-          'H_p1_flux',
-          'H_p1_velocity_x',
-          'H_p1_velocity_total',
-          'H_p1_kinetic_energy_density'
+    fields =['H_p1_number_density_normalized',
+          'H_p1_flux_normalized',
+          'H_p1_velocity_x_normalized',
+          'H_p1_velocity_total_normalized',
+          'H_p1_kinetic_energy_density_normalized',
+          'magnetic_field_total_normalized',
+          'O_p1_number_density_normalized',
+          'O2_p1_number_density_normalized',
           ]  
 
     ax_i = 0

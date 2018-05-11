@@ -164,6 +164,9 @@ def adjust_field_axes(plot, zeroline, override_lim_name=None):
     for f, ax in plot['axes'].items():
         if f in label_lookup:
             ax.set_ylabel(label_lookup[f])
+        elif f[:-11] in label_lookup:
+            ftemp = f[:-11]
+            ax.set_ylabel(label_lookup[ftemp]+' (Norm)')
         else:
             ax.set_ylabel(f)
         if zeroline:
