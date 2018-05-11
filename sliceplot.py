@@ -70,7 +70,7 @@ def finalize_sliceplot(plot, fname='Output/test.pdf', show=False, **kwargs):
     for ax_i, ax in enumerate(plot['axes']):
         finalize_sliceax(ax, ax_i, **kwargs) 
 
-        plt.tight_layout()
+        #plt.tight_layout()
     if show:
         plt.show()
     else:

@@ -186,11 +186,11 @@ def get_datasets(load_key=None, maven=False):
         ds_types = {k:[k] for k in keys}
     elif load_key == 'exo_comparisonA':
         keys = ['2349_1RM_225km', '2349_2RM_450km',
-                '2349_4RM_900km'] 
+                '2349_1.5RM_338km'] 
         ds_names = {k:exo_dir+'/ComparisonA/'+k+'.h5' for k in keys}
         ds_types = {k:[k] for k in keys}
     elif load_key == 'exo_comparisonB':
-        keys = ['2349_1RM_225km', 'T0_1RM_225km', 'T1_1RM_225km'] 
+        keys = ['2349_1RM_225km', 'T0_1RM_225km', 'T1_1RM_225km', 'T2_1RM_225km'] 
         ds_names = {k:exo_dir+'/ComparisonB/'+k+'.h5' for k in keys}
         ds_types = {k:[k] for k in keys}
 
@@ -319,6 +319,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         base_f = get_ds_data(ds, base_fname, indx, grid, 
                 area=area, normal=normal,
                 ion_velocity=ion_velocity, maven=maven)
+        print ds.attrs.keys()
         norm = ds.attrs[base_fname+'_norm']
         return base_f/norm
 
@@ -562,6 +563,9 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
             x2 = v[0]*B[1]-v[1]*B[0]
             x = np.sqrt(x0**2+x1**2+x2**2)
 
+        n = get_ds_data(ds, ion+'_number_density', indx, grid=grid)
+        x[n==0] = np.nan
+
         return x*1e-6
 
 
@@ -595,6 +599,21 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         vvec = get_ds_data(ds, vfield+'_'+vec, indx, grid=grid, maven=maven)
         dens = get_ds_data(ds, ion+'_number_density', indx, grid=grid, maven=maven)
         return np.abs(vvec/vtot)
+
+    elif field == "magnetic_field_orientation":
+        Br = get_ds_data(ds, "magnetic_field_normal", indx, 
+                         grid=grid, maven=maven, normal=normal)
+        Btot = get_ds_data(ds, "magnetic_field_total", indx,
+                            grid=grid, maven=maven)
+
+        return Br/Btot
+
+    elif field == "magnetic_field_open":
+        orientation = get_ds_data(ds, "magnetic_field_orientation", indx,
+                                 grid=grid, maven=maven, normal=normal)
+
+        o = np.abs(orientation)>0.25
+        return o
 
         
 

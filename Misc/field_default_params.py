@@ -64,7 +64,7 @@ field_lims_slices = {'O_p1_number_density': (1e-1, 1e2),
                      'H_p1_velocity_x':(-400,400),
                      'H_p1_velocity_y':(-400,400),
                      'H_p1_velocity_z':(-400,400),
-                     'H_p1_velocity_total':(100,1000),
+                     'H_p1_velocity_total':(200,600),
                      'O_p1_velocity_total':(1e0,600),
                      'O2_p1_velocity_x':(-400,400),
                      'O2_p1_velocity_Esw':(-400,400),
@@ -90,6 +90,15 @@ field_lims_slices = {'O_p1_number_density': (1e-1, 1e2),
                      'O_p1_v_cross_B_z':(-3e-3, 3e-3),
                      'O_p1_v_cross_B_y':(-3e-3, 3e-3),
                      'O_p1_v_cross_B_x':(-3e-3, 3e-3),
+                     'O_p1_v_cross_B_Esw':(-3e-3, 3e-3),
+                     'O_p1_v_cross_B_normal':(-3e-3, 3e-3),
+                     'O_p1_v_cross_B_Bperp':(-3e-3, 3e-3),
+                     'O2_p1_v_cross_B_z':(-3e-3, 3e-3),
+                     'O2_p1_v_cross_B_y':(-3e-3, 3e-3),
+                     'O2_p1_v_cross_B_x':(-3e-3, 3e-3),
+                     'O2_p1_v_cross_B_Esw':(-3e-3, 3e-3),
+                     'O2_p1_v_cross_B_Bperp':(-3e-3, 3e-3),
+                     'O2_p1_v_cross_B_normal':(-3e-3, 3e-3),
                      'v_cross_B_x':(-5000,5000),
                      'v_cross_B_y':(-5000,5000),
                      'v_cross_B_z':(-5000,5000),
@@ -108,6 +117,13 @@ field_lims_slices = {'O_p1_number_density': (1e-1, 1e2),
                      'O_p1_flux':(-1e9,1e9),
                      'O_p1_gyroradius':(0,20),
                      'O2_p1_gyroradius':(0,50),
+                     "O_p1_flux_normalized":(-1e-18,1e-18),
+                     "O2_p1_flux_normalized":(-1e-18,1e-18),
+                     "O2_p1_v_cross_B_x_normalized":(-1e-6,1e-6),
+                     "O2_p1_v_cross_B_Esw_normalized":(-1e-6,1e-6),
+                     "O2_p1_v_cross_B_Bperp_normalized":(-1e-6,1e-6),
+                     "O2_p1_v_cross_B_normal_normalized":(-1e-6,1e-6),
+                     "magnetic_field_total_normalized":(0,2),
                      }
 linthresh_slices = { 'v_cross_B_x':1,
                      'v_cross_B_y':1,
@@ -131,6 +147,8 @@ linthresh_slices = { 'v_cross_B_x':1,
                      'O_p1_velocity_Esw':1e-0,
                      'O_p1_velocity_Bperp':1e-0,
                      'O_p1_velocity_normal':1e-0,
+                     "O_p1_flux_normalized":1e-24,
+                     "O2_p1_flux_normalized":1e-24,
                      }
 
 
@@ -158,8 +176,8 @@ log_fields2 = [#'H_p1_number_density',
                'current_total',
                'J_cross_B_total',
                ]
-diverging_field_keys = ['flux', 'J_cross_B_y','magnetic_field_x', 'magnetic_field_y', 'magnetic_field_z', 'magnetic_field_normal', 'O_p1_v_cross_B_z', 'O2_p1_v_cross_B_z', 'O2_p1_velocity_z', 'O2_p1_velocity_z', 'O_p1_velocity_normal', 'O2_p1_velocity_normal', 'magnetic_field_Bperp', 'magnetic_field_Esw', 'O2_p1_v_cross_B_Bperp', 'O2_p1_v_cross_B_Esw', "O2_p1_velocity_Bperp", "O2_p1_velocity_Esw", "H_p1_velocity_Bperp", "H_p1_velocity_Esw", "H_p1_velocity_x", "O_p1_velocity_Esw", "O_p1_velocity_Bperp"]
-symlog_field_keys = ['flux', 'O2_p1_velocity_Esw', 'O2_p1_velocity_Bperp','O2_p1_velocity_x',  'O_p1_velocity_Esw', 'O_p1_velocity_Bperp','O_p1_velocity_x', "O_p1_velocity_normal"]
+diverging_field_keys = ['flux', 'J_cross_B_y','magnetic_field_x', 'magnetic_field_y', 'magnetic_field_z', 'magnetic_field_normal', 'O_p1_v_cross_B_z', 'O2_p1_v_cross_B_z', 'O2_p1_velocity_z', 'O2_p1_velocity_z', 'O_p1_velocity_normal', 'O2_p1_velocity_normal', 'magnetic_field_Bperp', 'magnetic_field_Esw', 'O2_p1_v_cross_B_Bperp', 'O2_p1_v_cross_B_Esw', "O2_p1_velocity_Bperp", "O2_p1_velocity_Esw", "H_p1_velocity_Bperp", "H_p1_velocity_Esw", "H_p1_velocity_x", "O_p1_velocity_Esw", "O_p1_velocity_Bperp", "O_p1_v_cross_B_Bperp", "O_p1_v_cross_B_Esw", "O_p1_v_cross_B_normal", "O2_p1_v_cross_B_normal", "O2_p1_v_cross_B_x", "magnetic_field_orientation"]
+symlog_field_keys = ['flux', 'O2_p1_velocity_Esw', 'O2_p1_velocity_Bperp','O2_p1_velocity_x',  'O_p1_velocity_Esw', 'O_p1_velocity_Bperp','O_p1_velocity_x', "O_p1_velocity_normal", "O_p1_flux_normalized", "O2_p1_flux_normalized",]
 log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressure','current_total', 'J_cross_B_total',
                'O2_p1_velocity_total',"O_p1_velocity_total"
                                          ]
