@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 import h5py
 from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 from matplotlib import ticker
-from general_functions import *
+from modelprocessing.general_functions import *
 import getopt
 import sys
-import cmocean
+#import cmocean
 import glob
 import ast
-from sliceplot_helper import *
+from modelprocessing.sliceplot_helper import *
 plt.style.use('seaborn-poster')
 
 
@@ -74,7 +74,7 @@ def finalize_sliceplot(plot, fname='Output/test.pdf', show=False, **kwargs):
     if show:
         plt.show()
     else:
-        print 'Saving: {0}'.format(fname)
+        print('Saving: {0}'.format(fname))
         plt.savefig(fname)
 
 def get_offgrid_slice(ds, ax_i, field, vec_field, center, extra_fields=None):
@@ -169,7 +169,7 @@ def slice_regrid(ds, ax_i, field, vec_field=False, test=False, center=None, extr
 
 def slice_onax(ds, ax_i, field, vec_field=False, idx=None, center=None, test=False):
     if idx is not None and center is not None:
-        print 'Cannot supply both idx and center to slice_onax'
+        print('Cannot supply both idx and center to slice_onax')
         raise(RuntimeError)
     
     if center is not None:
@@ -221,7 +221,6 @@ def plot_data_vec(plot_ax, slc, ax_i, field):
     field_dat[0] = log_mag*frac_x
     field_dat[1] = log_mag*frac_y
     
-    print field, field in vec_field_scale
     if field in vec_field_scale: scale = vec_field_scale[field]
     else: scale = None
     #scale=None
@@ -264,14 +263,14 @@ def apply_scalar_lims(field, field_dat,  override_lims=None):
         if field in linthresh_slices: linthresh = linthresh_slices[field]
         else: linthresh = 1e5
         norm = SymLogNorm(vmin=vmin, vmax=vmax, linthresh=linthresh)
-	maxlog=int(np.ceil( np.log10(vmax) ))
-	minlog=int(np.ceil( np.log10(-vmin) ))
-	linlog=int(np.ceil(np.log10(linthresh)))
-
-	#generate logarithmic ticks 
-	tick_locations=([-(10**x) for x in xrange(minlog,linlog-1,-1)]
-			+[0.0]
-			+[(10**x) for x in xrange(linlog,maxlog+1)] )
+        maxlog=int(np.ceil( np.log10(vmax) ))
+        minlog=int(np.ceil( np.log10(-vmin) ))
+        linlog=int(np.ceil(np.log10(linthresh)))
+        
+        #generate logarithmic ticks 
+        tick_locations=([-(10**x) for x in xrange(minlog,linlog-1,-1)]
+        		+[0.0]
+        		+[(10**x) for x in xrange(linlog,maxlog+1)] )
     elif diverging: 
         vm = np.max(np.abs([vmin, vmax]))
         norm = Normalize(vmax=vm, vmin=-1*vm)
@@ -367,13 +366,13 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None,
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:bs:",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field=", "boundaries", "stream_field=", "cycloidpickup"])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:bs:",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field=", "boundaries", "stream_field=", "cycloidpickup", "fname="])
     except getopt.GetoptError:
-        print getopt.GetoptError()
-        print 'error'
+        print(getopt.GetoptError())
+        print('error')
         return
     
-    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field, stream_field, boundaries, cycloidpickup = None, None, None, None, False, None, False,'', None, None, None,None, False, False
+    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field, stream_field, boundaries, cycloidpickup, fname = None, None, None, None, False, None, False,'', None, None, None,None, False, False, None
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
@@ -403,9 +402,11 @@ def main(argv):
             cycloidpickup=True
         elif opt in ("-s", "--stream_field"):
             stream_field = arg
+        elif opt in ("--outname"):
+            fname = arg
     
     if infile is None and fdir is None and ds_type is None: 
-        print 'must supply file'
+        print('must supply file')
         raise(RuntimeError)
     
     if ds_type is not None and infile is None:
@@ -436,10 +437,12 @@ def main(argv):
     
     for infile in infiles:
         for field in fields:
-            print infile, field
+            print(infile, field)
+            if fname is None:
+                fname = 'Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle)
             make_sliceplot(infile, field, orbit=orbit, test=test,
                       regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark, tlimit=tlim, stream_field=stream_field, 
-                      fname='Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle), boundaries=boundaries, cycloidpickup=cycloidpickup)
+                      fname=fname, boundaries=boundaries, cycloidpickup=cycloidpickup)
     
 if __name__ == '__main__':
     main(sys.argv[1:])

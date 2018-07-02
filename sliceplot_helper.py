@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 from matplotlib.patches import Wedge
-from general_functions import *
+from modelprocessing.general_functions import *
 
 def add_cycloidpickup(ax):
     R = 20000

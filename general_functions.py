@@ -4,8 +4,8 @@ import spiceypy as sp
 import h5py
 import matplotlib.pyplot as plt
 import pandas as pd
-from misc.labels import *
-from misc.field_default_params import *
+from modelprocessing.misc.labels import *
+from modelprocessing.misc.field_default_params import *
 
 #sp.furnsh("/Users/hilaryegan/Projects/ModelChallenge/ModelProcessing/misc/maven_spice.txt")
 mars_r = None
@@ -29,7 +29,11 @@ def load_data(ds_name, field=None, fields=None, vec_field=None):
     ds = {}
     ds['attrs'] = {}
     with h5py.File(ds_name, 'r') as f:
-        mars_r = float(f.attrs['radius'])
+        try:
+            mars_r = float(f.attrs['radius'])
+        except:
+            print("Can't load radius from h5 file, assuming Mars Radius")
+            mars_r = 3390.0
         for k,v in f.attrs.items():
             ds['attrs'][k]=v
         #ds['attrs']['scale_height'] = 300*3390/mars_r
@@ -203,22 +207,43 @@ def get_datasets(load_key=None, maven=False):
         ds_types = {k:[k] for k in keys}
 
     else:
-        print 'No datasets selected'
+        print('No datasets selected')
     
 
     return (ds_names, ds_types)
 
-def yt_load(ds_name, fields):
+def yt_load(ds_name, fields, use_ftype=False):
 
-    with h5py.File(ds_name) as ds:
-        mars_r = ds.attrs['radius']
+    try:
+        with h5py.File(ds_name) as ds:
+            mars_r = ds.attrs['radius']
+    except:
+        print("Can't load radius from h5 file, assuming Mars Radius")
+        mars_r = 3390.0
+
     data = load_data(ds_name, fields=fields)
+
     bbox = np.array([[-4,4], [-4,4],[-4,4]])
-    shape = data[fields[0]].shape#data['H_p1_number_density'].shape
-    data = {k:v for k,v in data.items() if k in fields}
-    ds = yt.load_uniform_grid(data, shape, mars_r*1e6, 
-                              bbox=bbox)
+
+    for test_field in data.keys():
+        if test_field not in ["attrs","x","y","z"]: break
+
+    shape = data[test_field].shape #data['H_p1_number_density'].shape
+    attrs = data['attrs']
+
+    data = {("gas",k):v for k,v in data.items() if k not in ["attrs", 'x', 'y', 'z']} 
+
+    for f in data.keys():
+        if "velocity" in f[1]: data[f] = (data[f], "km/s")
+        if "number_density" in f[1]: data[f] = (data[f], "cm**-3")
+        if "magnetic_field" in f[1]: data[f] = (data[f], "nT")
+
+
+    ds = yt.load_uniform_grid(data, shape, mars_r*1e5, 
+                              bbox=bbox, periodicity=(False, False, False))
+    ds.my_attributes = attrs 
     return ds
+
 
 def cart_geo_vec_transform(ds, prefix, indx):
     if 'xmesh' in ds.keys():
@@ -267,7 +292,7 @@ def get_path_idxs(coords, ds_names, ds_types):
     for ds_type, keys in ds_types.items():
         if ds_type == 'maven': continue
         if len(keys) == 0: continue
-        print 'getting indxs: '+ds_type
+        print('getting indxs: '+ds_type)
         indxs[ds_type] = bin_coords(coords, ds_names[keys[0]], 
                                     grid='batsrus' not in ds_type)
                                     #grid=ds_type=='heliosares')
@@ -319,7 +344,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         base_f = get_ds_data(ds, base_fname, indx, grid, 
                 area=area, normal=normal,
                 ion_velocity=ion_velocity, maven=maven)
-        print ds.attrs.keys()
+        print(ds.attrs.keys())
         norm = ds.attrs[base_fname+'_norm']
         return base_f/norm
 
@@ -608,6 +633,12 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
 
         return Br/Btot
 
+    elif field == 'magnetic_field_elevation_angle':
+        B_frac = get_ds_data(ds, "magnetic_field_orientation", indx,
+                grid=grid, maven=maven, normal=normal)
+        return 180*np.arcsin(B_frac)/np.pi
+
+
     elif field == "magnetic_field_open":
         orientation = get_ds_data(ds, "magnetic_field_orientation", indx,
                                  grid=grid, maven=maven, normal=normal)
@@ -631,7 +662,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         if maven: dstype = 'maven'
         elif grid: dstype = 'heliosares'
         else: dstype= 'batsrus'
-        print "Field {0} not found in {1}".format(field, dstype)
+        print("Field {0} not found in {1}".format(field, dstype))
         return np.array([])
         #raise(ValueError)
 
@@ -814,7 +845,7 @@ def get_all_data(ds_names, ds_types, indxs, fields, **kwargs):
 
     for ds_type, keys in ds_types.items():
         for dsk in keys:
-            print 'Getting data for: ',dsk
+            print('Getting data for: ',dsk)
 
             dsf = ds_names[dsk]
 
@@ -890,7 +921,6 @@ def get_cycloid_positions(R, theta, alt, N=100, zlim=None, tlim=None):
     
     if tlim is None and zlim is None: tlim = np.pi/2
     elif zlim is not None: 
-        print 1-(zlim*mars_r-z0)/R
         tlim = np.arccos(1-(zlim*mars_r-z0)/R)
     
     t = np.linspace(0, tlim, N)

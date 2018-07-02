@@ -60,6 +60,7 @@ def convert_dataset(infile, outname, radius=3390):
 
         for v in vars_1D_complete:
             dat = vr.read_variable(v)
+            if dat is None: continue 
             dat = dat[locs_sorted_idx].reshape(nz, ny, nx).T
             if name_conversion[v] in data_conversion.keys():
                 dat = data_conversion[name_conversion[v]](dat)
@@ -67,7 +68,9 @@ def convert_dataset(infile, outname, radius=3390):
 
         for v in vars_3D_complete:
             for x_i, x in enumerate(['_x','_y', '_z']):
-                dat = vr.read_variable(v)[:, x_i]
+                dat = vr.read_variable(v)
+                if dat is None: continue 
+                dat = dat[:, x_i]
                 dat = dat[locs_sorted_idx].reshape(nz, ny, nx).T
                 if name_conversion[v] in data_conversion.keys():
                     dat = data_conversion[name_conversion[v]](dat)
@@ -79,6 +82,7 @@ def convert_dataset(infile, outname, radius=3390):
 
         for ptype in ['sw_ave','planet_ave']:
             temp = vr.read_variable('n_H+'+ptype)
+            if temp is None: continue 
             temp = data_conversion['H_p1_number_density'](temp)
             n_dat += temp[locs_sorted_idx].reshape(nz, ny, nx).T
 
