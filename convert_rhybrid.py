@@ -15,7 +15,7 @@ dirname = os.path.dirname(__file__)
 f_var_rename =  os.path.join(dirname,'misc/name_conversion.txt')
 # Set up name conversion dictionary
 name_conversion = {}
-for pair in file(f_var_rename):
+for pair in open(f_var_rename):
     k,v = pair.split(',')
     name_conversion[k] = v[:-1] #remove newline
 
