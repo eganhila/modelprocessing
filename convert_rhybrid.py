@@ -113,7 +113,7 @@ def convert_dataset(infile, outname, radius=3390):
             f.create_dataset(name, data=var)
 
         f.attrs.create('radius', radius)
-        print 'Saving: ' + outname
+        print('Saving: ' + outname)
         f.close()
 
 
