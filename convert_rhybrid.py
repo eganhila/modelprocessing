@@ -45,7 +45,7 @@ def convert_dataset(infile, outname, radius=3390):
 
     # Cell locations
     locs = vr.get_cellid_locations()
-    locs_sorted = sorted(locs.iteritems(), key=oper.itemgetter(0))
+    locs_sorted = sorted(locs.items(), key=oper.itemgetter(0))
     locs_sorted_idx = np.array([ii[1] for ii in locs_sorted])
 
 

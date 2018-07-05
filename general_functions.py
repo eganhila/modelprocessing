@@ -1,6 +1,6 @@
 import numpy as np
 import yt
-import spiceypy as sp
+#import spiceypy as sp
 import h5py
 import matplotlib.pyplot as plt
 import pandas as pd

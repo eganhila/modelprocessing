@@ -65,7 +65,8 @@ def finalize_sliceax(ax, ax_i, orbit=None, center=None, show_center=False, tlimi
 
 def finalize_sliceplot(plot, fname='Output/test.pdf', show=False, **kwargs):
     plot['figure'].set_size_inches(5,10)
-    fname = fname[:-3] + 'png'
+    if fname is not None:
+        fname = fname[:-3] + 'png'
     
     for ax_i, ax in enumerate(plot['axes']):
         finalize_sliceax(ax, ax_i, **kwargs) 
@@ -179,7 +180,7 @@ def slice_onax(ds, ax_i, field, vec_field=False, idx=None, center=None, test=Fal
         idx = np.argmin(np.abs(ds[slc_v]-ax_center), axis=ax_i)[0,0]
                         
     if idx is None:
-        idx = ds['x'].shape[ax_i]/2
+        idx = int(ds['x'].shape[ax_i]/2)
 
                         
     if ax_i == 0: 
@@ -281,7 +282,7 @@ def apply_scalar_lims(field, field_dat,  override_lims=None):
 
     return (norm,cmap, tick_locations, symlogscale)
 
-def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, zlim=None, cbar=True, diverge_cmap=False):
+def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, override_lims=None, cbar=True, diverge_cmap=False):
     slc_0, slc_1, field_dat = slc
     #diverge_cmap, logscale, zlim = True, False, (-30,30)
     #zlim = (-180,180)
@@ -291,7 +292,7 @@ def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, zlim=None, cbar=T
     if field in label_lookup: label=label_lookup[field]
     else: label = field
 
-    norm, cmap, tick_locations, symlogscale = apply_scalar_lims(field, field_dat) 
+    norm, cmap, tick_locations, symlogscale = apply_scalar_lims(field, field_dat, override_lims=override_lims) 
     if field_dat.max() != field_dat.min(): 
     
         im = plot_ax.pcolormesh(slc_0.T, slc_1.T, np.ma.masked_array(field_dat.T),
@@ -318,7 +319,7 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None,
                    regrid_data=False, vec_field=False, fname=None, 
                    test=False, mark=False, tlimit=None, show=False,
                    boundaries=False, stream_field=False,
-                   cycloidpickup=False, lim=None):
+                   cycloidpickup=False, lim=None, override_lims=None):
     """
     ds_name: path for file you want to plot
     field: name of field you want to plot as a scalar slice, leave empty or set to none
@@ -347,7 +348,7 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None,
     for ax in [0,1,2]:
         if field is not None:
             slc = slice_data(ds, ax, field, regrid_data=regrid_data,test=test, center=center)
-            plot_data(plot['axes'][ax], slc, ax, field  )
+            plot_data(plot['axes'][ax], slc, ax, field, override_lims=override_lims)
 
         if vec_field is not None:
             slc = slice_data(ds, ax, vec_field, regrid_data=regrid_data, vec_field=True, test=test, center=center)
