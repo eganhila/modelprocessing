@@ -1,16 +1,15 @@
-from sliceplot import *
+from modelprocessing.sliceplot import *
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 from matplotlib import ticker
-from general_functions import *
+from modelprocessing.general_functions import *
 import getopt
 import sys
-import cmocean
 import glob
 import ast
-from sliceplot_helper import *
+from modelprocessing.sliceplot_helper import *
 import matplotlib.gridspec as gridspec
 import matplotlib as mpl
 plt.style.use('seaborn-poster')
@@ -54,8 +53,10 @@ def setup_slicegrid_plot(ds_keys, fields):
     return plot
 
 
-def finalize_slicegrid_plot(plot, ax_plt, center, fname, boundaries=False):
+def finalize_slicegrid_plot(plot, ax_plt, center, fname, boundaries=False, show=False,
+                           add_mars_ax=None):
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
+    if add_mars_ax is None: add_mars_ax = ax_plt
 
     for ax_i in range(plot['Nds']):
         for ax_j in range(plot['Nfields']):
@@ -66,7 +67,7 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname, boundaries=False):
 
             mars_frac = np.real(np.sqrt(1-center[ax_plt]**2))
             alpha = np.nanmax([mars_frac, 0.1])
-            add_mars(ax_plt, ax=ax, alpha=alpha)
+            add_mars(add_mars_ax, ax=ax, alpha=alpha)
             if boundaries: add_boundaries(ax, ax_plt, center)
 
            
@@ -96,8 +97,11 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname, boundaries=False):
     w = plot['Nds']*h/plot['Nfields'] 
 
     plot['figure'].set_size_inches(w,h)
-    print 'Saving: '+fname
-    plt.savefig(fname)
+    print('Saving: '+fname)
+    if show:
+        plt.show()
+    else:
+        plt.savefig(fname)
 
 
 def make_slicegrid_plot(fields, ds_keys, ax, center, fname='Output/test.pdf'):
@@ -108,7 +112,6 @@ def make_slicegrid_plot(fields, ds_keys, ax, center, fname='Output/test.pdf'):
         ds_name = ds_names[dsk]
 
         for field in fields:
-            print dsk, field
             ds = load_data(ds_name,field=field)
             slc = slice_data(ds, ax, field, regrid_data=dsk in regrid_data, center=center)
             plot_data(plot['axes'][(dsk, field)], slc, ax, field, cbar=False)
