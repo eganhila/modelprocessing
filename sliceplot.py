@@ -269,9 +269,9 @@ def apply_scalar_lims(field, field_dat,  override_lims=None):
         linlog=int(np.ceil(np.log10(linthresh)))
         
         #generate logarithmic ticks 
-        tick_locations=([-(10**x) for x in xrange(minlog,linlog-1,-1)]
+        tick_locations=([-(10**x) for x in range(minlog,linlog-1,-1)]
         		+[0.0]
-        		+[(10**x) for x in xrange(linlog,maxlog+1)] )
+        		+[(10**x) for x in range(linlog,maxlog+1)] )
     elif diverging: 
         vm = np.max(np.abs([vmin, vmax]))
         norm = Normalize(vmax=vm, vmin=-1*vm)

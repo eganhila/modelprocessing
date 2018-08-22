@@ -14,10 +14,10 @@ from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 plt.style.use('seaborn-poster')
 
 
-field = 'total_flux'
-cmap = 'RdBu'
-orientation = 'horizontal'
-log = 'symlog'
+field = 'O_p1_v_cross_B_z'
+cmap = 'RdBu_r'
+orientation = 'vertical'
+log = 'linear'
 
 vmin, vmax = field_lims_slices[field] 
 linthresh = 1e4 

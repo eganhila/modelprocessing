@@ -18,7 +18,7 @@ Inputs:
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
-from general_functions import *
+from modelprocessing.general_functions import *
 import sys
 import getopt
 from matplotlib import cm
@@ -176,7 +176,6 @@ def adjust_field_axes(plot, zeroline, override_lim_name=None):
         if f in log_fields2: ax.set_yscale('log')
         if f in linthresh_slices: 
             ax.set_yscale('symlog', linthreshy=linthresh_slices[f])
-            print f,linthresh_slices[f]
     
 def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False, 
                     reset_timebar=False, add_plasma_boundaries=False):
@@ -256,7 +255,7 @@ def make_flythrough_plot(fields, data, ds_names, title='flythrough',
                               plot['axes'][field], plot['kwargs'][dsk])
 
     finalize_plot(plot, zeroline=True, fname='Output/{0}_{1}.pdf'.format(title, subtitle), **kwargs)
-    print 'Saving: ', 'Output/{0}_{1}.pdf'.format(title, subtitle)
+    print('Saving: ', 'Output/{0}_{1}.pdf'.format(title, subtitle))
 
 def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
     """
@@ -279,7 +278,7 @@ def flythrough_orbit(orbits, ds_names, ds_types, field, region, **kwargs):
         time_true = time
         idx = []
     else:
-        print 'Orbit not supported'
+        print('Orbit not supported')
         raise(RuntimeError)
 
     coords = rotate_coords_simmso(coords)
@@ -359,7 +358,7 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"f:o:l:z",["field=", "orbit=", "load_key=",  "region=", "reset_timebar", "single_out="])
     except getopt.GetoptError:
-        print 'error'
+        print('error')
         return
 
 
@@ -384,7 +383,7 @@ def main(argv):
     
     # Get Datasets setup
     ds_names, ds_types = get_datasets(load_key=load_key)
-    print ds_names, ds_types
+    print(ds_names, ds_types)
 
     flythrough_orbit([orbit], ds_names, ds_types, field, region, reset_timebar=reset_timebar, single_out=single_out)
 

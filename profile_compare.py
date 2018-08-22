@@ -5,10 +5,10 @@ linear profiles
 
 import numpy as np
 import matplotlib.pyplot as plt
-from general_functions import *
+from modelprocessing.general_functions import *
 import sys
 import getopt
-from flythrough_compare import *
+from modelprocessing.flythrough_compare import *
 plt.style.use('seaborn-poster')
 
 

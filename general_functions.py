@@ -240,7 +240,7 @@ def yt_load(ds_name, fields, use_ftype=False):
 
 
     ds = yt.load_uniform_grid(data, shape, mars_r*1e5, 
-                              bbox=bbox, periodicity=(False, False, False))
+                              bbox=bbox, periodicity=(True, True, True))
     ds.my_attributes = attrs 
     return ds
 
@@ -344,7 +344,6 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         base_f = get_ds_data(ds, base_fname, indx, grid, 
                 area=area, normal=normal,
                 ion_velocity=ion_velocity, maven=maven)
-        print(ds.attrs.keys())
         norm = ds.attrs[base_fname+'_norm']
         return base_f/norm
 
@@ -356,7 +355,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         vz = get_ds_data(ds, field.replace('_total', '_z'), indx, grid=grid, maven=maven)
         return np.sqrt(vx**2+vy**2+vz**2)
     elif '_normal' in field: # field.replace('_normal', '_x') in ds.keys():
-
+        print(field)
         vx = get_ds_data(ds, field.replace('_normal', '_x'), indx, grid=grid, maven=maven)
         vy = get_ds_data(ds, field.replace('_normal', '_y'), indx, grid=grid, maven=maven)
         vz = get_ds_data(ds, field.replace('_normal', '_z'), indx, grid=grid, maven=maven)
@@ -379,6 +378,7 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         bf_z = get_ds_data(ds, base_field+'_z', indx, grid=grid, maven=maven)
 
         return Esw_hat[1]*bf_y+Esw_hat[2]*bf_z
+
 
 
     elif '_flux' in field:
@@ -509,6 +509,24 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
             v = np.sqrt(v0**2+v1**2+v2**2)
 
         return v*6.2#/n
+    elif "motional_electric_field" in field:
+        v = np.array([get_ds_data(ds, 'fluid_velocity_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+        B = np.array([get_ds_data(ds, 'magnetic_field_'+vec, indx, grid=grid, maven=maven) \
+                      for vec in ['x','y','z']])
+
+        if field[-1] == 'x': x = (v[1]*B[2]-v[2]*B[1])
+        if field[-1] == 'y': x = (v[2]*B[0]-v[0]*B[2])
+        if field[-1] == 'z': x = (v[0]*B[1]-v[1]*B[0])
+        if 'total' in field: 
+            x0 = v[1]*B[2]-v[2]*B[1]
+            x1 = v[2]*B[0]-v[0]*B[2]
+            x2 = v[0]*B[1]-v[1]*B[0]
+            x = np.sqrt(x0**2+x1**2+x2**2)
+
+        return x
+
+
     elif 'v_-_fluid_v' in field:
         ion = '_'.join(field.split('_')[:2])
 

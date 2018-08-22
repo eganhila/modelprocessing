@@ -26,13 +26,13 @@ import h5py
 import matplotlib.gridspec as gridspec
 from matplotlib import ticker
 from matplotlib.collections import LineCollection
-from general_functions import *
-from flythrough_compare import *
+from modelprocessing.general_functions import *
+from modelprocessing.flythrough_compare import *
 import pandas as pd
 from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 from itertools import product as iproduct
-from misc.labels import *
-from misc.field_default_params import *
+from modelprocessing.misc.labels import *
+from modelprocessing.misc.field_default_params import *
 import sys
 import ast
 plt.style.use(['seaborn-poster', 'poster'])
@@ -106,15 +106,15 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
     symlog=False
     if sum([1 for k in symlog_field_keys if k in field]):
         norm = SymLogNorm(vmin=vmin, vmax=vmax, linthresh=linthresh)
-	maxlog=int(np.ceil( np.log10(vmax) ))
-	minlog=int(np.ceil( np.log10(-vmin) ))
-	linlog=int(np.ceil(np.log10(linthresh)))
+        maxlog=int(np.ceil( np.log10(vmax) ))
+        minlog=int(np.ceil( np.log10(-vmin) ))
+        linlog=int(np.ceil(np.log10(linthresh)))
         symlog=True
 
-	#generate logarithmic ticks 
-	tick_locations=([-(10**x) for x in xrange(minlog,linlog-1,-1)]
-			+[0.0]
-			+[(10**x) for x in xrange(linlog,maxlog+1)] )
+        #generate logarithmic ticks 
+        tick_locations=([-(10**x) for x in xrange(minlog,linlog-1,-1)]
+                        +[0.0]
+                        +[(10**x) for x in xrange(linlog,maxlog+1)] )
     elif sum([1 for k in log_field_keys if k in field]):
         norm = LogNorm(vmin=vmin, vmax=vmax)
     else: norm = Normalize(vmin=vmin, vmax=vmax)
@@ -140,7 +140,7 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
     plt.xlabel('Longitude (0=Dayside, 180=Nightside)')
     plt.ylabel('Latitude')
     plt.title('R = {0} (RM)'.format(r))
-    print 'Saving: {0}'.format(fname)
+    print('Saving: {0}'.format(fname))
     if show:
         plt.show()
     else:
@@ -153,7 +153,7 @@ def run_sphere_flux(ds_names, ds_types, r, fields, ion_velocity, make_plot=True)
     indxs = get_path_idxs(coords, ds_names, ds_types)
     data = get_all_data(ds_names, ds_types, indxs, 
                         [f for f in fields if f != 'total_flux'],
-                        ion_velocity=ion_velocity, normal=rhat)
+                        ion_velocity=ion_velocity, normal=rhat, area=area)
 
     if 'total_flux' in fields:
         flux_dat = {}
@@ -177,8 +177,8 @@ def main(argv):
                 ["field=","species=", "infile=","radius=", "output_csv",
                  "total", "ion_velocity"] )
     except getopt.GetoptError:
-        print getopt.GetoptError
-        print 'error'
+        print(getopt.GetoptError)
+        print('error')
         return
 
     out_csv, total, ion_velocity = False, False, False
@@ -197,8 +197,8 @@ def main(argv):
         elif opt in ("-i", "--infile"):
             dsk = arg.split('/')[-1].split('.')[0]
             ds_names = {dsk:arg}
-            if 'helio' in arg or 'rhybrid' in arg: ds_types = {'heliosares':[dsk]}
-            else: ds_types = {'batsrus':[dsk]}
+            if 'batsrus' in dsk: ds_types = {'batsrus':[dsk]}
+            else: ds_types = {'rhybrid':[dsk]}
         elif opt in ("-r", "--radius"):
             if arg == 'all': radii = np.arange(1.0, 3.0, 0.2)
             else: radii = ast.literal_eval(arg)
@@ -211,7 +211,6 @@ def main(argv):
             ion_velocity = True
 
     fields = [ion+suff for ion, suff in iproduct(ions, fields_suffix)]
-    print ions, fields_suffix
     if total: fields.append('total_flux')
 
     if out_csv: df = pd.DataFrame(columns=ions, index=radii)
