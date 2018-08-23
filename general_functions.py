@@ -11,7 +11,7 @@ from modelprocessing.misc.field_default_params import *
 mars_r = None
 orbit_dir = '/Volumes/triton/Data/OrbitDat/Flythroughs/'
 model_dir = '/Volumes/triton/Data/ModelChallenge/'
-exo_dir = '/Volumes/triton/Data/Exoplanets/'
+exo_dir = "/Users/hilaryegan/Data/PlanetSize/" #'/Volumes/triton/Data/Exoplanets/'
 
 mH = 1.66053904e-27
 ion_mass = {'H_p1':mH, 'O_p1':16*mH, 'O2_p1':32*mH}
@@ -31,7 +31,7 @@ def load_data(ds_name, field=None, fields=None, vec_field=None):
     with h5py.File(ds_name, 'r') as f:
         try:
             mars_r = float(f.attrs['radius'])
-        except:
+        except KeyError:
             print("Can't load radius from h5 file, assuming Mars Radius")
             mars_r = 3390.0
         for k,v in f.attrs.items():
@@ -194,7 +194,7 @@ def get_datasets(load_key=None, maven=False):
         ds_names = {k:exo_dir+'/ComparisonA/'+k+'.h5' for k in keys}
         ds_types = {k:[k] for k in keys}
     elif load_key == 'exo_comparisonB':
-        keys = ['2349_1RM_225km', 'T0_1RM_225km', 'T1_1RM_225km', 'T2_1RM_225km'] 
+        keys = ['2349_1RM_225km', 'T0_1RM_225km', 'T1_1RM_225km', "T2_1RM_225km"] 
         ds_names = {k:exo_dir+'/ComparisonB/'+k+'.h5' for k in keys}
         ds_types = {k:[k] for k in keys}
 

@@ -14,8 +14,8 @@ from matplotlib.colors import LogNorm, Normalize, SymLogNorm
 plt.style.use('seaborn-poster')
 
 
-field = 'O_p1_v_cross_B_z'
-cmap = 'RdBu_r'
+field = 'H_p1_velocity_total'
+cmap = 'viridis'
 orientation = 'vertical'
 log = 'linear'
 

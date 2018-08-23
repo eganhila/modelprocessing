@@ -383,7 +383,6 @@ def main(argv):
     
     # Get Datasets setup
     ds_names, ds_types = get_datasets(load_key=load_key)
-    print(ds_names, ds_types)
 
     flythrough_orbit([orbit], ds_names, ds_types, field, region, reset_timebar=reset_timebar, single_out=single_out)
 
