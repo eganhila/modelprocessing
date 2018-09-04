@@ -19,10 +19,75 @@ plt.style.use('seaborn-poster')
 #mpl.rcParams['ytick.labelsize'] = 36
 
 
+north_ax = {'v':"E", 'E':"Bperp", "Bperp":"E"}
+centers = {'v':[-3.5,0,0], "E":[0.0,0.0,0.0], "Bperp":[0,0,0]}
+vecs = {'nominal':{'v':[1,0,0],
+                'E':[0,0.17,0.98],
+                'Bperp':[0,0.98,0.18]},
+        'qparallel':{'v':[1,0,0],
+              'E':[0,0.95,0.28],
+              'Bperp':[0,-0.28,-0.95]}}
+vecs['euv'] = vecs['qparallel']
+vecs['pbeta'] = vecs['qparallel']
+vecs['sw_str'] = vecs['qparallel']
 
 axes = {'x':0,'y':1,'z':2}
 ds_names, ds_types = get_datasets('exo_comparisonA', False)
 regrid_data = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'batsrus_multi_species'] 
+
+def get_offax_data(ds_names, fields, ax, center=None):
+
+    all_dat = {}
+
+    if center is None: center = centers[ax]
+    for dsk, ds_name in ds_names.items():
+        all_dat[dsk] = {}
+
+        ds = yt_load(ds_name, fields="all")
+
+
+        slc = yt.OffAxisSlicePlot(ds, vecs[dsk][ax], fields, center,
+                north_vector=vecs[dsk][north_ax[ax]])
+
+        frb = slc.data_source.to_frb((8, "code_length"), 512)
+        for f in fields:
+            all_dat[dsk][f] = frb[f].d[::-1]
+
+    plt.clf()
+
+    return all_dat
+
+
+def plot_offax_grid(ds_names, ds_keys,  fields, all_dat, fname, normalize, ax):
+    plot = setup_slicegrid_plot(ds_keys, fields)
+    base_fields = fields
+    if normalize:
+        fields = [f+'_normalized' for f in base_fields]
+
+    for dsk in ds_names.keys():
+        for bf, f in zip(base_fields,fields):
+            
+            if f in reset_lims.keys(): olims = reset_lims[f] #[IC]
+            else: olims = None
+            #olims = None
+
+            if normalize:
+                with h5py.File(ds_names[dsk]) as ds:
+                    data = all_dat[dsk][bf]/ds.attrs[normalize]
+            else:
+                data = all_dat[dsk][bf]
+                data[data==0]=np.nan
+
+            norm, cmap, tick_locations, symlogscale = apply_scalar_lims(f, data,  override_lims=olims)
+            
+            if f in override_cmaps.keys(): cmap = override_cmaps[f]
+            
+            im = plot['axes'][(dsk,f)].imshow(data, extent=[-4,4,-4,4],
+                    norm=norm,cmap=cmap)
+
+    finalize_slicegrid_plot(plot, 0,centers[ax], fname,  add_mars_ax=3)
+    plt.clf()
+
 
 def setup_slicegrid_plot(ds_keys, fields):
     plot = {}
