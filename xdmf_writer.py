@@ -44,7 +44,7 @@ def write_footer(fout):
 
 def write_xmf(infile, outname):
 
-    fout = file(outname, 'w')
+    fout = open(outname, 'w')
     ds = h5py.File(infile)
 
     dims_arr = ds['O_p1_number_density'].shape
@@ -68,7 +68,7 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "", ["infile="])
     except getopt.GetoptError:
-        print getopt.GetoptError()
+        print(getopt.GetoptError())
         return
 
     for opt, arg in opts:
