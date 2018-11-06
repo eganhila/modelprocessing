@@ -21,7 +21,7 @@ Inputs:
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import spiceypy as sp
+#import spiceypy as sp
 import h5py
 import matplotlib.gridspec as gridspec
 from matplotlib import ticker
@@ -35,7 +35,7 @@ from modelprocessing.misc.labels import *
 from modelprocessing.misc.field_default_params import *
 import sys
 import ast
-plt.style.use(['seaborn-poster', 'poster'])
+#plt.style.use(['seaborn-poster', 'poster'])
 
 
 
@@ -148,7 +148,7 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
     plt.close()
 
 
-def run_sphere_flux(ds_names, ds_types, r, fields, ion_velocity, make_plot=True):
+def run_sphere_flux(ds_names, ds_types, r, fields, ion_velocity, make_plot=True, plot_kwargs=None):
     xy, coords, rhat, area = create_sphere_mesh(r)
     indxs = get_path_idxs(coords, ds_names, ds_types)
     data = get_all_data(ds_names, ds_types, indxs, 
@@ -166,7 +166,8 @@ def run_sphere_flux(ds_names, ds_types, r, fields, ion_velocity, make_plot=True)
         for dsk in ds_names.keys(): 
             for field in fields: 
                 create_plot(field, xy, data[field][dsk], r,
-                            fname='Output/sphere_r{0}_{1}_{2}.pdf'.format(r,field,dsk))
+                            fname='Output/sphere_r{0}_{1}_{2}.pdf'.format(r,field,dsk),
+                            **plot_kwargs)
 
     data['area'] = area
     return data

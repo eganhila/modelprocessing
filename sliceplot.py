@@ -41,7 +41,7 @@ def finalize_sliceax(ax, ax_i, orbit=None, center=None, show_center=False, tlimi
     ax.set_title('$\mathrm{'+ax_title_lab[ax_i]+'= '+"{0:0.02}".format(center[ax_i])+'}\;(R_P)$')
 
     alpha = np.nanmax([mars_frac, 0.1])
-    #add_mars(ax_i,ax=ax, alpha = alpha)
+    add_mars(ax_i,ax=ax, alpha = alpha)
 
     if orbit is not None: 
         add_orbit(ax,ax_i, orbit, center, show_center=show_center, 
