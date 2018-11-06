@@ -57,7 +57,7 @@ def load_data(ds_name, field=None, fields=None, vec_field=None):
         if fields is None:
             fields = []
         elif fields == 'all':
-            fields = [k for k in f.keys() if 'mesh' not in k]
+            fields = [k for k in f.keys() if 'mesh' not in k and k not in ['x','y','z']]
 
         if vec_field is not None:
             for v in ['_x', '_y', '_z']: fields.append(vec_field+v)
@@ -212,7 +212,7 @@ def get_datasets(load_key=None, maven=False):
 
     return (ds_names, ds_types)
 
-def yt_load(ds_name, fields, use_ftype=False):
+def yt_load(ds_name, fields, use_ftype=False, periodic=True):
 
     try:
         with h5py.File(ds_name) as ds:
@@ -223,7 +223,11 @@ def yt_load(ds_name, fields, use_ftype=False):
 
     data = load_data(ds_name, fields=fields)
 
-    bbox = np.array([[-4,4], [-4,4],[-4,4]])
+    xlim = (data['x'].min(), data['x'].max())
+    ylim = (data['y'].min(), data['y'].max())
+    zlim = (data['z'].min(), data['z'].max())
+
+    bbox = np.array([xlim, ylim, zlim])
 
     for test_field in data.keys():
         if test_field not in ["attrs","x","y","z"]: break
@@ -238,9 +242,12 @@ def yt_load(ds_name, fields, use_ftype=False):
         if "number_density" in f[1]: data[f] = (data[f], "cm**-3")
         if "magnetic_field" in f[1]: data[f] = (data[f], "nT")
 
+    if periodic: periodicity = (True, True,True)
+    else: periodicity = (False, False, False)
+
 
     ds = yt.load_uniform_grid(data, shape, mars_r*1e5, 
-                              bbox=bbox, periodicity=(True, True, True))
+                              bbox=bbox, periodicity=periodicity)
     ds.my_attributes = attrs 
     return ds
 
