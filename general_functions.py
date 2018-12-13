@@ -362,7 +362,6 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         vz = get_ds_data(ds, field.replace('_total', '_z'), indx, grid=grid, maven=maven)
         return np.sqrt(vx**2+vy**2+vz**2)
     elif '_normal' in field: # field.replace('_normal', '_x') in ds.keys():
-        print(field)
         vx = get_ds_data(ds, field.replace('_normal', '_x'), indx, grid=grid, maven=maven)
         vy = get_ds_data(ds, field.replace('_normal', '_y'), indx, grid=grid, maven=maven)
         vz = get_ds_data(ds, field.replace('_normal', '_z'), indx, grid=grid, maven=maven)

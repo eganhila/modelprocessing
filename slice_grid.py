@@ -35,7 +35,7 @@ axes = {'x':0,'y':1,'z':2}
 ds_names, ds_types = get_datasets('exo_comparisonA', False)
 regrid_data = ['batsrus_mf_lr', 'batsrus_electron_pressure', 'batsrus_multi_species'] 
 
-def get_offax_data(ds_names, fields, ax, center=None):
+def get_offax_data(ds_names, fields, ax, center=None, use_gfields=False):
 
     all_dat = {}
 
@@ -43,7 +43,10 @@ def get_offax_data(ds_names, fields, ax, center=None):
     for dsk, ds_name in ds_names.items():
         all_dat[dsk] = {}
 
-        ds = yt_load(ds_name, fields="all")
+        if use_gfields: load_fields = fields
+        else: load_fields = "all"
+
+        ds = yt_load(ds_name, fields=load_fields)
 
 
         slc = yt.OffAxisSlicePlot(ds, vecs[dsk][ax], fields, center,
@@ -58,18 +61,22 @@ def get_offax_data(ds_names, fields, ax, center=None):
     return all_dat
 
 
-def plot_offax_grid(ds_names, ds_keys,  fields, all_dat, fname, normalize, ax):
+def plot_offax_grid(ds_names, ds_keys,  fields, all_dat,ax,add_mars_ax=None,
+                    fname=None, normalize=False, override_lims=None, show=False,
+                    override_cmaps=None):
     plot = setup_slicegrid_plot(ds_keys, fields)
     base_fields = fields
     if normalize:
         fields = [f+'_normalized' for f in base_fields]
+    if override_lims is None: override_lims = {}
+    if override_cmaps is None: override_cmaps = {}
+    if add_mars_ax is None: add_mars_ax=ax
 
     for dsk in ds_names.keys():
         for bf, f in zip(base_fields,fields):
             
-            if f in reset_lims.keys(): olims = reset_lims[f] #[IC]
+            if f in override_lims.keys(): olims = override_lims[f] #[IC]
             else: olims = None
-            #olims = None
 
             if normalize:
                 with h5py.File(ds_names[dsk]) as ds:
@@ -83,9 +90,10 @@ def plot_offax_grid(ds_names, ds_keys,  fields, all_dat, fname, normalize, ax):
             if f in override_cmaps.keys(): cmap = override_cmaps[f]
             
             im = plot['axes'][(dsk,f)].imshow(data, extent=[-4,4,-4,4],
-                    norm=norm,cmap=cmap)
+                    cmap=cmap, norm=norm)
 
-    finalize_slicegrid_plot(plot, 0,centers[ax], fname,  add_mars_ax=3)
+    finalize_slicegrid_plot(plot, 0,centers[ax], fname=fname,  add_mars_ax=add_mars_ax, show=show)
+    plt.show()
     plt.clf()
 
 
@@ -118,7 +126,7 @@ def setup_slicegrid_plot(ds_keys, fields):
     return plot
 
 
-def finalize_slicegrid_plot(plot, ax_plt, center, fname, boundaries=False, show=False,
+def finalize_slicegrid_plot(plot, ax_plt, center, fname=None, boundaries=False, show=False,
                            add_mars_ax=None):
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
     if add_mars_ax is None: add_mars_ax = ax_plt
@@ -162,10 +170,10 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname, boundaries=False, show=
     w = plot['Nds']*h/plot['Nfields'] 
 
     plot['figure'].set_size_inches(w,h)
-    print('Saving: '+fname)
     if show:
         plt.show()
     else:
+        print('Saving: '+fname)
         plt.savefig(fname)
 
 

@@ -27,7 +27,10 @@ data_conversion = {'O2_p1_number_density': lambda x: x*1e-6,
                    'O2_p1_velocity':lambda x: x*1e-3,
                    'O_p1_velocity':lambda x: x*1e-3,
                    'H_p1_velocity':lambda x: x*1e-3,
-                   'He_p2_velocity':lambda x: x*1e-3,}
+                   'He_p2_velocity':lambda x: x*1e-3,
+                   "electron_velocity":lambda x: x*1e-3,
+                   "electric_field":lambda x: x*1e6, #put in microV/m to match nT km/s
+                   }
 
 
 def convert_dataset(infile, outname, radius=3390):
@@ -50,7 +53,7 @@ def convert_dataset(infile, outname, radius=3390):
 
 
     vars_1D_complete = ['n_O+_ave', 'n_O2+_ave']
-    vars_3D_complete = ['v_O+_ave', 'v_O2+_ave', 'cellBAverage', 'cellUe']
+    vars_3D_complete = ['v_O+_ave', 'v_O2+_ave', 'cellBAverage', 'cellUe', "cellJ", "nodeE"]
     vars_1D_add = [('n_H+sw_ave','n_H+planet_ave')]
     vars_3D_ave = [('v_H+sw_ave','v_H+planet_ave')]
     vars_spatial = ['x', 'y', 'z']

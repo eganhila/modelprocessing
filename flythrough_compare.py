@@ -139,9 +139,9 @@ def change_xticks(plot):
     alt = plot['altitude']
     
     alt_vals = [alt[np.argmin(np.abs(tadj-tick))] for tick in tick_locs]
-    #time_vals = [datetime.datetime.fromtimestamp(t).strftime("%H:%M") for t in tick_locs]
+    time_vals = [datetime.datetime.fromtimestamp(t).strftime("%H:%M") for t in tick_locs]
     t_idxs = [np.argmin(np.abs(ti-tadj)) for ti in tick_locs]
-    time_vals = [sp.et2utc(t[ti], 'C', 0)[-8:-3] for ti in t_idxs]
+    #time_vals = [sp.et2utc(t[ti], 'C', 0)[-8:-3] for ti in t_idxs]
     ax.set_xticklabels(['{1:02d}'.format(tv, int(av)) for tv, av in zip(time_vals, alt_vals)])
     ax.set_xticks(tick_locs)
 
@@ -160,7 +160,7 @@ def add_boundaries(plot):
         ax.plot([ 0.171, 0.171], flim, ls=':',lw=1, color='k', alpha=0.3)
 
     
-def adjust_field_axes(plot, zeroline, override_lim_name=None):
+def adjust_field_axes(plot, zeroline, override_lim_name=None, override_lims=None):
     for f, ax in plot['axes'].items():
         if f in label_lookup:
             ax.set_ylabel(label_lookup[f])
@@ -171,19 +171,23 @@ def adjust_field_axes(plot, zeroline, override_lim_name=None):
             ax.set_ylabel(f)
         if zeroline:
             ax.hlines(0, ax.get_xlim()[0], ax.get_xlim()[1], linestyle=':', alpha=0.4)
-        if override_lim_name is not None: f = override_lim_name[f]
+        if override_lim_name is not None:f = override_lim_name[f]
         if f in field_lims: ax.set_ylim(field_lims[f])
+        if override_lims is not None:
+            if f in override_lims:
+                ax.set_ylim(override_lims[f])
         if f in log_fields2: ax.set_yscale('log')
         if f in linthresh_slices: 
             ax.set_yscale('symlog', linthreshy=linthresh_slices[f])
     
 def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False, 
-                    reset_timebar=False, add_plasma_boundaries=False):
+                    reset_timebar=False, add_plasma_boundaries=False,
+                    override_lims=None):
     """
     Make final plotting adjustments and save/show image
     """
     
-    adjust_field_axes(plot, zeroline)
+    adjust_field_axes(plot, zeroline, override_lims=override_lims)
 
     for i in range(plot['N_axes']):
         ax = plot['ax_arr'][i]
@@ -199,6 +203,8 @@ def finalize_plot(plot, xlim=None, fname=None, show=False, zeroline=False,
 
         if plot['tlimit'] is not None: ax.set_xlim(plot['tlimit'])
         else: ax.set_xlim(0,1)
+
+        if xlim is not None: ax.set_xlim(xlim)
 
     add_tbars(plot, reset_timebar)
     change_xticks(plot)
@@ -231,7 +237,7 @@ def plot_field_ds(x, data, ax, kwargs):
         
         ax.fill_between(x, min1_dat, max1_dat, alpha=0.2, color=kwargs['color'])
         lim = ax.get_ylim()
-        ax.fill_between(x, min0_dat, max0_dat, alpha=0.05, color=kwargs['color'])
+        ax.fill_between(x, min0_dat, max0_dat, alpha=0.1, color=kwargs['color'])
         ax.set_ylim(lim)
 
 
