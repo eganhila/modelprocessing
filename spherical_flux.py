@@ -79,13 +79,19 @@ def create_sphere_mesh(r,planet_r=3390,d_angle=5.0,hemi=None):
     return ((lon_f, lat_f), coords_f, rhat, area)
 
 
-def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
+def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf', override_lims=None):
+    if override_lims is None:
+        override_lims = {}
     
     # Check to see if the field diverges
     if field in field_lims_shells:
         vmin, vmax = field_lims_shells[field]
         #linthresh = 10**(int(np.ceil(np.log10(vmax)))-4.5)
         linthresh = 1e4
+
+    if field in override_lims:
+        vmin, vmax = override_lims[field]
+
 
     if sum([1 for k in diverging_field_keys if k in field]):
         cmap = 'RdBu'
@@ -112,9 +118,9 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf'):
         symlog=True
 
         #generate logarithmic ticks 
-        tick_locations=([-(10**x) for x in xrange(minlog,linlog-1,-1)]
+        tick_locations=([-(10**x) for x in range(minlog,linlog-1,-1)]
                         +[0.0]
-                        +[(10**x) for x in xrange(linlog,maxlog+1)] )
+                        +[(10**x) for x in range(linlog,maxlog+1)] )
     elif sum([1 for k in log_field_keys if k in field]):
         norm = LogNorm(vmin=vmin, vmax=vmax)
     else: norm = Normalize(vmin=vmin, vmax=vmax)
