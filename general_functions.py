@@ -393,6 +393,14 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
         dens = get_ds_data(ds, field.replace('flux', "number_density"), indx, grid, maven=maven)
         
         return vn*dens
+    elif "power" in field:
+        flux =  get_ds_data(ds, field.replace("power", "flux"), indx, grid,
+                            normal, ion_velocity, maven=maven)
+        vmag = get_ds_data(ds, velocity_field+"_total", indx, grid, normal,
+                            ion_velocity, maven=maven)
+
+        return flux*vmag*vmag
+
     elif 'area' == field:
         return area
                                    
