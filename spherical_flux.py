@@ -103,7 +103,7 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf', override
             linthresh= 100*np.min(np.abs(fdat[fdat>0]))
     else:
         cmap = 'viridis'
-        fdat = np.ma.masked_where(fdat==0, fdat)
+        #fdat = np.ma.masked_where(fdat==0, fdat)
         fdat = np.ma.masked_invalid(fdat)
         if field not in field_lims_shells:
             vmin, vmax = np.min(fdat), np.max(fdat)
@@ -154,8 +154,8 @@ def create_plot(field, xy, fdat,r, show=False, fname='Output/test.pdf', override
     plt.close()
 
 
-def run_sphere_flux(ds_names, ds_types, r, fields, ion_velocity, make_plot=True, plot_kwargs=None):
-    xy, coords, rhat, area = create_sphere_mesh(r)
+def run_sphere_flux(ds_names, ds_types, r, fields, ion_velocity, make_plot=True, plot_kwargs=None, d_angle=5.0):
+    xy, coords, rhat, area = create_sphere_mesh(r, d_angle=d_angle)
     indxs = get_path_idxs(coords, ds_names, ds_types)
     data = get_all_data(ds_names, ds_types, indxs, 
                         [f for f in fields if f != 'total_flux'],
