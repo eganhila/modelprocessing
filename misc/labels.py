@@ -105,6 +105,8 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'km':'Distance (km)',
           'H':'Distance (scale heights)',
           'R_P':r'Distance ($R_P$)',
+          "electric_field_normal":"$E_r\; [\mu V/m]$",
+          "motional_electric_field_normal":"$E_r\; [\mu V/m]$",
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}}$'
