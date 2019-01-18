@@ -1,4 +1,7 @@
 from modelprocessing.spherical_flux import create_sphere_mesh
+from modelprocessing.general_functions import yt_load
+import numpy as np
+from yt.visualization.api import Streamlines
 
 def single_topology(stream, bbox):
     stream = stream[np.all(stream != 0.0, axis=1)]
@@ -89,7 +92,7 @@ class TopologyMap():
     def run(self, altitude=300, d_angle=10):
         self.ds = yt_load(self.fname,fields="all")
         if not self.positions_set:
-            self._create_base_positions(altitude, d_angle=d_angle)
+            self._create_basemap_positions(altitude, d_angle=d_angle)
         self._prepare_data_structures()
         self._integrate()
         self._check_topology()
