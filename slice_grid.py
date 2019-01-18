@@ -127,7 +127,7 @@ def setup_slicegrid_plot(ds_keys, fields):
 
 
 def finalize_slicegrid_plot(plot, ax_plt, center, fname=None, boundaries=False, show=False,
-                           add_mars_ax=None):
+                           add_mars_ax=None,size_scale=None):
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
     if add_mars_ax is None: add_mars_ax = ax_plt
 
@@ -151,10 +151,11 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname=None, boundaries=False, 
                     ax.set_ylabel(plot['fields'][ax_j])
                 ax.yaxis.set_label_position("right")
             if ax_j == 0:
-                if plot['ds_keys'][ax_i] in label_lookup.keys():
-                    ax.set_title(label_lookup[plot['ds_keys'][ax_i]])
-                else:
-                    ax.set_title(plot['ds_keys'][ax_i])
+                #if plot['ds_keys'][ax_i] in label_lookup.keys():
+                #    ax.set_title(label_lookup[plot['ds_keys'][ax_i]])
+                #else:
+                #    ax.set_title(plot['ds_keys'][ax_i])
+                pass
             if ax_j != plot['Nfields']-1:
                 ax.set_xticks([])
             else:
@@ -166,10 +167,14 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname=None, boundaries=False, 
                 ax.set_ylabel('$\mathrm{'+ax_labels[ax_plt][1]+'} \;(R_P)$')
 
 
-    h = 15.0
+    if size_scale == None: 
+        h = 15
+    else:
+        h = size_scale
     w = plot['Nds']*h/plot['Nfields'] 
 
     plot['figure'].set_size_inches(w,h)
+    plt.tight_layout()
     if show:
         plt.show()
     else:
