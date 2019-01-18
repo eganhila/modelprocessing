@@ -490,6 +490,13 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
 
             return 1e-15*p/(n*k)
 
+    elif field == "standoff_pressure_fraction":
+        pb = get_ds_data(ds, 'magnetic_pressure', indx, grid=grid, maven=maven)
+        pr = get_ds_data(ds, 'ram_pressure', indx, grid=grid, maven=maven)
+
+        return pb/pr
+
+
 
     elif field == 'thermal_pressure':
         if 'pressure' in ds.keys(): 
