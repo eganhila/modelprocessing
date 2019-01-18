@@ -33,9 +33,9 @@ def add_electric_field(infile):
 
 
     # save the output 
-    ds.create_dataset('electric_field_x', data=E[0])
-    ds.create_dataset('electric_field_y', data=E[1])
-    ds.create_dataset('electric_field_z', data=E[2])
+    ds.create_dataset('motional_electric_field_x', data=E[0])
+    ds.create_dataset('motional_electric_field_y', data=E[1])
+    ds.create_dataset('motional_electric_field_z', data=E[2])
 
     ds.close()
 
