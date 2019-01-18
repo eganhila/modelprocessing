@@ -45,6 +45,7 @@ def add_mars(ax_i, **kwargs):
     if ax_i == 1: add_mars_xz(**kwargs)
     if ax_i == 0: add_mars_yz(**kwargs)
     if ax_i == 3: add_mars_offax(**kwargs)
+    if ax_i == 4: add_mars_xy_rev(**kwargs)
 
 def add_mars_offax(ax=None,alpha=1):
     if ax is None: ax = plt.gca()
@@ -67,6 +68,18 @@ def add_mars_xy(ax=None,alpha=1):
     for radius in [1, 0.66, 0.3]:
         w1 = Wedge(center, radius, theta1, theta2, fc='k', lw=1, ec='k',alpha=alpha,width=0.33)
         w2 = Wedge(center, radius, theta2, theta1, fc='white', ec='k',lw=1,alpha=alpha)
+        for wedge in [w1, w2]:
+            ax.add_artist(wedge)     
+
+def add_mars_xy_rev(ax=None,alpha=1):
+    if ax is None: ax = plt.gca()
+    center = (0,0)
+    radius = 1
+    theta1, theta2 = 90, 270
+    
+    for radius in [1, 0.66, 0.3]:
+        w1 = Wedge(center, radius, theta2, theta1, fc='k', lw=1, ec='k',alpha=alpha,width=0.33)
+        w2 = Wedge(center, radius, theta1, theta2, fc='white', ec='k',lw=1,alpha=alpha)
         for wedge in [w1, w2]:
             ax.add_artist(wedge)     
 
