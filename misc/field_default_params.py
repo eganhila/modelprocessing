@@ -132,10 +132,12 @@ field_lims_slices = {'O_p1_number_density': (1e-1, 1e2),
                      "motional_electric_field_x":(-500,500),
                      "motional_electric_field_y":(-500,500),
                      "motional_electric_field_z":(-1000,1000),
+                     "motional_electric_field_total":(1e0,1e4),
                      "electric_field_normal":(-3e3,3e3),
                      "O2_p1_gyroradius":(1e-1,1e3),
                      "ram_pressure":(1e-4,1e0),
                      "electron_temperature":(1e4,1e8),
+                     "velocity_fraction":(1e-1,1e1)
                      }
 linthresh_slices = { 'v_cross_B_x':1,
                      'v_cross_B_y':1,
@@ -194,10 +196,11 @@ log_fields2 = [#'H_p1_number_density',
                'J_cross_B_total',
                ]
 diverging_field_keys = ['flux', 'J_cross_B_y','magnetic_field_x', 'magnetic_field_y', 'magnetic_field_z', 'magnetic_field_normal', 'O_p1_v_cross_B_z', 'O2_p1_v_cross_B_z', 'O2_p1_velocity_z', 'O2_p1_velocity_z', 'O_p1_velocity_normal', 'O2_p1_velocity_normal', 'magnetic_field_Bperp', 'magnetic_field_Esw', 'O2_p1_v_cross_B_Bperp', 'O2_p1_v_cross_B_Esw', "O2_p1_velocity_Bperp", "O2_p1_velocity_Esw", "H_p1_velocity_Bperp", "H_p1_velocity_Esw", "H_p1_velocity_x", "O_p1_velocity_Esw", "O_p1_velocity_Bperp", "O_p1_v_cross_B_Bperp", "O_p1_v_cross_B_Esw", "O_p1_v_cross_B_normal", "O2_p1_v_cross_B_normal", "O2_p1_v_cross_B_x", "magnetic_field_orientation", 'magnetic_field_elevation_angle', "electric_field_normal", "electron_velocity_normal", 
-        "standoff_pressure_fraction"]
+        "standoff_pressure_fraction","velocity_fraction"]
 symlog_field_keys = ['flux', 'O2_p1_velocity_Esw', 'O2_p1_velocity_Bperp','O2_p1_velocity_x',  'O_p1_velocity_Esw', 'O_p1_velocity_Bperp','O_p1_velocity_x', "O_p1_velocity_normal", "O_p1_flux_normalized", "O2_p1_flux_normalized","O2_p1_v_cross_B_x","O2_p1_v_cross_B_y","O2_p1_v_cross_B_z",]#, "electric_field_z","electric_field_normal",]
 log_field_keys = ['number_density', 'temperature', 'magnetic_pressure', 'pressure','current_total', 'J_cross_B_total',
-               'O2_p1_velocity_total',"O_p1_velocity_total", "O2_p1_gyroradius", "O_p1_gyoradius","electron_velocity_total", "H_p1_velocity_total","standoff_pressure_fraction"]
+               'O2_p1_velocity_total',"O_p1_velocity_total", "O2_p1_gyroradius", "O_p1_gyoradius","electron_velocity_total",
+                "H_p1_velocity_total","standoff_pressure_fraction","velocity_fraction", "motional_electric_field_total"]
 
 
 vec_field_scale = {'magnetic_field':15,

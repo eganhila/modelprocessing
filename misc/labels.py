@@ -107,6 +107,9 @@ label_lookup = {'H_p1_number_density':r'$n(H+)$', #\;\mathrm{cm^{-3}}$',
           'R_P':r'Distance ($R_P$)',
           "electric_field_normal":"$E_r\; [\mu V/m]$",
           "motional_electric_field_normal":"$E_r\; [\mu V/m]$",
+          "motional_electric_field_total":"$|E|\;[\mu V/m]$",
+          "velocity_fraction":"$|v(O_2^+)|/|u_e|$",
+          "electron_velocity_total":"$|u_e|\; [km/s]$"
           }
 label_lookup['H_p1_velocity_total'] = '$\mathrm{|v(H+)|}$'
 label_lookup['H_p1_velocity_normal'] = '$\mathrm{v(H+)\cdot \hat{r}}$'

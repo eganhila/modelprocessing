@@ -496,7 +496,10 @@ def get_ds_data(ds, field, indx, grid=True, normal=None, ion_velocity=True,
 
         return pb/pr
 
-
+    elif field == "velocity_fraction":
+        pi = get_ds_data(ds, "O2_p1_velocity_total", indx,grid=grid)
+        pe = get_ds_data(ds, "electron_velocity_total", indx, grid=grid)
+        return pe/pi
 
     elif field == 'thermal_pressure':
         if 'pressure' in ds.keys(): 

@@ -282,7 +282,8 @@ def apply_scalar_lims(field, field_dat,  override_lims=None):
 
     return (norm,cmap, tick_locations, symlogscale)
 
-def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, override_lims=None, cbar=True, diverge_cmap=False):
+def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, override_lims=None, cbar=True, diverge_cmap=False,
+                     override_cmap=None):
     slc_0, slc_1, field_dat = slc
     #diverge_cmap, logscale, zlim = True, False, (-30,30)
     #zlim = (-180,180)
@@ -293,6 +294,7 @@ def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, override_lims=Non
     else: label = field
 
     norm, cmap, tick_locations, symlogscale = apply_scalar_lims(field, field_dat, override_lims=override_lims) 
+    if override_cmap is not None: cmap = override_cmap
     if field_dat.max() != field_dat.min(): 
     
         im = plot_ax.pcolormesh(slc_0.T, slc_1.T, np.ma.masked_array(field_dat.T),

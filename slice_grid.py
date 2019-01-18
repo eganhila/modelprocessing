@@ -127,7 +127,7 @@ def setup_slicegrid_plot(ds_keys, fields):
 
 
 def finalize_slicegrid_plot(plot, ax_plt, center, fname=None, boundaries=False, show=False,
-                           add_mars_ax=None,size_scale=None):
+                           add_mars_ax=None,size_scale=None, lims=None):
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
     if add_mars_ax is None: add_mars_ax = ax_plt
 
@@ -135,8 +135,12 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname=None, boundaries=False, 
         for ax_j in range(plot['Nfields']):
             ax = plot['axes_grid'][ax_j,ax_i]
             ax.set_aspect('equal')
-            ax.set_xlim(-4,4)
-            ax.set_ylim(-4,4)
+            if lims is None:
+                ax.set_xlim(-4,4)
+                ax.set_ylim(-4,4)
+            else:
+                ax.set_xlim(lims[0])
+                ax.set_ylim(lims[1])
 
             mars_frac = np.real(np.sqrt(1-center[ax_plt]**2))
             alpha = np.nanmax([mars_frac, 0.1])
@@ -145,11 +149,12 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname=None, boundaries=False, 
 
            
             if ax_i == plot['Nds'] -1:
-                if plot['fields'][ax_j] in label_lookup.keys():
-                    ax.set_ylabel(label_lookup[plot['fields'][ax_j]])
-                else:
-                    ax.set_ylabel(plot['fields'][ax_j])
-                ax.yaxis.set_label_position("right")
+                pass
+                #if plot['fields'][ax_j] in label_lookup.keys():
+                #    ax.set_ylabel(label_lookup[plot['fields'][ax_j]])
+                #else:
+                #    ax.set_ylabel(plot['fields'][ax_j])
+                #ax.yaxis.set_label_position("right")
             if ax_j == 0:
                 #if plot['ds_keys'][ax_i] in label_lookup.keys():
                 #    ax.set_title(label_lookup[plot['ds_keys'][ax_i]])
