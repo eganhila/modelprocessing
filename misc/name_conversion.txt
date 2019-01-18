@@ -1,3 +1,6 @@
+n_tot,electron_number_density
+n_tot_ave,electron_number_density
+T_tot,electron_temperature
 nodeE,electric_field
 cellUe,electron_velocity
 cellJ,current
