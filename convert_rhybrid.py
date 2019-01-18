@@ -23,6 +23,7 @@ data_conversion = {'O2_p1_number_density': lambda x: x*1e-6,
                    'O_p1_number_density': lambda x: x*1e-6,
                    'H_p1_number_density': lambda x: x*1e-6,
                    'He_p2_number_density': lambda x: x*1e-6,
+                   'electron_number_density': lambda x: x*1e-6,
                    'magnetic_field': lambda x: x*1e9,
                    'O2_p1_velocity':lambda x: x*1e-3,
                    'O_p1_velocity':lambda x: x*1e-3,
@@ -52,7 +53,7 @@ def convert_dataset(infile, outname, radius=3390):
     locs_sorted_idx = np.array([ii[1] for ii in locs_sorted])
 
 
-    vars_1D_complete = ['n_O+_ave', 'n_O2+_ave']
+    vars_1D_complete = ['n_O+_ave', 'n_O2+_ave', "T_tot", 'n_tot_ave']
     vars_3D_complete = ['v_O+_ave', 'v_O2+_ave', 'cellBAverage', 'cellUe', "cellJ", "nodeE"]
     vars_1D_add = [('n_H+sw_ave','n_H+planet_ave')]
     vars_3D_ave = [('v_H+sw_ave','v_H+planet_ave')]
@@ -69,7 +70,7 @@ def convert_dataset(infile, outname, radius=3390):
                 dat = data_conversion[name_conversion[v]](dat)
             f.create_dataset(name_conversion[v], data=dat)
 
-        for v in vars_3D_complete:
+        for v in vars_3D_complete[::-1]:
             for x_i, x in enumerate(['_x','_y', '_z']):
                 dat = vr.read_variable(v)
                 if dat is None: continue 
@@ -88,7 +89,6 @@ def convert_dataset(infile, outname, radius=3390):
             if temp is None: continue 
             temp = data_conversion['H_p1_number_density'](temp)
             n_dat += temp[locs_sorted_idx].reshape(nz, ny, nx).T
-
 
             for x_i, x in enumerate(['_x','_y', '_z']):
                 tempv = vr.read_variable('v_H+'+ptype)[:, x_i]*temp
