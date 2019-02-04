@@ -205,10 +205,10 @@ def slice_data(ds, ax_i, field, regrid_data, **kwargs):
     if regrid_data: return slice_regrid(ds, ax_i, field, **kwargs)
     else: return slice_onax(ds, ax_i, field, **kwargs)
 
-def plot_data_vec(plot_ax, slc, ax_i, field):
+def plot_data_vec(plot_ax, slc, ax_i, field, Ns_factor=20,scale=None, width=0.008):
     slc_0, slc_1, field_dat = slc
-    Ns = np.array(slc_0.shape, dtype=int)/20
-
+    Ns = np.array(slc_0.shape, dtype=int)/Ns_factor
+    Ns = Ns.astype(int)
     mag = np.sqrt(np.sum(np.array(field_dat)**2,axis=0))
 
     log_mag = np.log10(mag)
@@ -222,14 +222,14 @@ def plot_data_vec(plot_ax, slc, ax_i, field):
     field_dat[0] = log_mag*frac_x
     field_dat[1] = log_mag*frac_y
     
-    if field in vec_field_scale: scale = vec_field_scale[field]
-    else: scale = None
-    #scale=None
+    #if field in vec_field_scale: scale = vec_field_scale[field]
+    #else: scale = None
+    if scale is not None: scale = 1.0/scale
 
     plot_ax.quiver(slc_0.T[::Ns[0], ::Ns[1]], slc_1.T[::Ns[0], ::Ns[1]],
                               field_dat[0].T[::Ns[0], ::Ns[1]],
                               field_dat[1].T[::Ns[0], ::Ns[1]],
-                              width=0.008, minshaft=2, scale=scale, pivot='mid',
+                              width=width, minshaft=2, scale=scale, pivot='mid',
                               color='Gainsboro')
 
 
