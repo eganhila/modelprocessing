@@ -74,7 +74,6 @@ def convert_file(fname, h5_name):
             if i == N-1: break
 
                 
-    print data.keys()
 
     # Going to make the lat/lon/alt fields
     lat, lon, alt = convert_coords_cart_sphere(
@@ -89,7 +88,7 @@ def convert_file(fname, h5_name):
 
     # Save data
     with h5py.File(h5_name, 'w') as f:
-        print 'Writing to {0}'.format(h5_name)
+        print('Writing to {0}'.format(h5_name))
         for k, v in data.items():
             if  name_conversion[k] in data_conversion.keys():
                 v = data_conversion[name_conversion[k]](v)
