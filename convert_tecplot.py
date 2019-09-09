@@ -12,7 +12,7 @@ Inputs:
 
 import numpy as np
 import h5py 
-import spiceypy as sp
+#import spiceypy as sp
 import glob
 import sys
 import getopt
