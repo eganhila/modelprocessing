@@ -205,7 +205,7 @@ def slice_data(ds, ax_i, field, regrid_data, **kwargs):
     if regrid_data: return slice_regrid(ds, ax_i, field, **kwargs)
     else: return slice_onax(ds, ax_i, field, **kwargs)
 
-def plot_data_vec(plot_ax, slc, ax_i, field, Ns_factor=20,scale=None, width=0.008):
+def plot_data_vec(plot_ax, slc, ax_i, field, Ns_factor=20,scale=None, width=0.008, color="Gainsboro"):
     slc_0, slc_1, field_dat = slc
     Ns = np.array(slc_0.shape, dtype=int)/Ns_factor
     Ns = Ns.astype(int)
@@ -230,7 +230,7 @@ def plot_data_vec(plot_ax, slc, ax_i, field, Ns_factor=20,scale=None, width=0.00
                               field_dat[0].T[::Ns[0], ::Ns[1]],
                               field_dat[1].T[::Ns[0], ::Ns[1]],
                               width=width, minshaft=2, scale=scale, pivot='mid',
-                              color='Gainsboro')
+                              color=color)
 
 
 def plot_data_stream(plot_ax, slc, ax_i, field):
@@ -244,19 +244,29 @@ def plot_data_stream(plot_ax, slc, ax_i, field):
                             color='white', linewidth=0.7,density=2)
     
 
-def apply_scalar_lims(field, field_dat,  override_lims=None):
+def apply_scalar_lims(field, field_dat,  override_lims=None, logscale=None):
     field_lims = field_lims_slices
 
     if override_lims is not None: vmin, vmax = override_lims
     elif field in field_lims.keys(): vmin, vmax = field_lims_slices[field]
     else: vmin, vmax = np.nanmin(field_dat), np.nanmax(field_dat)
 
-    diverging, logscale, symlogscale=False, False, False
+    diverging = False
+
     if sum([1 for dfk in diverging_field_keys if dfk in field])>0: diverging=True
     if '_x' == field[-2:] or '_y' == field[-2:] or '_z' == field[-2:]: diverging=True
-    if sum([1 for lfk in log_field_keys if lfk in field])>0: logscale=True
-    if sum([1 for sfk in symlog_field_keys if sfk in field])>0: symlogscale=True
-
+    
+    if logscale is not None:
+        if diverging: 
+            symlogscale = logscale
+            logscale = False
+        else: 
+            logscale = logscale
+            symlogscale = False
+    else:
+        logscale, symlogscale=False, False
+        if sum([1 for lfk in log_field_keys if lfk in field])>0: logscale=True
+        if sum([1 for sfk in symlog_field_keys if sfk in field])>0: symlogscale=True
     
     tick_locations = None
     if logscale: norm = LogNorm(vmax=vmax, vmin=vmin)
@@ -282,7 +292,7 @@ def apply_scalar_lims(field, field_dat,  override_lims=None):
 
     return (norm,cmap, tick_locations, symlogscale)
 
-def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, override_lims=None, cbar=True, diverge_cmap=False,
+def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=None, override_lims=None, cbar=True, diverge_cmap=False,
                      override_cmap=None):
     slc_0, slc_1, field_dat = slc
     #diverge_cmap, logscale, zlim = True, False, (-30,30)
@@ -293,7 +303,7 @@ def plot_data_scalar(plot_ax, slc, ax_i, field, logscale=True, override_lims=Non
     if field in label_lookup: label=label_lookup[field]
     else: label = field
 
-    norm, cmap, tick_locations, symlogscale = apply_scalar_lims(field, field_dat, override_lims=override_lims) 
+    norm, cmap, tick_locations, symlogscale = apply_scalar_lims(field, field_dat, override_lims=override_lims,logscale=logscale) 
     if override_cmap is not None: cmap = override_cmap
     if field_dat.max() != field_dat.min(): 
     
