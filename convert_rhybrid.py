@@ -141,7 +141,7 @@ def main(argv):
         elif opt in ("-o", "--outname"):
             outname = arg
         elif opt in ("-r", "--radius"):
-            radius = arg
+            radius = float(arg)
 
     convert_dataset(infile, outname, radius)
 
