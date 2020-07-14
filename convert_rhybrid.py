@@ -19,18 +19,11 @@ for pair in open(f_var_rename):
     k,v = pair.split(',')
     name_conversion[k] = v[:-1] #remove newline
 
-data_conversion = {'O2_p1_number_density': lambda x: x*1e-6,
-                   'O_p1_number_density': lambda x: x*1e-6,
-                   'H_p1_number_density': lambda x: x*1e-6,
-                   'He_p2_number_density': lambda x: x*1e-6,
-                   'electron_number_density': lambda x: x*1e-6,
-                   'magnetic_field': lambda x: x*1e9,
-                   'O2_p1_velocity':lambda x: x*1e-3,
-                   'O_p1_velocity':lambda x: x*1e-3,
-                   'H_p1_velocity':lambda x: x*1e-3,
-                   'He_p2_velocity':lambda x: x*1e-3,
-                   "electron_velocity":lambda x: x*1e-3,
-                   "electric_field":lambda x: x*1e6, #put in microV/m to match nT km/s
+
+data_conversion = {"number_density": lambda x: x*1e-6,
+                   "velocity": lambda x: x*1e-3,
+                   "electric_field": lambda x: x*1e6, #put in microV/m to match nT km/s
+                   "magnetic_field": lambda x: x*1e9, #nT
                    }
 
 
@@ -55,10 +48,15 @@ def convert_dataset(infile, outname, radius=3390):
 
     vars_1D_complete = ['n_O+_ave', 'n_O2+_ave', "T_tot", 'n_tot_ave']
     vars_3D_complete = ['v_O+_ave', 'v_O2+_ave', 'cellBAverage', 'cellUe', "cellJ", "nodeE"]
-    vars_1D_add = [('n_H+sw_ave','n_H+planet_ave')]
-    vars_3D_ave = [('v_H+sw_ave','v_H+planet_ave')]
+    vars_multi = [('H+', ('sw_ave', 'planet_ave'), 'H_p1'),
+                  ('O+', ('io_ave', 'torus_ave'), 'O_p1'),
+                  ('S+', ('io_ave', 'torus_ave'), 'S_p1'),
+                  ]
+
     vars_spatial = ['x', 'y', 'z']
 
+
+    base_shape = None
 
     with h5py.File(outname) as f:
 
@@ -66,9 +64,13 @@ def convert_dataset(infile, outname, radius=3390):
             dat = vr.read_variable(v)
             if dat is None: continue 
             dat = dat[locs_sorted_idx].reshape(nz, ny, nx).T
-            if name_conversion[v] in data_conversion.keys():
-                dat = data_conversion[name_conversion[v]](dat)
+
+            for dc in data_conversion.keys():
+                if dc in name_conversion[v]:
+                    dat = data_conversion[dc](dat)
             f.create_dataset(name_conversion[v], data=dat)
+
+            base_shape = dat.shape
 
         for v in vars_3D_complete[::-1]:
             for x_i, x in enumerate(['_x','_y', '_z']):
@@ -76,29 +78,40 @@ def convert_dataset(infile, outname, radius=3390):
                 if dat is None: continue 
                 dat = dat[:, x_i]
                 dat = dat[locs_sorted_idx].reshape(nz, ny, nx).T
+                for dc in data_conversion.keys():
+                    if dc in name_conversion[v]:
+                        dat = data_conversion[dc](dat)
                 if name_conversion[v] in data_conversion.keys():
                     dat = data_conversion[name_conversion[v]](dat)
                 f.create_dataset(name_conversion[v]+x, data=dat)
 
         # Do the sw/pl ion averaging
-        n_dat = np.zeros_like(dat)
-        v_dat = [np.zeros_like(dat) for i in range(3)]
 
-        for ptype in ['sw_ave','planet_ave']:
-            temp = vr.read_variable('n_H+'+ptype)
-            if temp is None: continue 
-            temp = data_conversion['H_p1_number_density'](temp)
-            n_dat += temp[locs_sorted_idx].reshape(nz, ny, nx).T
+        for base, ptypes, outbase in vars_multi:
+
+            n_dat = np.zeros(base_shape)
+            v_dat = [np.zeros(base_shape) for i in range(3)]
+
+            for ptype in ptypes:
+                temp = vr.read_variable('n_'+base+ptype)
+
+                if temp is None: continue 
+
+
+                temp = data_conversion['number_density'](temp)
+                n_dat += temp[locs_sorted_idx].reshape(nz, ny, nx).T
+
+                for x_i, x in enumerate(['_x','_y', '_z']):
+                    tempv = vr.read_variable('v_'+base+ptype)[:, x_i]*temp
+                    v_dat[x_i] += tempv[locs_sorted_idx].reshape(nz, ny, nx).T
+
+            v_dat = [v/n_dat for v in v_dat]
+            v_dat = data_conversion['velocity'](np.array(v_dat))
+
+            f.create_dataset(outbase+'_number_density', data=n_dat)
 
             for x_i, x in enumerate(['_x','_y', '_z']):
-                tempv = vr.read_variable('v_H+'+ptype)[:, x_i]*temp
-                v_dat[x_i] += tempv[locs_sorted_idx].reshape(nz, ny, nx).T
-
-        v_dat = [v/n_dat for v in v_dat]
-        v_dat = [v*1e-3 for v in v_dat]
-        f.create_dataset('H_p1_number_density', data=n_dat)
-        for x_i, x in enumerate(['_x','_y', '_z']):
-            f.create_dataset('H_p1_velocity'+x, data=v_dat[x_i])
+                f.create_dataset(outbase+'_velocity'+x, data=v_dat[x_i])
 
 
         # Make spatial vars
@@ -141,7 +154,7 @@ def main(argv):
         elif opt in ("-o", "--outname"):
             outname = arg
         elif opt in ("-r", "--radius"):
-            radius = arg
+            radius = float(arg)
 
     convert_dataset(infile, outname, radius)
 

@@ -127,20 +127,18 @@ def setup_slicegrid_plot(ds_keys, fields):
 
 
 def finalize_slicegrid_plot(plot, ax_plt, center, fname=None, boundaries=False, show=False,
-                           add_mars_ax=None,size_scale=None, lims=None):
+                           add_mars_ax=None,size_scale=None, lims=None, xticks=None, xticks_minor=None,
+                           yticks=None, yticks_minor=None):
     ax_labels = [['Y','Z'],['X','Z'],['X','Y']]
     if add_mars_ax is None: add_mars_ax = ax_plt
+    if lims is None: lims = [(-4,4),(-4,4)]
 
     for ax_i in range(plot['Nds']):
         for ax_j in range(plot['Nfields']):
             ax = plot['axes_grid'][ax_j,ax_i]
             ax.set_aspect('equal')
-            if lims is None:
-                ax.set_xlim(-4,4)
-                ax.set_ylim(-4,4)
-            else:
-                ax.set_xlim(lims[0])
-                ax.set_ylim(lims[1])
+            ax.set_xlim(lims[0])
+            ax.set_ylim(lims[1])
 
             mars_frac = np.real(np.sqrt(1-center[ax_plt]**2))
             alpha = np.nanmax([mars_frac, 0.1])
@@ -164,19 +162,23 @@ def finalize_slicegrid_plot(plot, ax_plt, center, fname=None, boundaries=False, 
             if ax_j != plot['Nfields']-1:
                 ax.set_xticks([])
             else:
+                if xticks is not None: ax.set_xticks(xticks)
+                if xticks_minor is not None: ax.set_xticks(xticks_minor,minor=True)
                 ax.set_xlabel('$\mathrm{'+ax_labels[ax_plt][0]+'} \;(R_P)$')
 
             if ax_i != 0:
                 ax.set_yticks([])
             else:
+                if yticks is not None: ax.set_yticks(yticks)
+                if yticks_minor is not None: ax.set_yticks(yticks_minor,minor=True)
                 ax.set_ylabel('$\mathrm{'+ax_labels[ax_plt][1]+'} \;(R_P)$')
-
 
     if size_scale == None: 
         h = 15
     else:
         h = size_scale
-    w = plot['Nds']*h/plot['Nfields'] 
+    aspect_ratio =  (lims[0][1]-lims[0][0])/float(lims[1][1]-lims[1][0])
+    w = aspect_ratio*plot['Nds']*h/plot['Nfields'] 
 
     plot['figure'].set_size_inches(w,h)
     plt.tight_layout()

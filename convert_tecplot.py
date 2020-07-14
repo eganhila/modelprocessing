@@ -46,16 +46,30 @@ def convert_file(fname, h5_name):
             l = dat_file.readline()
             
             # Grab the first variable thats at the end of the line
-            if "VARIABLES" in l: dat_vars.append(l.replace("VARIABLES = ", ''))
+            if "VARIABLES" in l: 
+                variables = l.split(',')
+                for var in variables:
+                    var = var.replace("VARIABLES =", '') 
+                    var = var.strip()
+                    dat_vars.append(var)
             
             # If the line begins with " then its another variable
             if l[0] == '"': dat_vars.append(l)
 
             # Contains the number of elements to read
             if "Nodes" in l: N = int( (l.split(',')[0]).split("=")[-1] )
+            if "ZONE T" in l: 
+                metadata = l.split(",")
+                for md in metadata:
+                    md = md.split("=")
+
+                    if md[0].strip() == "N": 
+                        N = int(md[1])
 
             # Begining of last line before data
             if "DT" in l: read_header = False
+
+            if "AUXDATA TIMESIMSHORT" in l: read_header = False
 
         dat_vars = [v.replace('"', '').replace('\n','') for v in dat_vars]
 

@@ -70,7 +70,7 @@ class TopologyMap():
         self.streamlines_out = streamlines
         
     def _check_topology(self):
-        bbox = np.array([self.ds.domain_left_edge.d,self.ds.domain_left_edge.d])
+        bbox = np.array([self.ds.domain_left_edge.d,self.ds.domain_left_edge.d]).T
         for i, stream in enumerate(self.streamlines_in.streamlines):
             self.in_ends[i] = single_topology(stream, bbox)
     
