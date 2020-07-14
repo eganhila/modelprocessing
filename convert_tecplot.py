@@ -16,7 +16,7 @@ import h5py
 import glob
 import sys
 import getopt
-from general_functions import *
+#from general_functions import *
 
 #Multi-fluid/chuanfei things
 data_conversion = {'H_p1_number_density':lambda x: x/1.00794, 
@@ -31,13 +31,13 @@ data_conversion = {'H_p1_number_density':lambda x: x/1.00794,
 #                   'O_p1_number_density':lambda x: x/15.9994, 
 #                   'CO2_p1_number_density':lambda x: x/(15.9994*2+12.0107),
 #                   }
-f_var_rename = 'Misc/name_conversion.txt'
+f_var_rename = '/Users/Everding/Library/PythonThings/modelprocessing/misc/name_conversion.txt'
 
 
 def convert_file(fname, h5_name):
 
     # read in file
-    with file(fname) as dat_file: 
+    with open(fname) as dat_file: 
         
         #Process header inforation
         read_header = True
@@ -65,7 +65,7 @@ def convert_file(fname, h5_name):
         # Iterate through the data
         for i, line in enumerate(dat_file):
             line_dat = line.split(' ')
-            line_dat = filter(None, line_dat)
+            line_dat = list(filter(None, line_dat))
             for j, key in enumerate(dat_vars):
                 data[key][i] = float(line_dat[j])
 
@@ -76,13 +76,13 @@ def convert_file(fname, h5_name):
                 
 
     # Going to make the lat/lon/alt fields
-    lat, lon, alt = convert_coords_cart_sphere(
-            np.array([data['X [R]'], data['Y [R]'], data['Z [R]']]))
+    #lat, lon, alt = convert_coords_cart_sphere(
+    #        np.array([data['X [R]'], data['Y [R]'], data['Z [R]']]))
 
 
     # Set up name conversion dictionary
     name_conversion = {}
-    for pair in file(f_var_rename):
+    for pair in open(f_var_rename):
         k,v = pair.split(',')
         name_conversion[k] = v[:-1] #remove newline
 
