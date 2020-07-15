@@ -58,7 +58,7 @@ def finalize_sliceax(ax, ax_i, orbit=None, center=None, show_center=False, tlimi
                    [center[off_ax[ax_i][1]]],
                    marker='x', color='white', zorder=20, s=3)
     
-    if lim is None: lim=(-4,4)#(-2.5,2.5)
+    if lim is None: (-3,3)
     ax.set_xlim(lim)
     ax.set_ylim(lim)
 
@@ -379,13 +379,13 @@ def make_sliceplot(ds_name=None, field=None, center=None, orbit=None,
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:bs:",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field=", "boundaries", "stream_field=", "cycloidpickup", "fname="])
+        opts, args = getopt.getopt(argv,"f:i:o:t:c:d:mv:bs:",["field=","infile=", "orbit=", "center=", "type=","indir=", "mark", "subtitle=", "tlimit=", "vec_field=", "boundaries", "stream_field=", "cycloidpickup", "fname=", "limfactor="])
     except getopt.GetoptError:
         print(getopt.GetoptError())
         print('error')
         return
     
-    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field, stream_field, boundaries, cycloidpickup, fname = None, None, None, None, False, None, False,'', None, None, None,None, False, False, None
+    infile, field, orbit, center, test, fdir, mark, subtitle, ds_type, tlim, vec_field, stream_field, boundaries, cycloidpickup, fname, lim = None, None, None, None, False, None, False,'', None, None, None,None, False, False, None, None
     for opt, arg in opts:
         if opt in ("-i", "--infile"):
             infile = arg
@@ -417,6 +417,9 @@ def main(argv):
             stream_field = arg
         elif opt in ("--outname"):
             fname = arg
+        elif opt in ("--limfactor"):
+            limfactor = arg
+            lim = (-4*limfactor, 4*limfactor)
     
     if infile is None and fdir is None and ds_type is None: 
         print('must supply file')
@@ -455,7 +458,7 @@ def main(argv):
                 fname = 'Output/slice_{0}_{1}_{2}{3}.pdf'.format(field, infile.split('/')[-1][:-3], orbit, subtitle)
             make_sliceplot(infile, field, orbit=orbit, test=test,
                       regrid_data=regrid_data, vec_field=vec_field, center=center, mark=mark, tlimit=tlim, stream_field=stream_field, 
-                      fname=fname, boundaries=boundaries, cycloidpickup=cycloidpickup)
+                      fname=fname, boundaries=boundaries, cycloidpickup=cycloidpickup, lim=lim)
     
 if __name__ == '__main__':
     main(sys.argv[1:])
