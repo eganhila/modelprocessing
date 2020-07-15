@@ -73,17 +73,16 @@ def convert_file(fname, h5_name):
             if "AUXDATA TIMESIMSHORT" in l: read_header = False
 
         dat_vars = [v.replace('"', '').replace('\n','') for v in dat_vars]
-
+        Nvars = len(dat_vars)
         # Setup empty data structure
         data = {var:np.empty(N, dtype=float) for var in dat_vars}
 
         # Iterate through the data
         i=0
         for line in dat_file:
-            if line == "": continue
-
             line_dat = line.split(' ')
             line_dat = list(filter(None, line_dat))
+            if len(line_dat) != Nvars: continue
             for j, key in enumerate(dat_vars):
                 data[key][i] = float(line_dat[j])
 
