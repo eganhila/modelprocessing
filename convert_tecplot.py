@@ -16,6 +16,7 @@ import h5py
 import glob
 import sys
 import getopt
+import os
 #from general_functions import *
 
 #Multi-fluid/chuanfei things
@@ -31,7 +32,7 @@ data_conversion = {'H_p1_number_density':lambda x: x/1.00794,
 #                   'O_p1_number_density':lambda x: x/15.9994, 
 #                   'CO2_p1_number_density':lambda x: x/(15.9994*2+12.0107),
 #                   }
-f_var_rename = '/Users/Everding/Library/PythonThings/modelprocessing/misc/name_conversion.txt'
+f_var_rename = os.path.dirname(__file__)+'/misc/name_conversion.txt'
 
 
 def convert_file(fname, h5_name):
