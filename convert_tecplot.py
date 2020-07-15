@@ -78,7 +78,10 @@ def convert_file(fname, h5_name):
         data = {var:np.empty(N, dtype=float) for var in dat_vars}
 
         # Iterate through the data
-        for i, line in enumerate(dat_file):
+        i=0
+        for line in dat_file:
+            if line == "": continue
+
             line_dat = line.split(' ')
             line_dat = list(filter(None, line_dat))
             for j, key in enumerate(dat_vars):
@@ -87,6 +90,7 @@ def convert_file(fname, h5_name):
             # There are bonus garbage lines at the end so we have to
             # manually exit the loop
             if i == N-1: break
+            i+=1
 
                 
 
